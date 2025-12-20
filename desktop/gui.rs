@@ -67,7 +67,7 @@ pub struct Gui {
 fn truncate_with_ellipsis(input: &str, max_length: usize) -> String {
     if input.chars().count() > max_length {
         let truncated: String = input.chars().take(max_length.saturating_sub(1)).collect();
-        format!("{}…", truncated)
+        format!("{truncated}…")
     } else {
         input.to_string()
     }
@@ -151,7 +151,7 @@ impl Gui {
                     Some(winit_position_to_euclid_point(*position).to_f32() / scale);
                 self.last_mouse_position
                     .is_some_and(|p| self.is_in_egui_toolbar_rect(p))
-            },
+            }
             WindowEvent::MouseInput {
                 state: ElementState::Pressed,
                 button: MouseButton::Forward,
@@ -159,7 +159,7 @@ impl Gui {
             } => {
                 self.event_queue.push(UserInterfaceCommand::Forward);
                 true
-            },
+            }
             WindowEvent::MouseInput {
                 state: ElementState::Pressed,
                 button: MouseButton::Back,
@@ -167,7 +167,7 @@ impl Gui {
             } => {
                 self.event_queue.push(UserInterfaceCommand::Back);
                 true
-            },
+            }
             WindowEvent::MouseWheel { .. } | WindowEvent::MouseInput { .. } => self
                 .last_mouse_position
                 .is_some_and(|p| self.is_in_egui_toolbar_rect(p)),
@@ -351,7 +351,7 @@ impl Gui {
                                     if stop_button.clicked() {
                                         warn!("Do not support stop yet.");
                                     }
-                                },
+                                }
                                 LoadStatus::Complete => {
                                     let reload_button = ui.add(Gui::toolbar_button("↻"));
                                     reload_button.widget_info(|| {
@@ -363,7 +363,7 @@ impl Gui {
                                         *location_dirty = false;
                                         event_queue.push(UserInterfaceCommand::Reload);
                                     }
-                                },
+                                }
                             }
                             ui.add_space(2.0);
 
@@ -406,8 +406,8 @@ impl Gui {
                                         if cfg!(target_os = "macos") {
                                             i.clone().consume_key(Modifiers::COMMAND, Key::L)
                                         } else {
-                                            i.clone().consume_key(Modifiers::COMMAND, Key::L) ||
-                                                i.clone().consume_key(Modifiers::ALT, Key::D)
+                                            i.clone().consume_key(Modifiers::COMMAND, Key::L)
+                                                || i.clone().consume_key(Modifiers::ALT, Key::D)
                                         }
                                     }) {
                                         // The focus request immediately makes gained_focus return true.
@@ -427,8 +427,8 @@ impl Gui {
                                         }
                                     }
                                     // Navigate to address when enter is pressed in the address bar.
-                                    if location_field.lost_focus() &&
-                                        ui.input(|i| i.clone().key_pressed(Key::Enter))
+                                    if location_field.lost_focus()
+                                        && ui.input(|i| i.clone().key_pressed(Key::Enter))
                                     {
                                         event_queue
                                             .push(UserInterfaceCommand::Go(location.clone()));
@@ -462,16 +462,6 @@ impl Gui {
                             if new_tab_button.clicked() {
                                 event_queue.push(UserInterfaceCommand::NewWebView);
                             }
-
-                            let new_window_button = ui.add(Gui::toolbar_button("⊞"));
-                            new_window_button.widget_info(|| {
-                                let mut info = WidgetInfo::new(WidgetType::Button);
-                                info.label = Some("New window".into());
-                                info
-                            });
-                            if new_window_button.clicked() {
-                                event_queue.push(UserInterfaceCommand::NewWindow);
-                            }
                         },
                     );
                 });
@@ -491,8 +481,8 @@ impl Gui {
             // the size of its RenderingContext.
             let rect = ctx.available_rect();
             let size = Size2D::new(rect.width(), rect.height()) * scale;
-            if let Some(webview) = window.active_webview() &&
-                size != webview.size()
+            if let Some(webview) = window.active_webview()
+                && size != webview.size()
             {
                 // `rect` is sized to just the WebView viewport, which is required by
                 // `OffscreenRenderingContext` See:
@@ -555,7 +545,7 @@ impl Gui {
             Some(location) if location != self.location => {
                 self.location = location.to_owned();
                 true
-            },
+            }
             _ => false,
         }
     }
@@ -602,10 +592,10 @@ impl Gui {
         //       because logical OR would short-circuit if any of the functions return true.
         //       We want to ensure that all functions are called. The "bitwise OR" operator
         //       does not short-circuit.
-        self.update_load_status(window) |
-            self.update_location_in_toolbar(window) |
-            self.update_status_text(window) |
-            self.update_can_go_back_and_forward(window)
+        self.update_load_status(window)
+            | self.update_location_in_toolbar(window)
+            | self.update_status_text(window)
+            | self.update_can_go_back_and_forward(window)
     }
 
     /// Returns true if a redraw is required after handling the provided event.
@@ -617,17 +607,17 @@ impl Gui {
             egui_winit::accesskit_winit::WindowEvent::InitialTreeRequested => {
                 self.context.egui_ctx.enable_accesskit();
                 true
-            },
+            }
             egui_winit::accesskit_winit::WindowEvent::ActionRequested(req) => {
                 self.context
                     .egui_winit
                     .on_accesskit_action_request(req.clone());
                 true
-            },
+            }
             egui_winit::accesskit_winit::WindowEvent::AccessibilityDeactivated => {
                 self.context.egui_ctx.disable_accesskit();
                 false
-            },
+            }
         }
     }
 
@@ -650,11 +640,11 @@ fn embedder_image_to_egui_image(image: &Image) -> egui::ColorImage {
                 .flat_map(|pixel| [pixel[0], pixel[0], pixel[0], pixel[1]])
                 .collect();
             egui::ColorImage::from_rgba_unmultiplied([width, height], &data)
-        },
+        }
         PixelFormat::RGB8 => egui::ColorImage::from_rgb([width, height], image.data()),
         PixelFormat::RGBA8 => {
             egui::ColorImage::from_rgba_unmultiplied([width, height], image.data())
-        },
+        }
         PixelFormat::BGRA8 => {
             // Convert from BGRA to RGBA
             let data: Vec<u8> = image
@@ -663,7 +653,7 @@ fn embedder_image_to_egui_image(image: &Image) -> egui::ColorImage {
                 .flat_map(|chunk| [chunk[2], chunk[1], chunk[0], chunk[3]])
                 .collect();
             egui::ColorImage::from_rgba_unmultiplied([width, height], &data)
-        },
+        }
     }
 }
 

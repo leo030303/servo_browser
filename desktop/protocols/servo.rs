@@ -71,12 +71,12 @@ impl ProtocolHandler for ServoProtocolHandler {
                     .collect::<Vec<String>>()
                     .join(",");
                 json_response(request, format!("[{pref_list}]"))
-            },
+            }
 
             "default-user-agent" => {
                 let user_agent = UserAgentPlatform::default().to_user_agent_string();
                 json_response(request, format!("\"{user_agent}\""))
-            },
+            }
 
             _ => Box::pin(std::future::ready(Response::network_internal_error(
                 "Invalid shortcut",

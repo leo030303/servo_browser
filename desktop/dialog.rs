@@ -180,11 +180,11 @@ impl Dialog {
                                 let paths = std::slice::from_ref(path);
                                 picker.select(paths);
                                 DialogAction::Submit
-                            },
+                            }
                             DialogState::PickedMultiple(paths) => {
                                 picker.select(paths);
                                 DialogAction::Submit
-                            },
+                            }
                             DialogState::Cancelled | DialogState::Closed => DialogAction::Dismiss,
                         }
                     })
@@ -195,16 +195,16 @@ impl Dialog {
                         if let Some(picker) = maybe_picker.take() {
                             picker.dismiss();
                         }
-                    },
+                    }
                     DialogAction::Submit => {
                         if let Some(picker) = maybe_picker.take() {
                             picker.submit();
                         }
-                    },
-                    DialogAction::Continue => {},
+                    }
+                    DialogAction::Continue => {}
                 }
                 matches!(action, DialogAction::Continue)
-            },
+            }
             Dialog::Alert(maybe_alert_dialog) => {
                 let Some(alert_dialog) = maybe_alert_dialog else {
                     return false;
@@ -217,8 +217,8 @@ impl Dialog {
                         ui,
                         |_ui| {},
                         |ui| {
-                            if ui.button("Close").clicked() ||
-                                ui.input(|i| i.key_pressed(egui::Key::Escape))
+                            if ui.button("Close").clicked()
+                                || ui.input(|i| i.key_pressed(egui::Key::Escape))
                             {
                                 is_open = false;
                             }
@@ -232,7 +232,7 @@ impl Dialog {
                     }
                 }
                 is_open
-            },
+            }
             Dialog::Confirm(maybe_confirm_dialog) => {
                 let Some(confirm_dialog) = maybe_confirm_dialog else {
                     return false;
@@ -245,13 +245,13 @@ impl Dialog {
                         ui,
                         |_ui| {},
                         |ui| {
-                            if ui.button("Ok").clicked() ||
-                                ui.input(|i| i.key_pressed(egui::Key::Enter))
+                            if ui.button("Ok").clicked()
+                                || ui.input(|i| i.key_pressed(egui::Key::Enter))
                             {
                                 dialog_action = DialogAction::Submit;
                             }
-                            if ui.button("Cancel").clicked() ||
-                                ui.input(|i| i.key_pressed(egui::Key::Escape))
+                            if ui.button("Cancel").clicked()
+                                || ui.input(|i| i.key_pressed(egui::Key::Escape))
                             {
                                 dialog_action = DialogAction::Dismiss;
                             }
@@ -265,16 +265,16 @@ impl Dialog {
                             confirm_dialog.dismiss();
                         }
                         false
-                    },
+                    }
                     DialogAction::Submit => {
                         if let Some(confirm_dialog) = maybe_confirm_dialog.take() {
                             confirm_dialog.confirm();
                         }
                         false
-                    },
+                    }
                     DialogAction::Continue => true,
                 }
-            },
+            }
             Dialog::Prompt(maybe_prompt_dialog) => {
                 let Some(prompt_dialog) = maybe_prompt_dialog else {
                     return false;
@@ -288,14 +288,14 @@ impl Dialog {
                         ui,
                         |_ui| {},
                         |ui| {
-                            if ui.button("Ok").clicked() ||
-                                ui.input(|i| i.key_pressed(egui::Key::Enter))
+                            if ui.button("Ok").clicked()
+                                || ui.input(|i| i.key_pressed(egui::Key::Enter))
                             {
                                 prompt_dialog.set_current_value(&prompt_text);
                                 dialog_action = DialogAction::Submit;
                             }
-                            if ui.button("Cancel").clicked() ||
-                                ui.input(|i| i.key_pressed(egui::Key::Escape))
+                            if ui.button("Cancel").clicked()
+                                || ui.input(|i| i.key_pressed(egui::Key::Escape))
                             {
                                 dialog_action = DialogAction::Dismiss;
                             }
@@ -309,16 +309,16 @@ impl Dialog {
                             prompt_dialog.dismiss();
                         }
                         false
-                    },
+                    }
                     DialogAction::Submit => {
                         if let Some(prompt_dialog) = maybe_prompt_dialog.take() {
                             prompt_dialog.confirm();
                         }
                         false
-                    },
+                    }
                     DialogAction::Continue => true,
                 }
-            },
+            }
             Dialog::Authentication {
                 username,
                 password,
@@ -357,16 +357,16 @@ impl Dialog {
                         ui,
                         |_ui| {},
                         |ui| {
-                            if ui.button("Sign in").clicked() ||
-                                ui.input(|i| i.key_pressed(egui::Key::Enter))
+                            if ui.button("Sign in").clicked()
+                                || ui.input(|i| i.key_pressed(egui::Key::Enter))
                             {
                                 let request =
                                     request.take().expect("non-None until dialog is closed");
                                 request.authenticate(username.clone(), password.clone());
                                 is_open = false;
                             }
-                            if ui.button("Cancel").clicked() ||
-                                ui.input(|i| i.key_pressed(egui::Key::Escape))
+                            if ui.button("Cancel").clicked()
+                                || ui.input(|i| i.key_pressed(egui::Key::Escape))
                             {
                                 is_open = false;
                             }
@@ -374,7 +374,7 @@ impl Dialog {
                     );
                 });
                 is_open
-            },
+            }
             Dialog::Permission { message, request } => {
                 let mut is_open = true;
                 let modal = Modal::new("permission".into());
@@ -384,16 +384,16 @@ impl Dialog {
                         ui,
                         |_ui| {},
                         |ui| {
-                            if ui.button("Allow").clicked() ||
-                                ui.input(|i| i.key_pressed(egui::Key::Enter))
+                            if ui.button("Allow").clicked()
+                                || ui.input(|i| i.key_pressed(egui::Key::Enter))
                             {
                                 let request =
                                     request.take().expect("non-None until dialog is closed");
                                 request.allow();
                                 is_open = false;
                             }
-                            if ui.button("Deny").clicked() ||
-                                ui.input(|i| i.key_pressed(egui::Key::Escape))
+                            if ui.button("Deny").clicked()
+                                || ui.input(|i| i.key_pressed(egui::Key::Escape))
                             {
                                 let request =
                                     request.take().expect("non-None until dialog is closed");
@@ -404,7 +404,7 @@ impl Dialog {
                     );
                 });
                 is_open
-            },
+            }
             Dialog::SelectDevice {
                 devices,
                 selected_device_index,
@@ -434,21 +434,21 @@ impl Dialog {
                         ui,
                         |_ui| {},
                         |ui| {
-                            if ui.button("Ok").clicked() ||
-                                ui.input(|i| i.key_pressed(egui::Key::Enter))
+                            if ui.button("Ok").clicked()
+                                || ui.input(|i| i.key_pressed(egui::Key::Enter))
                             {
                                 if let Err(e) = response_sender
                                     .send(Some(devices[*selected_device_index].clone()))
                                 {
-                                    warn!("Failed to send device selection: {}", e);
+                                    warn!("Failed to send device selection: {e}");
                                 }
                                 is_open = false;
                             }
-                            if ui.button("Cancel").clicked() ||
-                                ui.input(|i| i.key_pressed(egui::Key::Escape))
+                            if ui.button("Cancel").clicked()
+                                || ui.input(|i| i.key_pressed(egui::Key::Escape))
                             {
                                 if let Err(e) = response_sender.send(None) {
-                                    warn!("Failed to send cancellation: {}", e);
+                                    warn!("Failed to send cancellation: {e}");
                                 }
                                 is_open = false;
                             }
@@ -456,7 +456,7 @@ impl Dialog {
                     );
                 });
                 is_open
-            },
+            }
             Dialog::SelectElement {
                 maybe_prompt,
                 toolbar_offset,
@@ -532,7 +532,7 @@ impl Dialog {
                                             &mut is_open,
                                             false,
                                         );
-                                    },
+                                    }
                                     SelectElementOptionOrOptgroup::Optgroup { label, options } => {
                                         ui.label(RichText::new(label).strong());
 
@@ -545,7 +545,7 @@ impl Dialog {
                                                 true,
                                             );
                                         }
-                                    },
+                                    }
                                 }
                             }
                         });
@@ -564,7 +564,7 @@ impl Dialog {
                 }
 
                 is_open
-            },
+            }
             Dialog::ColorPicker {
                 current_color,
                 maybe_prompt,
@@ -593,8 +593,8 @@ impl Dialog {
 
                         ui.add_space(10.);
 
-                        if ui.button("Dismiss").clicked() ||
-                            ui.input(|i| i.key_pressed(egui::Key::Escape))
+                        if ui.button("Dismiss").clicked()
+                            || ui.input(|i| i.key_pressed(egui::Key::Escape))
                         {
                             is_open = false;
                             prompt.select(None);
@@ -617,7 +617,7 @@ impl Dialog {
                 }
 
                 is_open
-            },
+            }
             Dialog::ContextMenu {
                 menu,
                 toolbar_offset,
@@ -649,7 +649,7 @@ impl Dialog {
                                                 ),
                                                 false => {
                                                     (ui.visuals().weak_text_color(), Sense::empty())
-                                                },
+                                                }
                                             };
 
                                             ui.style_mut().visuals.widgets.inactive.weak_bg_fill =
@@ -671,10 +671,10 @@ impl Dialog {
                                                 selected_action = Some(*action);
                                                 ui.close();
                                             }
-                                        },
+                                        }
                                         ContextMenuItem::Separator => {
                                             ui.separator();
-                                        },
+                                        }
                                     }
                                 }
                             })
@@ -692,7 +692,7 @@ impl Dialog {
                     }
                 }
                 is_open
-            },
+            }
         }
     }
 
@@ -700,10 +700,10 @@ impl Dialog {
         match self {
             Dialog::SelectElement { maybe_prompt, .. } => {
                 maybe_prompt.as_ref().map(|element| element.id())
-            },
+            }
             Dialog::ColorPicker { maybe_prompt, .. } => {
                 maybe_prompt.as_ref().map(|element| element.id())
-            },
+            }
             _ => None,
         }
     }

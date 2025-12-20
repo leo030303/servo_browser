@@ -171,7 +171,7 @@ impl App {
     /// Takes any events generated during `egui` updates and performs their actions.
     fn handle_interface_commands_for_window(
         &self,
-        active_event_loop: Option<&ActiveEventLoop>,
+        _active_event_loop: Option<&ActiveEventLoop>,
         state: &Rc<RunningAppState>,
         window: &ServoShellWindow,
         commands: Vec<UserInterfaceCommand>,
@@ -190,23 +190,23 @@ impl App {
                     if let Some(active_webview) = window.active_webview() {
                         active_webview.load(url.into_url());
                     }
-                },
+                }
                 UserInterfaceCommand::Back => {
                     if let Some(active_webview) = window.active_webview() {
                         active_webview.go_back(1);
                     }
-                },
+                }
                 UserInterfaceCommand::Forward => {
                     if let Some(active_webview) = window.active_webview() {
                         active_webview.go_forward(1);
                     }
-                },
+                }
                 UserInterfaceCommand::Reload => {
                     window.set_needs_update();
                     if let Some(active_webview) = window.active_webview() {
                         active_webview.reload();
                     }
-                },
+                }
                 UserInterfaceCommand::ReloadAll => {
                     for window in state.windows().values() {
                         window.set_needs_update();
@@ -214,22 +214,16 @@ impl App {
                             webview.reload();
                         }
                     }
-                },
+                }
                 UserInterfaceCommand::NewWebView => {
                     window.set_needs_update();
                     let url = Url::parse("servo:newtab").expect("Should always be able to parse");
                     window.create_and_activate_toplevel_webview(state.clone(), url);
-                },
+                }
                 UserInterfaceCommand::CloseWebView(id) => {
                     window.set_needs_update();
                     window.close_webview(id);
-                },
-                UserInterfaceCommand::NewWindow => {
-                    let url = Url::parse("servo:newtab").unwrap();
-                    let platform_window =
-                        self.create_platform_window(url.clone(), active_event_loop);
-                    state.open_window(platform_window, url);
-                },
+                }
             }
         }
     }

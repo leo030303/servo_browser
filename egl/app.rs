@@ -170,15 +170,15 @@ impl PlatformWindow for EmbeddedPlatformWindow {
             EmbedderControl::InputMethod(input_method_control) => {
                 self.visible_input_methods.borrow_mut().push(control_id);
                 self.host.on_ime_show(input_method_control);
-            },
+            }
             EmbedderControl::SimpleDialog(simple_dialog) => match simple_dialog {
                 SimpleDialog::Alert(alert_dialog) => {
                     self.host.show_alert(alert_dialog.message().into());
                     alert_dialog.confirm();
-                },
-                _ => {}, // The drop implementation will send the default response.
+                }
+                _ => {} // The drop implementation will send the default response.
             },
-            _ => {},
+            _ => {}
         }
     }
 
@@ -198,17 +198,17 @@ impl PlatformWindow for EmbeddedPlatformWindow {
             MediaSessionEvent::SetMetadata(metadata) => {
                 self.host
                     .on_media_session_metadata(metadata.title, metadata.artist, metadata.album)
-            },
+            }
             MediaSessionEvent::PlaybackStateChange(state) => {
                 self.host.on_media_session_playback_state_change(state)
-            },
+            }
             MediaSessionEvent::SetPositionState(position_state) => {
                 self.host.on_media_session_set_position_state(
                     position_state.duration,
                     position_state.position,
                     position_state.playback_rate,
                 )
-            },
+            }
         };
     }
 

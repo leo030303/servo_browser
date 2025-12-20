@@ -106,7 +106,7 @@ pub extern "C" fn Java_org_servo_servoview_JNIServo_init<'local>(
         Err(err) => {
             throw(&mut env, &err);
             return;
-        },
+        }
     };
 
     if log {
@@ -161,7 +161,7 @@ pub extern "C" fn Java_org_servo_servoview_JNIServo_init<'local>(
                 "Failed to get global reference of callback argument",
             );
             return;
-        },
+        }
     };
 
     let event_loop_waker = Box::new(WakeupCallback::new(callbacks_ref.clone(), &env));
@@ -177,13 +177,13 @@ pub extern "C" fn Java_org_servo_servoview_JNIServo_init<'local>(
     let (opts, mut preferences, servoshell_preferences) = match parse_command_line_arguments(args) {
         ArgumentParsingResult::ContentProcess(..) => {
             unreachable!("Android does not have support for multiprocess yet.")
-        },
+        }
         ArgumentParsingResult::ChromeProcess(opts, preferences, servoshell_preferences) => {
             (opts, preferences, servoshell_preferences)
-        },
+        }
         ArgumentParsingResult::Exit => {
             std::process::exit(0);
-        },
+        }
         ArgumentParsingResult::ErrorParsing => std::process::exit(1),
     };
 
@@ -278,10 +278,10 @@ pub extern "C" fn Java_org_servo_servoview_JNIServo_loadUri<'local>(
         Ok(url) => {
             let url: String = url.into();
             call(&mut env, |s| s.load_uri(&url));
-        },
+        }
         Err(_) => {
             throw(&mut env, "Failed to convert Java string");
-        },
+        }
     };
 }
 
@@ -624,12 +624,12 @@ impl HostTrait for HostCallbacks {
             LoadStatus::Started => {
                 env.call_method(self.callbacks.as_obj(), "onLoadStarted", "()V", &[])
                     .unwrap();
-            },
-            LoadStatus::HeadParsed => {},
+            }
+            LoadStatus::HeadParsed => {}
             LoadStatus::Complete => {
                 env.call_method(self.callbacks.as_obj(), "onLoadEnded", "()V", &[])
                     .unwrap();
-            },
+            }
         };
     }
 
@@ -781,7 +781,7 @@ fn new_string_as_jvalue<'local>(
         Err(_) => {
             throw(env, "Couldn't create Java string");
             return Err("Couldn't create Java string");
-        },
+        }
     };
     Ok(JValueOwned::from(jstring))
 }

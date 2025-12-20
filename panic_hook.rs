@@ -34,7 +34,7 @@ pub(crate) fn panic_hook(info: &PanicHookInfo) {
             location.line()
         );
     } else {
-        let _ = writeln!(&mut stderr, "{} (thread {})", msg, name);
+        let _ = writeln!(&mut stderr, "{msg} (thread {name})");
     }
     if env::var("RUST_BACKTRACE").is_ok() {
         let _ = crate::backtrace::print(&mut stderr);
@@ -49,5 +49,5 @@ pub(crate) fn panic_hook(info: &PanicHookInfo) {
         raise_signal_or_exit_with_error(libc::SIGSEGV);
     }
 
-    error!("{}", msg);
+    error!("{msg}");
 }

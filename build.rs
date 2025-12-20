@@ -75,14 +75,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     match git_sha() {
-        Ok(hash) => println!("cargo:rustc-env=GIT_SHA={}", hash),
+        Ok(hash) => println!("cargo:rustc-env=GIT_SHA={hash}"),
         Err(error) => {
-            println!(
-                "cargo:warning=Could not generate git version information: {:?}",
-                error
-            );
+            println!("cargo:warning=Could not generate git version information: {error:?}");
             println!("cargo:rustc-env=GIT_SHA=nogit");
-        },
+        }
     }
 
     // On MacOS, all dylib dependencies are shipped along with the binary

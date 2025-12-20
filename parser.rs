@@ -13,7 +13,7 @@ pub fn parse_url_or_filename(cwd: &Path, input: &str) -> Result<ServoUrl, ()> {
         Ok(url) => Ok(url),
         Err(url::ParseError::RelativeUrlWithoutBase) => {
             url::Url::from_file_path(&*cwd.join(input)).map(ServoUrl::from_url)
-        },
+        }
         Err(_) => Err(()),
     }
 }
@@ -31,7 +31,7 @@ pub fn get_default_url(
     let cmdline_url = url_opt.map(|s| s.to_string()).and_then(|url_string| {
         parse_url_or_filename(cwd.as_ref(), &url_string)
             .inspect_err(|&error| {
-                log::warn!("URL parsing failed ({:?}).", error);
+                log::warn!("URL parsing failed ({error:?}).");
             })
             .ok()
     });
@@ -41,8 +41,8 @@ pub fn get_default_url(
         match (url.scheme(), url.host(), url.to_file_path()) {
             ("file", None, Ok(ref path)) if exists(path) => {
                 new_url = cmdline_url;
-            },
-            _ => {},
+            }
+            _ => {}
         }
     }
 
@@ -77,19 +77,19 @@ pub(crate) fn location_bar_input_to_url(request: &str, searchpage: &str) -> Opti
 
 fn try_as_file(request: &str) -> Option<ServoUrl> {
     if request.starts_with('/') {
-        return ServoUrl::parse(&format!("file://{}", request)).ok();
+        return ServoUrl::parse(&format!("file://{request}")).ok();
     }
     None
 }
 
 fn try_as_domain(request: &str) -> Option<ServoUrl> {
     fn is_domain_like(s: &str) -> bool {
-        !s.starts_with('/') && s.contains('/') ||
-            (!s.contains(' ') && !s.starts_with('.') && s.split('.').count() > 1)
+        !s.starts_with('/') && s.contains('/')
+            || (!s.contains(' ') && !s.starts_with('.') && s.split('.').count() > 1)
     }
 
     if !request.contains(' ') && is_reg_domain(request) || is_domain_like(request) {
-        return ServoUrl::parse(&format!("https://{}", request)).ok();
+        return ServoUrl::parse(&format!("https://{request}")).ok();
     }
     None
 }

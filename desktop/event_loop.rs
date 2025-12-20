@@ -75,7 +75,7 @@ impl ServoShellEventLoop {
         match self {
             ServoShellEventLoop::Winit(event_loop) => {
                 Box::new(HeadedEventLoopWaker::new(event_loop))
-            },
+            }
             ServoShellEventLoop::Headless(data) => Box::new(HeadlessEventLoopWaker(data.clone())),
         }
     }
@@ -86,7 +86,7 @@ impl ServoShellEventLoop {
                 event_loop
                     .run_app(app)
                     .expect("Failed while running events loop");
-            },
+            }
             ServoShellEventLoop::Headless(event_loop) => event_loop.run_app(app),
         }
     }
@@ -108,7 +108,7 @@ impl EventLoopWaker for HeadedEventLoopWaker {
     fn wake(&self) {
         // Kick the OS event loop awake.
         if let Err(err) = self.proxy.lock().unwrap().send_event(AppEvent::Waker) {
-            warn!("Failed to wake up event loop ({}).", err);
+            warn!("Failed to wake up event loop ({err}).");
         }
     }
 

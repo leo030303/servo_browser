@@ -613,8 +613,7 @@ impl PlatformWindow for Window {
                 let effective_egui_zoom_factor = desired_scale_factor / scale_factor as f32;
 
                 info!(
-                    "window scale factor changed to {}, setting egui zoom factor to {}",
-                    scale_factor, effective_egui_zoom_factor
+                    "window scale factor changed to {scale_factor}, setting egui zoom factor to {effective_egui_zoom_factor}"
                 );
 
                 self.gui

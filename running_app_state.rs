@@ -141,7 +141,6 @@ pub(crate) enum UserInterfaceCommand {
     ReloadAll,
     NewWebView,
     CloseWebView(WebViewId),
-    NewWindow,
 }
 
 pub(crate) struct RunningAppState {
@@ -409,7 +408,7 @@ impl RunningAppState {
                 Err(error) => {
                     error!("Could not take screenshot: {error:?}");
                     return;
-                },
+                }
             };
 
             let image_format = ImageFormat::from_path(&output_path).unwrap_or(ImageFormat::Png);
@@ -496,22 +495,22 @@ impl RunningAppState {
 
     pub(crate) fn handle_webdriver_script_command(&self, script_command: &WebDriverScriptCommand) {
         match script_command {
-            WebDriverScriptCommand::ExecuteScript(_webview_id, response_sender) |
-            WebDriverScriptCommand::ExecuteAsyncScript(_webview_id, response_sender) => {
+            WebDriverScriptCommand::ExecuteScript(_webview_id, response_sender)
+            | WebDriverScriptCommand::ExecuteAsyncScript(_webview_id, response_sender) => {
                 // Give embedder a chance to interrupt the script command.
                 // Webdriver only handles 1 script command at a time, so we can
                 // safely set a new interrupt sender and remove the previous one here.
                 self.set_script_command_interrupt_sender(Some(response_sender.clone()));
-            },
+            }
             WebDriverScriptCommand::AddLoadStatusSender(webview_id, load_status_sender) => {
                 self.set_load_status_sender(*webview_id, load_status_sender.clone());
-            },
+            }
             WebDriverScriptCommand::RemoveLoadStatusSender(webview_id) => {
                 self.remove_load_status_sender(*webview_id);
-            },
+            }
             _ => {
                 self.set_script_command_interrupt_sender(None);
-            },
+            }
         }
     }
 
@@ -528,7 +527,7 @@ impl RunningAppState {
         self.platform_window_for_webview_id(webview_id)
             .dismiss_embedder_controls_for_webview(webview_id);
 
-        info!("Loading URL in webview {}: {}", webview_id, url);
+        info!("Loading URL in webview {webview_id}: {url}");
         self.set_load_status_sender(webview_id, load_status_sender);
         webview.load(url);
     }
@@ -715,10 +714,10 @@ impl WebViewDelegate for RunningAppState {
         match self.gamepad_support.borrow_mut().as_mut() {
             Some(gamepad_support) => {
                 gamepad_support.play_haptic_effect(index, effect_type, effect_complete_sender);
-            },
+            }
             None => {
                 let _ = effect_complete_sender.send(false);
-            },
+            }
         }
     }
 

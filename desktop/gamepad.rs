@@ -29,7 +29,7 @@ impl GamepadSupport {
             Err(error) => {
                 warn!("Error creating gamepad input connection ({error})");
                 return None;
-            },
+            }
         };
         Some(Self {
             handle,
@@ -52,7 +52,7 @@ impl GamepadSupport {
                         let update_type = GamepadUpdateType::Button(mapped_index, 1.0);
                         gamepad_event = Some(GamepadEvent::Updated(index, update_type));
                     }
-                },
+                }
                 EventType::ButtonReleased(button, _) => {
                     let mapped_index = Self::map_gamepad_button(button);
                     // We only want to send this for a valid digital button, aka on/off only
@@ -60,7 +60,7 @@ impl GamepadSupport {
                         let update_type = GamepadUpdateType::Button(mapped_index, 0.0);
                         gamepad_event = Some(GamepadEvent::Updated(index, update_type));
                     }
-                },
+                }
                 EventType::ButtonChanged(button, value, _) => {
                     let mapped_index = Self::map_gamepad_button(button);
                     // We only want to send this for a valid non-digital button, aka the triggers
@@ -68,7 +68,7 @@ impl GamepadSupport {
                         let update_type = GamepadUpdateType::Button(mapped_index, value as f64);
                         gamepad_event = Some(GamepadEvent::Updated(index, update_type));
                     }
-                },
+                }
                 EventType::AxisChanged(axis, value, _) => {
                     // Map axis index and value to represent Standard Gamepad axis
                     // <https://www.w3.org/TR/gamepad/#dfn-represents-a-standard-gamepad-axis>
@@ -90,7 +90,7 @@ impl GamepadSupport {
                         let update_type = GamepadUpdateType::Axis(mapped_axis, axis_value as f64);
                         gamepad_event = Some(GamepadEvent::Updated(index, update_type));
                     }
-                },
+                }
                 EventType::Connected => {
                     let name = String::from(name);
                     let bounds = GamepadInputBounds {
@@ -108,10 +108,10 @@ impl GamepadSupport {
                         bounds,
                         supported_haptic_effects,
                     ));
-                },
+                }
                 EventType::Disconnected => {
                     gamepad_event = Some(GamepadEvent::Disconnected(index));
-                },
+                }
                 EventType::ForceFeedbackEffectCompleted => {
                     let Some(effect) = self.haptic_effects.get(&event.id.into()) else {
                         warn!("Failed to find haptic effect for id {}", event.id);
@@ -122,8 +122,8 @@ impl GamepadSupport {
                         .send(true)
                         .expect("Failed to send haptic effect completion.");
                     self.haptic_effects.remove(&event.id.into());
-                },
-                _ => {},
+                }
+                _ => {}
             }
 
             if let Some(event) = gamepad_event {
@@ -218,9 +218,9 @@ impl GamepadSupport {
         let stopped_successfully = match haptic_effect.effect.stop() {
             Ok(()) => true,
             Err(e) => {
-                debug!("Failed to stop haptic effect: {:?}", e);
+                debug!("Failed to stop haptic effect: {e:?}");
                 false
-            },
+            }
         };
         self.haptic_effects.remove(&index);
 

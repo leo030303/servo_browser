@@ -28,7 +28,7 @@ pub fn install() {
             let mut stderr = stderr.lock();
             let _ = write!(&mut stderr, "Caught signal {sig}");
             if let Some(name) = thread::current().name() {
-                let _ = write!(&mut stderr, " in thread \"{}\"", name);
+                let _ = write!(&mut stderr, " in thread \"{name}\"");
             }
             let _ = writeln!(&mut stderr);
 
