@@ -2,7 +2,8 @@
 name = "servoshell"
 build = "build.rs"
 version = "0.0.3"
-authors = "Leo Ring"
+authors = ["Leo Ring"]
+edition = "2024"
 
 [lib]
 name = "servoshell"
@@ -53,40 +54,40 @@ webxr = ["libservo/webxr"]
 
 [dependencies]
 bpaf = { version = "0.9.20", features = ["derive"] }
-cfg-if = { workspace = true }
-crossbeam-channel = { workspace = true }
-dpi = { workspace = true }
-euclid = { workspace = true }
-hitrace = { workspace = true, optional = true }
-image = { workspace = true }
-ipc-channel = { workspace = true }
-keyboard-types = { workspace = true }
-libc = { workspace = true }
-libservo = { path = "../../components/servo", features = ["background_hang_monitor", "bluetooth", "testbinding", "vello_cpu"], default-features = false }
-log = { workspace = true }
-mime_guess = { workspace = true }
-raw-window-handle = { workspace = true }
-rustls = { workspace = true, features = ["aws-lc-rs"] }
-tokio = { workspace = true }
-tracing = { workspace = true, optional = true }
-tracing-perfetto = { workspace = true, optional = true }
-tracing-subscriber = { workspace = true, optional = true, features = ["env-filter"] }
-url = { workspace = true }
-webdriver_server = { path = "../../components/webdriver_server" }
+cfg-if = { version = "1.0.4" }
+crossbeam-channel = { version = "0.5" }
+dpi = { version = "0.1" }
+euclid = { version = "0.22" }
+hitrace = { version = "0.1.5", optional = true }
+image = { version = "0.25", default-features = false, features = ["avif", "rayon", "bmp", "gif", "ico", "jpeg", "png", "webp"] }
+ipc-channel = { version = "0.20.2" }
+keyboard-types = { version = "0.8.3", features = ["serde", "webdriver"] }
+libc = { version = "0.2" }
+libservo = { git = "https://github.com/servo/servo.git", rev = "e81e92f", features = ["background_hang_monitor", "bluetooth", "testbinding", "vello_cpu"], default-features = false }
+log = { version = "0.4.29" }
+mime_guess = { version = "2.0.5" }
+raw-window-handle = { version = "0.6" }
+rustls = { version = "0.23", features = ["aws-lc-rs"] }
+tokio = { version = "1" }
+tracing = { version = "0.1.43", optional = true }
+tracing-perfetto = { version = "0.1.5", optional = true }
+tracing-subscriber = { version = "0.3.22", optional = true, features = ["env-filter"] }
+url = { version = "2.5" }
+webdriver_server = { git = "https://github.com/servo/servo.git", rev = "e81e92f" }
 
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = "0.15"
 jni = "0.21.1"
 
 [target.'cfg(not(target_os = "android"))'.dependencies]
-backtrace = { workspace = true }
+backtrace = { version = "0.3" }
 
 [target.'cfg(target_env = "ohos")'.dependencies]
 env_filter = "0.1.4"
-euclid = { workspace = true }
+euclid = { version = "0.22" }
 hilog = "0.2.2"
 # force inprocess until we add multi-process support for ohos
-ipc-channel = { workspace = true, features = ["force-inprocess"] }
+ipc-channel = { version = "0.20.2", features = ["force-inprocess"] }
 napi-derive-ohos = "1.1.4"
 napi-ohos = "1.1.4"
 ohos-abilitykit-sys = { version = "0.1.2", features = ["api-14"] }
@@ -98,9 +99,9 @@ ohos-window-manager-sys = { version = "0.1", features = ["api-14"] }
 xcomponent-sys = { version = "0.3.4", features = ["api-14", "keyboard-types"] }
 
 [target.'cfg(any(target_os = "android", target_env = "ohos"))'.dependencies]
-nix = { workspace = true, features = ["fs"] }
-serde_json = { workspace = true }
-surfman = { workspace = true, features = ["sm-angle-default"] }
+nix = { version = "0.30", features = ["fs"] }
+serde_json = { version = "1.0" }
+surfman = { version = "0.11.0", features = ["sm-angle-default"] }
 
 [target.'cfg(not(any(target_os = "android", target_env = "ohos")))'.dependencies]
 dirs = "6.0"
@@ -109,20 +110,20 @@ egui-file-dialog = "0.12.0"
 egui-winit = { version = "0.33.2", default-features = false, features = ["accesskit", "clipboard", "wayland"] }
 egui_glow = { version = "0.33.2", features = ["winit"] }
 gilrs = "0.11.0"
-glow = { workspace = true }
-headers = { workspace = true }
-serde_json = { workspace = true }
+glow = { version = "0.16.0" }
+headers = { version = "0.4" }
+serde_json = { version = "1.0" }
 # For optional feature servo_allocator/use-system-allocator and servo_allocator/allocation-tracking
-servo_allocator = { path = "../../components/allocator" }
-surfman = { workspace = true, features = ["sm-raw-window-handle-06", "sm-x11"] }
-winit = { workspace = true }
+servo_allocator = { git = "https://github.com/servo/servo.git", rev = "e81e92f" }
+surfman = { version = "0.11.0", features = ["sm-raw-window-handle-06", "sm-x11"] }
+winit = { version = "0.30.12" }
 
 [target.'cfg(any(all(target_os = "linux", not(target_env = "ohos")), target_os = "macos"))'.dependencies]
 sig = "1.0"
 
 [target.'cfg(target_os = "windows")'.dependencies]
-libservo = { path = "../../components/servo", features = ["no-wgl"] }
-windows-sys = { workspace = true, features = ["Win32_Graphics_Gdi", "Win32_System_Console"] }
+libservo = { git = "https://github.com/servo/servo.git", rev = "e81e92f", features = ["no-wgl"] }
+windows-sys = { version = "0.61", features = ["Win32_Graphics_Gdi", "Win32_System_Console"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-app-kit = { version = "0.3.2", default-features = false, features = [

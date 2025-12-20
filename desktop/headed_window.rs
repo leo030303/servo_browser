@@ -134,7 +134,7 @@ impl Window {
 
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         {
-            let icon_bytes = include_bytes!("../../../resources/servo_64.png");
+            let icon_bytes = include_bytes!("../resources/servo_64.png");
             winit_window.set_window_icon(Some(load_icon(icon_bytes)));
         }
 
@@ -626,7 +626,7 @@ impl PlatformWindow for Window {
                 // Request a winit redraw event, so we can recomposite, update and paint
                 // the GUI, and present the new frame.
                 self.winit_window.request_redraw();
-            },
+            }
             ref event => {
                 let response = self
                     .gui
@@ -644,15 +644,15 @@ impl PlatformWindow for Window {
                 // TODO how do we handle the tab key? (see doc for consumed)
                 // Note that servo doesn’t yet support tabbing through links and inputs
                 consumed = response.consumed;
-            },
+            }
         }
 
         if matches!(
             event,
-            WindowEvent::CursorMoved { .. } |
-                WindowEvent::MouseInput { .. } |
-                WindowEvent::MouseWheel { .. } |
-                WindowEvent::KeyboardInput { .. }
+            WindowEvent::CursorMoved { .. }
+                | WindowEvent::MouseInput { .. }
+                | WindowEvent::MouseWheel { .. }
+                | WindowEvent::KeyboardInput { .. }
         ) && window
             .active_webview()
             .is_some_and(|webview| self.has_active_dialog_for_webview(webview.id()))
@@ -676,16 +676,16 @@ impl PlatformWindow for Window {
                 match event {
                     WindowEvent::KeyboardInput { event, .. } => {
                         self.handle_keyboard_input(state.clone(), window, event)
-                    },
+                    }
                     WindowEvent::ModifiersChanged(modifiers) => {
                         self.modifiers_state.set(modifiers.state())
-                    },
+                    }
                     WindowEvent::MouseInput { state, button, .. } => {
                         self.handle_mouse_button_event(&webview, button, state);
-                    },
+                    }
                     WindowEvent::CursorMoved { position, .. } => {
                         self.handle_mouse_move_event(&webview, position);
-                    },
+                    }
                     WindowEvent::CursorLeft { .. } => {
                         let webview_rect: Rect<_, _> = webview.size().into();
                         if webview_rect.contains(self.webview_relative_mouse_point.get()) {
@@ -693,7 +693,7 @@ impl PlatformWindow for Window {
                                 MouseLeftViewportEvent::default(),
                             ));
                         }
-                    },
+                    }
                     WindowEvent::MouseWheel { delta, .. } => {
                         let (delta_x, delta_y, mode) = match delta {
                             MouseScrollDelta::LineDelta(delta_x, delta_y) => (
@@ -703,7 +703,7 @@ impl PlatformWindow for Window {
                             ),
                             MouseScrollDelta::PixelDelta(delta) => {
                                 (delta.x, delta.y, WheelMode::DeltaPixel)
-                            },
+                            }
                         };
 
                         // Create wheel event before snapping to the major axis of movement
@@ -718,7 +718,7 @@ impl PlatformWindow for Window {
                             delta,
                             point.into(),
                         )));
-                    },
+                    }
                     WindowEvent::Touch(touch) => {
                         webview.notify_input_event(InputEvent::Touch(TouchEvent::new(
                             winit_phase_to_touch_event_type(touch.phase),
@@ -726,22 +726,22 @@ impl PlatformWindow for Window {
                             DevicePoint::new(touch.location.x as f32, touch.location.y as f32)
                                 .into(),
                         )));
-                    },
+                    }
                     WindowEvent::PinchGesture { delta, .. } => {
                         webview.pinch_zoom(
                             delta as f32 + 1.0,
                             self.webview_relative_mouse_point.get(),
                         );
-                    },
+                    }
                     WindowEvent::CloseRequested => {
                         window.schedule_close();
-                    },
+                    }
                     WindowEvent::ThemeChanged(theme) => {
                         webview.notify_theme_change(match theme {
                             winit::window::Theme::Light => Theme::Light,
                             winit::window::Theme::Dark => Theme::Dark,
                         });
-                    },
+                    }
                     WindowEvent::Ime(ime) => match ime {
                         Ime::Enabled => {
                             webview.notify_input_event(InputEvent::Ime(ImeEvent::Composition(
@@ -750,7 +750,7 @@ impl PlatformWindow for Window {
                                     data: String::new(),
                                 },
                             )));
-                        },
+                        }
                         Ime::Preedit(text, _) => {
                             webview.notify_input_event(InputEvent::Ime(ImeEvent::Composition(
                                 servo::CompositionEvent {
@@ -758,7 +758,7 @@ impl PlatformWindow for Window {
                                     data: text,
                                 },
                             )));
-                        },
+                        }
                         Ime::Commit(text) => {
                             webview.notify_input_event(InputEvent::Ime(ImeEvent::Composition(
                                 servo::CompositionEvent {
@@ -766,12 +766,12 @@ impl PlatformWindow for Window {
                                     data: text,
                                 },
                             )));
-                        },
+                        }
                         Ime::Disabled => {
                             webview.notify_input_event(InputEvent::Ime(ImeEvent::Dismissed));
-                        },
+                        }
                     },
-                    _ => {},
+                    _ => {}
                 }
             }
         }
@@ -817,8 +817,8 @@ impl PlatformWindow for Window {
         let new_outer_size =
             new_outer_size.clamp(MIN_WINDOW_INNER_SIZE + decoration_size, screen_size * 2);
 
-        if outer_size.width == new_outer_size.width as u32 &&
-            outer_size.height == new_outer_size.height as u32
+        if outer_size.width == new_outer_size.width as u32
+            && outer_size.height == new_outer_size.height as u32
         {
             return Some(new_outer_size);
         }
@@ -917,7 +917,7 @@ impl PlatformWindow for Window {
             Cursor::None => {
                 self.winit_window.set_cursor_visible(false);
                 return;
-            },
+            }
         };
         self.winit_window.set_cursor(winit_cursor);
         self.winit_window.set_cursor_visible(true);
@@ -1008,7 +1008,7 @@ impl PlatformWindow for Window {
                     webview_id,
                     Dialog::new_select_element_dialog(prompt, offset),
                 );
-            },
+            }
             EmbedderControl::ColorPicker(color_picker) => {
                 // FIXME: Reading the toolbar height is needed here to properly position the select dialog.
                 // But if the toolbar height changes while the dialog is open then the position won't be updated
@@ -1017,21 +1017,21 @@ impl PlatformWindow for Window {
                     webview_id,
                     Dialog::new_color_picker_dialog(color_picker, offset),
                 );
-            },
+            }
             EmbedderControl::InputMethod(input_method_control) => {
                 self.visible_input_methods.borrow_mut().push(control_id);
                 self.show_ime(input_method_control);
-            },
+            }
             EmbedderControl::FilePicker(file_picker) => {
                 self.add_dialog(webview_id, Dialog::new_file_dialog(file_picker));
-            },
+            }
             EmbedderControl::SimpleDialog(simple_dialog) => {
                 self.add_dialog(webview_id, Dialog::new_simple_dialog(simple_dialog));
-            },
+            }
             EmbedderControl::ContextMenu(prompt) => {
                 let offset = self.gui.borrow().toolbar_height();
                 self.add_dialog(webview_id, Dialog::new_context_menu(prompt, offset));
-            },
+            }
         }
     }
 
