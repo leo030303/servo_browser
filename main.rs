@@ -36,7 +36,7 @@ fn main() {
     }
     cfg_if::cfg_if! {
         if #[cfg(not(any(target_os = "android", target_env = "ohos")))] {
-            servoshell::main()
+            servo_browser::main()
         } else {
             // Android: see ports/servoshell/egl/android/mod.rs.
             // OpenHarmony: see ports/servoshell/egl/ohos/mod.rs.

@@ -1,17 +1,17 @@
 [package]
-name = "servoshell"
+name = "servo_browser"
 build = "build.rs"
 version = "0.0.3"
 authors = ["Leo Ring"]
 edition = "2024"
 
 [lib]
-name = "servoshell"
+name = "servo_browser"
 path = "lib.rs"
 bench = false
 
 [[bin]]
-name = "servo"
+name = "servo_browser"
 path = "main.rs"
 bench = false
 

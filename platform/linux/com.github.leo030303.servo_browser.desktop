@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Servo Browser
+StartupWMClass=servo
+Comment=A lightweight, high performance, independent web browser
+GenericName=Web Browser
+Type=Application
+Categories=Network
+Icon=com.github.leo030303.servo_browser
+Exec=servo_browser

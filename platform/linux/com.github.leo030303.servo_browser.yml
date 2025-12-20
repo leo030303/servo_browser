@@ -1,0 +1,57 @@
+id: com.github.leo030303.servo_browser
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+  - org.freedesktop.Sdk.Extension.llvm21
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --socket=system-bus
+  - --socket=session-bus
+  - --share=network
+  - --device=dri
+  - --filesystem=home
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/llvm21/bin
+  prepend-ld-library-path: /usr/lib/sdk/llvm21/lib
+  build-args: 
+    - --share=network
+  env:
+    CARGO_HOME: /run/build/servo_browser/cargo
+    MOZJS_ARCHIVE: /run/build/servo_browser/libmozjs-x86_64-unknown-linux-gnu.tar.gz
+command: servo_browser
+modules:
+  - name: uv
+    buildsystem: simple
+    build-commands:
+      # Install pyhton packages required by script crates
+      - pip3 install --prefix=/app uv
+  - name: servo_browser
+    buildsystem: simple
+    build-commands:
+      # Install pyhton packages required by script crates
+      - pip3 install --prefix=/app --no-deps ./third_party/ply
+      - pip3 install --prefix=/app --no-deps ./third_party/WebIDL/
+      # Desktop file
+      - install -d /app/share/applications
+      - install -Dm755 platform/linux/com.github.leo030303.servo_browser.desktop /app/share/applications/${FLATPAK_ID}.desktop
+      - install -Dm644 resources/servo_256.png /app/share/icons/hicolor/256x256/apps/${FLATPAK_ID}.png
+      # Install resources folder
+      - cp -r resources /app/
+      - cargo build --release
+      - install -Dm755 ./target/release/servo_browser -t /app/bin/
+    sources:
+      - type: dir
+        path: ../../
+      - type: file
+        # Update the link whenever mozjs-sys is updated
+        url: https://github.com/servo/mozjs/releases/download/mozjs-sys-v0.140.5-7/libmozjs-x86_64-unknown-linux-gnu.tar.gz
+        sha256: cab46d83c4e1e089f6869ced5c92e5d42eaa5e9e6ba853fe2a437d453f42ab66
+        only-arches:
+          - x86_64
+
+

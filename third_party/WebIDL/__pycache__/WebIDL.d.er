@@ -1,0 +1,1235 @@
+##[pylyzer] failed /home/leoring/Documents/Personal_Coding_Projects/blitz_stuff/servo/third_party/WebIDL/WebIDL.py 1754314206 333714
+
+.copy = pyimport "copy"
+
+.math = pyimport "math"
+
+.os = pyimport "os"
+
+.re = pyimport "re"
+
+.string = pyimport "string"
+
+.traceback = pyimport "traceback"
+
+.___v_desugar_1 = pyimport "collections"
+.collections = pyimport "collections"
+.OrderedDict: {collections.OrderedDict!}
+.defaultdict: Never
+.___v_desugar_2 = pyimport "itertools"
+.itertools = pyimport "itertools"
+.chain: |T: Type|(*iterables: global::Iterable(T)) -> itertools.Chain(T)
+.___v_desugar_3 = pyimport "typing"
+.typing = pyimport "typing"
+.Any: {typing.Any}
+.lex = pyimport "lex"
+.yacc = pyimport "yacc"
+
+.parseInt: (literal: Obj) -> Int
+.enum: (*names: Str, base: Obj := Obj) -> WebIDL.enum.CustomEnumType
+.WebIDLError: ClassType
+.WebIDLError <: global::Exception
+.WebIDLError.message: typing.Any
+.WebIDLError.locations: typing.Any
+.WebIDLError.warning: typing.Any
+.WebIDLError.__call__: (message: Obj, locations: Obj, warning: Obj := Obj) -> WebIDL.WebIDLError
+.WebIDLError.__str__: (self: WebIDL.WebIDLError) -> Str
+
+.Location: ClassType
+.Location <: Obj
+.Location._lineno: typing.Any
+.Location._lexdata: typing.Any
+.Location._line: typing.Any
+.Location.filename: typing.Any
+.Location._lexpos: typing.Any
+.Location.__call__: (lexer: Obj, lineno: Obj, lexpos: Obj, filename: Obj) -> WebIDL.Location
+.Location.__eq__: |Type_88846 <: Structural({.filename = E; ._lexpos = E}), E :> typing.Any|(self: WebIDL.Location, other: Type_88846) -> Bool
+.Location.resolve: (self: WebIDL.Location) -> NoneType
+.Location.get: (self: WebIDL.Location) -> Str
+.Location._pointerline: (self: WebIDL.Location) -> Str
+.Location.__str__: (self: WebIDL.Location) -> Str
+
+.BuiltinLocation: ClassType
+.BuiltinLocation <: Obj
+.BuiltinLocation.msg: typing.Any
+.BuiltinLocation.filename: typing.Any
+.BuiltinLocation.__call__: (text: Obj) -> WebIDL.BuiltinLocation
+.BuiltinLocation.__slots__: global::Tuple([{"msg"}, {"filename"}])
+.BuiltinLocation.__eq__: |Type_88872 <: Structural({.msg = E}), E :> typing.Any|(self: WebIDL.BuiltinLocation, other: Type_88872) -> Bool
+.BuiltinLocation.resolve: (self: WebIDL.BuiltinLocation) -> NoneType
+.BuiltinLocation.get: (self: WebIDL.BuiltinLocation) -> typing.Any
+.BuiltinLocation.__str__: (self: WebIDL.BuiltinLocation) -> typing.Any
+
+.IDLObject: ClassType
+.IDLObject <: Obj
+.IDLObject.filename: typing.Any
+.IDLObject.location: typing.Any
+.IDLObject.userData: typing.Any
+.IDLObject.__call__: (location: Obj) -> WebIDL.IDLObject
+.IDLObject.__slots__: global::Tuple([{"location"}, {"userData"}, {"filename"}])
+.IDLObject.isInterface: (self: WebIDL.IDLObject) -> {False}
+.IDLObject.isNamespace: (self: WebIDL.IDLObject) -> {False}
+.IDLObject.isInterfaceMixin: (self: WebIDL.IDLObject) -> {False}
+.IDLObject.isEnum: (self: WebIDL.IDLObject) -> {False}
+.IDLObject.isCallback: (self: WebIDL.IDLObject) -> {False}
+.IDLObject.isType: (self: WebIDL.IDLObject) -> {False}
+.IDLObject.isDictionary: (self: WebIDL.IDLObject) -> {False}
+.IDLObject.isUnion: (self: WebIDL.IDLObject) -> {False}
+.IDLObject.isTypedef: (self: WebIDL.IDLObject) -> {False}
+.IDLObject.getUserData: (self: WebIDL.IDLObject, key: Obj, default: Obj) -> typing.Any or Str
+.IDLObject.setUserData: (self: WebIDL.IDLObject, key: Obj, value: Obj) -> NoneType
+.IDLObject.addExtendedAttributes: (self: WebIDL.IDLObject, attrs: Obj) -> NoneType
+.IDLObject.handleExtendedAttribute: (self: WebIDL.IDLObject, attr: Obj) -> NoneType
+.IDLObject._getDependentObjects: (self: WebIDL.IDLObject) -> NoneType
+.IDLObject.getDeps: |R <: WebIDL.IDLObject|(self: R, visited: Structural({.__contains__ = (self: Never, R) -> Bool; .add = (self: Obj, R) -> Never}) := {None} and Structural({.__contains__ = (self: Never, R) -> Bool; .add = (self: Obj, R) -> Never})) -> Never
+
+.IDLScope: ClassType
+WebIDL = pyimport "WebIDL"
+.IDLScope <: .IDLObject
+.IDLScope.parentScope: typing.Any
+.IDLScope.globalNameMapping: typing.Any
+.IDLScope.globalNames: typing.Any
+.IDLScope._dict: typing.Any
+.IDLScope.__call__: (location: Obj, parentScope: Obj, identifier: Obj) -> WebIDL.IDLScope
+.IDLScope.__slots__: global::Tuple([{"parentScope"}, {"_name"}, {"_dict"}, {"globalNames"}, {"globalNameMapping"}])
+.IDLScope.__str__: (self: WebIDL.IDLScope) -> Never
+.IDLScope.QName: (self: WebIDL.IDLScope) -> Never
+.IDLScope.ensureUnique: |Type_95039 <: Structural({.name = R and Type_94922}), Type_94922: Type, R: Type|(self: WebIDL.IDLScope, identifier: Type_95039, Obj: Obj) -> NoneType
+.IDLScope.addNewIdentifier: |Type_95039 <: Structural({.name = R and Type_94922}), Type_94922: Type, R: Type|(self: WebIDL.IDLScope, identifier: Type_95039, Obj: Obj) -> NoneType
+.IDLScope.resolveIdentifierConflict: |Type_95039 <: Structural({.name = R and Type_94922}), Type_94922: Type, R: Type|(self: WebIDL.IDLScope, scope: WebIDL.IDLScope, identifier: Type_95039, originalObject: Obj, newObject: Obj) -> Never
+.IDLScope.createIdentifierConflictError: |Type_95272: Type, Type_89028 <: Structural({.name = Type_95272})|(self: WebIDL.IDLScope, identifier: Type_89028, originalObject: Structural({.location = Obj}), newObject: Structural({.location = Obj})) -> WebIDL.WebIDLError
+.IDLScope._lookupIdentifier: |Type_95322: Type, Type_89033 <: Structural({.name = Type_95322})|(self: WebIDL.IDLScope, identifier: Type_89033) -> Never
+.IDLScope.lookupIdentifier: |Type_89036 <: Structural({.scope = Type_89032}), Type_89032 <: WebIDL.IDLScope|(self: Type_89032, identifier: Type_89036) -> Never
+.IDLScope.addIfaceGlobalNames: (self: WebIDL.IDLScope, interfaceName: Obj, globalNames: global::Iterable(Never)) -> NoneType
+
+.IDLIdentifier: ClassType
+.IDLIdentifier <: .IDLObject
+.IDLIdentifier.scope: typing.Any
+.IDLIdentifier.name: typing.Any
+.IDLIdentifier.__call__: (location: Obj, scope: Obj, name: Obj) -> WebIDL.IDLIdentifier
+.IDLIdentifier.__slots__: global::Tuple([{"name"}, {"scope"}])
+.IDLIdentifier.__str__: (self: WebIDL.IDLIdentifier) -> Never
+.IDLIdentifier.QName: (self: WebIDL.IDLIdentifier) -> Never
+.IDLIdentifier.__hash__: (self: WebIDL.IDLIdentifier) -> Int
+.IDLIdentifier.__eq__: (self: WebIDL.IDLIdentifier, other: WebIDL.IDLScope) -> Bool
+.IDLIdentifier.Obj: (self: WebIDL.IDLIdentifier) -> Never
+
+.IDLUnresolvedIdentifier: ClassType
+.IDLUnresolvedIdentifier <: .IDLObject
+.IDLUnresolvedIdentifier.name: typing.Any
+.IDLUnresolvedIdentifier.__call__: (location: Obj, name: Obj, allowDoubleUnderscore: Obj := Obj, allowForbidden: Obj := Obj) -> WebIDL.IDLUnresolvedIdentifier
+.IDLUnresolvedIdentifier.__slots__: global::Tuple([{"name"}])
+.IDLUnresolvedIdentifier.__str__: (self: WebIDL.IDLUnresolvedIdentifier) -> Never
+.IDLUnresolvedIdentifier.QName: (self: WebIDL.IDLUnresolvedIdentifier) -> Never
+.IDLUnresolvedIdentifier.resolve: (self: WebIDL.IDLUnresolvedIdentifier, scope: WebIDL.IDLScope, Obj: Obj) -> WebIDL.IDLIdentifier
+.IDLUnresolvedIdentifier.finish: (self: WebIDL.IDLUnresolvedIdentifier) -> NoneType
+
+.IDLObjectWithIdentifier: ClassType
+.IDLObjectWithIdentifier <: .IDLObject
+.IDLObjectWithIdentifier.identifier: typing.Any
+.IDLObjectWithIdentifier.__call__: (location: Obj, parentScope: Obj, identifier: Obj) -> WebIDL.IDLObjectWithIdentifier
+.IDLObjectWithIdentifier.resolve: (self: WebIDL.IDLObjectWithIdentifier, parentScope: Obj) -> NoneType
+
+.IDLObjectWithScope: ClassType
+.IDLObjectWithScope <: .IDLObjectWithIdentifier
+.IDLObjectWithScope.__call__: (location: Obj, parentScope: Obj, identifier: Obj) -> WebIDL.IDLObjectWithScope
+.IDLObjectWithScope.__slots__: global::Tuple([])
+
+.IDLIdentifierPlaceholder: ClassType
+.IDLIdentifierPlaceholder <: .IDLObjectWithIdentifier
+.IDLIdentifierPlaceholder.__call__: (location: Obj, identifier: Obj) -> WebIDL.IDLIdentifierPlaceholder
+.IDLIdentifierPlaceholder.__slots__: global::Tuple([])
+.IDLIdentifierPlaceholder.finish: (self: WebIDL.IDLIdentifierPlaceholder, scope: WebIDL.IDLScope) -> Never
+
+.IDLExposureMixins: ClassType
+.IDLExposureMixins._globalScope: typing.Any
+.IDLExposureMixins._location: typing.Any
+.IDLExposureMixins.exposureSet: typing.Any
+.IDLExposureMixins._exposureGlobalNames: typing.Any
+.IDLExposureMixins.__call__: (location: Obj) -> WebIDL.IDLExposureMixins
+.IDLExposureMixins.finish: |Type_95864 <: Structural({.__contains__ = (self: Never, R) -> Bool}), Type_95804: Type, Type_89245 <: Structural({.globalNames = Type_95824 and Type_95864; .parentScope = Type_95804}), R: Type, Type_95824 <: typing.Any|(self: WebIDL.IDLExposureMixins, scope: Type_89245) -> NoneType
+.IDLExposureMixins.isExposedInWindow: (self: WebIDL.IDLExposureMixins) -> Never
+.IDLExposureMixins.isExposedInAnyWorker: (self: WebIDL.IDLExposureMixins) -> {.len(.self.getWorkerExposureSet()) in {Type_v_global_37709: Nat | (Type_v_global_37709 == 0 or (Type_v_global_37709 >= 0) and (Type_v_global_37709 != 0))}}
+.IDLExposureMixins.isExposedInWorkerDebugger: (self: WebIDL.IDLExposureMixins) -> {.len(.self.getWorkerDebuggerExposureSet()) in {Type_v_global_37718: Nat | (Type_v_global_37718 == 0 or (Type_v_global_37718 >= 0) and (Type_v_global_37718 != 0))}}
+.IDLExposureMixins.isExposedInAnyWorklet: (self: WebIDL.IDLExposureMixins) -> {.len(.self.getWorkletExposureSet()) in {Type_v_global_37750: Nat | (Type_v_global_37750 == 0 or (Type_v_global_37750 >= 0) and (Type_v_global_37750 != 0))}}
+.IDLExposureMixins.isExposedInSomeButNotAllWorkers: (self: Never) -> {.len(.workerScopes.difference(.self.exposureSet)) in {Type_v_global_37788: Nat | (Type_v_global_37788 == 0 or (Type_v_global_37788 >= 0) and (Type_v_global_37788 != 0))}}
+.IDLExposureMixins.isExposedInShadowRealms: (self: WebIDL.IDLExposureMixins) -> Never
+.IDLExposureMixins.getWorkerExposureSet: (self: WebIDL.IDLExposureMixins) -> Structural({.__len__ = (self: Never) -> Nat})
+.IDLExposureMixins.getWorkletExposureSet: (self: WebIDL.IDLExposureMixins) -> Structural({.__len__ = (self: Never) -> Nat})
+.IDLExposureMixins.getWorkerDebuggerExposureSet: (self: WebIDL.IDLExposureMixins) -> Structural({.__len__ = (self: Never) -> Nat})
+
+.IDLExternalInterface: ClassType
+.IDLExternalInterface <: .IDLObjectWithIdentifier
+.IDLExternalInterface.parent: typing.Any
+.IDLExternalInterface.__call__: (location: Obj, parentScope: Obj, identifier: Obj) -> WebIDL.IDLExternalInterface
+.IDLExternalInterface.__slots__: global::Tuple([{"parent"}])
+.IDLExternalInterface.finish: (self: WebIDL.IDLExternalInterface, scope: Obj) -> NoneType
+.IDLExternalInterface.validate: (self: WebIDL.IDLExternalInterface) -> NoneType
+.IDLExternalInterface.isIteratorInterface: (self: WebIDL.IDLExternalInterface) -> {False}
+.IDLExternalInterface.isAsyncIteratorInterface: (self: WebIDL.IDLExternalInterface) -> {False}
+.IDLExternalInterface.isExternal: (self: WebIDL.IDLExternalInterface) -> {True}
+.IDLExternalInterface.isInterface: (self: WebIDL.IDLExternalInterface) -> {True}
+.IDLExternalInterface.addExtendedAttributes: |Type_89324 <: Structural({.__len__ = (self: Never) -> Nat})|(self: WebIDL.IDLExternalInterface, attrs: Type_89324) -> NoneType
+.IDLExternalInterface.resolve: (self: WebIDL.IDLExternalInterface, parentScope: Obj) -> NoneType
+.IDLExternalInterface.getJSImplementation: (self: WebIDL.IDLExternalInterface) -> {None}
+.IDLExternalInterface.isJSImplemented: (self: WebIDL.IDLExternalInterface) -> {False}
+.IDLExternalInterface.hasProbablyShortLivingWrapper: (self: WebIDL.IDLExternalInterface) -> {False}
+.IDLExternalInterface._getDependentObjects: (self: WebIDL.IDLExternalInterface) -> Never
+
+.IDLPartialDictionary: ClassType
+.IDLPartialDictionary <: .IDLObject
+.IDLPartialDictionary._finished: typing.Any
+.IDLPartialDictionary.members: typing.Any
+.IDLPartialDictionary.identifier: typing.Any
+.IDLPartialDictionary._nonPartialDictionary: typing.Any
+.IDLPartialDictionary.__call__: (location: Obj, name: Obj, members: Obj, nonPartialDictionary: Obj) -> WebIDL.IDLPartialDictionary
+.IDLPartialDictionary.__slots__: global::Tuple([{"identifier"}, {"members"}, {"_nonPartialDictionary"}, {"_finished"}])
+.IDLPartialDictionary.addExtendedAttributes: (self: WebIDL.IDLPartialDictionary, attrs: Obj) -> NoneType
+.IDLPartialDictionary.finish: (self: WebIDL.IDLPartialDictionary, scope: Obj) -> Never
+.IDLPartialDictionary.validate: (self: WebIDL.IDLPartialDictionary) -> NoneType
+
+.IDLPartialInterfaceOrNamespace: ClassType
+.IDLPartialInterfaceOrNamespace <: .IDLObject
+.IDLPartialInterfaceOrNamespace._haveSecureContextExtendedAttribute: typing.Any
+.IDLPartialInterfaceOrNamespace.members: typing.Any
+.IDLPartialInterfaceOrNamespace.identifier: typing.Any
+.IDLPartialInterfaceOrNamespace.propagatedExtendedAttrs: typing.Any
+.IDLPartialInterfaceOrNamespace._nonPartialInterfaceOrNamespace: typing.Any
+.IDLPartialInterfaceOrNamespace._finished: typing.Any
+.IDLPartialInterfaceOrNamespace.__call__: (location: Obj, name: Obj, members: Obj, nonPartialInterfaceOrNamespace: Obj) -> WebIDL.IDLPartialInterfaceOrNamespace
+.IDLPartialInterfaceOrNamespace.__slots__: global::Tuple([{"identifier"}, {"members"}, {"propagatedExtendedAttrs"}, {"_haveSecureContextExtendedAttribute"}, {"_nonPartialInterfaceOrNamespace"}, {"_finished"}])
+.IDLPartialInterfaceOrNamespace.addExtendedAttributes: (self: WebIDL.IDLPartialInterfaceOrNamespace, attrs: global::Iterable(Structural({.identifier = (self: Obj) -> {"LegacyFactoryFunction"}}))) -> NoneType
+.IDLPartialInterfaceOrNamespace.finish: (self: WebIDL.IDLPartialInterfaceOrNamespace, scope: Obj) -> Never
+.IDLPartialInterfaceOrNamespace.validate: (self: WebIDL.IDLPartialInterfaceOrNamespace) -> NoneType
+
+.convertExposedAttrToGlobalNameSet: |Type_96686 <: Bool, Type_89386 <: Structural({.hasValue = (self: Obj) -> Type_96668; .value = (self: Obj) -> Type_96675; .hasArgs = (self: Obj) -> Type_96686; .args = (self: Obj) -> Type_96695}), Type_96668 <: Bool, Type_96695: Type, Type_96675: Type|(exposedAttr: Type_89386, targetSet: Structural({.__len__ = (self: Never) -> Nat; .add = (self: Obj, Type_96675) -> NoneType; .update = (self: Obj, Type_96695) -> NoneType})) -> NoneType
+.globalNameSetToExposureSet: |Type_95864 <: Structural({.__contains__ = (self: Never, R) -> Bool}), Type_95804: Type, Type_89245 <: Structural({.globalNames = Type_95824 and Type_95864; .parentScope = Type_95804}), R: Type, Type_95824 <: typing.Any|(globalScope: Type_89245, nameSet: typing.Any, exposureSet: Structural({.update = (self: Obj, Obj) -> Never})) -> NoneType
+.IDLOperations: ClassType
+.IDLOperations.regular: typing.Any
+.IDLOperations.static: typing.Any
+.IDLOperations.__call__: (static: Obj := Obj, regular: Obj := Obj) -> WebIDL.IDLOperations
+.IDLOperations.__slots__: global::Tuple([{"static"}, {"regular"}])
+
+.IDLInterfaceOrInterfaceMixinOrNamespace: ClassType
+.IDLInterfaceOrInterfaceMixinOrNamespace <: .IDLObjectWithScope
+.IDLInterfaceOrInterfaceMixinOrNamespace._extendedAttrDict: typing.Any
+.IDLInterfaceOrInterfaceMixinOrNamespace._finished: typing.Any
+.IDLInterfaceOrInterfaceMixinOrNamespace.members: typing.Any
+.IDLInterfaceOrInterfaceMixinOrNamespace._isKnownNonPartial: typing.Any
+.IDLInterfaceOrInterfaceMixinOrNamespace._partials: typing.Any
+.IDLInterfaceOrInterfaceMixinOrNamespace.__call__: (location: Obj, parentScope: Obj, name: Obj) -> WebIDL.IDLInterfaceOrInterfaceMixinOrNamespace
+.IDLInterfaceOrInterfaceMixinOrNamespace.__slots__: global::Tuple([{"_finished"}, {"members"}, {"_partials"}, {"_extendedAttrDict"}, {"_isKnownNonPartial"}])
+.IDLInterfaceOrInterfaceMixinOrNamespace.finish: (self: WebIDL.IDLInterfaceOrInterfaceMixinOrNamespace, scope: Obj) -> NoneType
+.IDLInterfaceOrInterfaceMixinOrNamespace.addNewIdentifier: (self: WebIDL.IDLInterfaceOrInterfaceMixinOrNamespace, identifier: Obj, Obj: Obj) -> NoneType
+.IDLInterfaceOrInterfaceMixinOrNamespace.resolveIdentifierConflict: (self: WebIDL.IDLInterfaceOrInterfaceMixinOrNamespace, scope: Obj, identifier: Obj, originalObject: WebIDL.IDLOperations, newObject: Obj) -> Never
+.IDLInterfaceOrInterfaceMixinOrNamespace.typeName: (self: WebIDL.IDLInterfaceOrInterfaceMixinOrNamespace) -> {"interface mixin"}
+.IDLInterfaceOrInterfaceMixinOrNamespace.getExtendedAttribute: (self: WebIDL.IDLInterfaceOrInterfaceMixinOrNamespace, name: Obj) -> typing.Any or Str
+.IDLInterfaceOrInterfaceMixinOrNamespace.setNonPartial: |Type_89467 <: Structural({.__add__ = (self: Never, R) -> O}), R :> typing.Any, O <: typing.Any|(self: WebIDL.IDLInterfaceOrInterfaceMixinOrNamespace, location: typing.Any, members: Type_89467) -> NoneType
+.IDLInterfaceOrInterfaceMixinOrNamespace.addPartial: |Type_89473 <: Structural({.identifier = Type_97587}), Type_97587: Type|(self: WebIDL.IDLInterfaceOrInterfaceMixinOrNamespace, partial: Type_89473) -> NoneType
+.IDLInterfaceOrInterfaceMixinOrNamespace.getPartials: (self: WebIDL.IDLInterfaceOrInterfaceMixinOrNamespace) -> Never
+.IDLInterfaceOrInterfaceMixinOrNamespace.finishMembers: (self: WebIDL.IDLInterfaceOrInterfaceMixinOrNamespace, scope: Obj) -> NoneType
+.IDLInterfaceOrInterfaceMixinOrNamespace.isExternal: (self: WebIDL.IDLInterfaceOrInterfaceMixinOrNamespace) -> {False}
+
+.IDLInterfaceMixin: ClassType
+.IDLInterfaceMixin <: .IDLInterfaceOrInterfaceMixinOrNamespace
+.IDLInterfaceMixin.actualExposureGlobalNames: typing.Any
+.IDLInterfaceMixin.__call__: (location: Obj, parentScope: Obj, name: Obj, members: Obj, isKnownNonPartial: Obj) -> WebIDL.IDLInterfaceMixin
+.IDLInterfaceMixin.__slots__: global::Tuple([{"actualExposureGlobalNames"}])
+.IDLInterfaceMixin.__str__: (self: WebIDL.IDLInterfaceMixin) -> Str
+.IDLInterfaceMixin.isInterfaceMixin: (self: WebIDL.IDLInterfaceMixin) -> {True}
+.IDLInterfaceMixin.finish: (self: Never, scope: Obj) -> NoneType
+.IDLInterfaceMixin.validate: (self: WebIDL.IDLInterfaceMixin) -> NoneType
+.IDLInterfaceMixin.addExtendedAttributes: (self: WebIDL.IDLInterfaceMixin, attrs: global::Iterable(Structural({.listValue = (self: Obj) -> Structural({.__len__ = (self: Never) -> Nat}); .noArguments = (self: Obj) -> Bool; .identifier = (self: Obj) -> {"SecureContext"}}))) -> NoneType
+.IDLInterfaceMixin._getDependentObjects: (self: WebIDL.IDLInterfaceMixin) -> Never
+
+.IDLInterfaceOrNamespace: ClassType
+.IDLInterfaceOrNamespace <: .IDLInterfaceOrInterfaceMixinOrNamespace
+.IDLInterfaceOrNamespace.parent: typing.Any
+.IDLInterfaceOrNamespace.maplikeOrSetlikeOrIterable: typing.Any
+.IDLInterfaceOrNamespace.hasDescendantWithCrossOriginMembers: typing.Any
+.IDLInterfaceOrNamespace.includedMixins: typing.Any
+.IDLInterfaceOrNamespace._callback: typing.Any
+.IDLInterfaceOrNamespace.legacyWindowAliases: typing.Any
+.IDLInterfaceOrNamespace.interfacesBasedOnSelf: typing.Any
+.IDLInterfaceOrNamespace.iterableInterface: typing.Any
+.IDLInterfaceOrNamespace.legacyFactoryFunctions: typing.Any
+.IDLInterfaceOrNamespace.asyncIterableInterface: typing.Any
+.IDLInterfaceOrNamespace.totalMembersInSlots: typing.Any
+.IDLInterfaceOrNamespace.hasCrossOriginMembers: typing.Any
+.IDLInterfaceOrNamespace._isOnGlobalProtoChain: typing.Any
+.IDLInterfaceOrNamespace._ownMembersInSlots: typing.Any
+.IDLInterfaceOrNamespace._hasChildInterfaces: typing.Any
+.IDLInterfaceOrNamespace.__call__: (location: Obj, parentScope: Obj, name: Obj, parent: Obj, members: Obj, isKnownNonPartial: Obj) -> WebIDL.IDLInterfaceOrNamespace
+.IDLInterfaceOrNamespace.__slots__: global::Tuple([{"parent"}, {"_callback"}, {"maplikeOrSetlikeOrIterable"}, {"legacyFactoryFunctions"}, {"legacyWindowAliases"}, {"includedMixins"}, {"interfacesBasedOnSelf"}, {"_hasChildInterfaces"}, {"_isOnGlobalProtoChain"}, {"totalMembersInSlots"}, {"_ownMembersInSlots"}, {"iterableInterface"}, {"asyncIterableInterface"}, {"hasCrossOriginMembers"}, {"hasDescendantWithCrossOriginMembers"}])
+.IDLInterfaceOrNamespace.ctor: (self: Never) -> Never
+.IDLInterfaceOrNamespace.isIterable: (self: WebIDL.IDLInterfaceOrNamespace) -> Never
+.IDLInterfaceOrNamespace.isAsyncIterable: (self: WebIDL.IDLInterfaceOrNamespace) -> Never
+.IDLInterfaceOrNamespace.isIteratorInterface: (self: WebIDL.IDLInterfaceOrNamespace) -> {.self.iterableInterface in {Type_v_global_38704: Obj | Type_v_global_38704 != None}}
+.IDLInterfaceOrNamespace.isAsyncIteratorInterface: (self: WebIDL.IDLInterfaceOrNamespace) -> {.self.asyncIterableInterface in {Type_v_global_38708: Obj | Type_v_global_38708 != None}}
+.IDLInterfaceOrNamespace.getClassName: (self: WebIDL.IDLInterfaceOrNamespace) -> Never
+.IDLInterfaceOrNamespace.finish: (self: Never, scope: Obj) -> NoneType
+.IDLInterfaceOrNamespace.validate: (self: WebIDL.IDLInterfaceOrNamespace) -> NoneType
+.IDLInterfaceOrNamespace.setCallback: (self: WebIDL.IDLInterfaceOrNamespace, value: typing.Any) -> NoneType
+.IDLInterfaceOrNamespace.isCallback: (self: WebIDL.IDLInterfaceOrNamespace) -> Structural({.__and__ = (self: Never, Structural({.__and__ = (self: Never, Never) -> Bool})) -> Bool})
+.IDLInterfaceOrNamespace.isSingleOperationInterface: (self: WebIDL.IDLInterfaceOrNamespace) -> Bool
+.IDLInterfaceOrNamespace.inheritanceDepth: (self: WebIDL.IDLInterfaceOrNamespace) -> Nat
+.IDLInterfaceOrNamespace.hasConstants: (self: WebIDL.IDLInterfaceOrNamespace) -> Bool
+.IDLInterfaceOrNamespace.hasInterfaceObject: (self: Never) -> {self in not Structural({._noInterfaceObject = Obj})}
+.IDLInterfaceOrNamespace.hasInterfacePrototypeObject: (self: WebIDL.IDLInterfaceOrNamespace) -> Bool
+.IDLInterfaceOrNamespace.addIncludedMixin: (self: WebIDL.IDLInterfaceOrNamespace, includedMixin: Obj) -> NoneType
+.IDLInterfaceOrNamespace.getInheritedInterfaces: (self: WebIDL.IDLInterfaceOrNamespace) -> Never
+.IDLInterfaceOrNamespace.findInterfaceLoopPoint: (self: WebIDL.IDLInterfaceOrNamespace, otherInterface: Obj) -> {None}
+.IDLInterfaceOrNamespace.setNonPartial: (self: WebIDL.IDLInterfaceOrNamespace, location: Obj, parent: Obj, members: Obj) -> NoneType
+.IDLInterfaceOrNamespace.getJSImplementation: (self: WebIDL.IDLInterfaceOrNamespace) -> Never
+.IDLInterfaceOrNamespace.isJSImplemented: (self: WebIDL.IDLInterfaceOrNamespace) -> Never
+.IDLInterfaceOrNamespace.hasProbablyShortLivingWrapper: (self: Never) -> {False}
+.IDLInterfaceOrNamespace.hasChildInterfaces: (self: WebIDL.IDLInterfaceOrNamespace) -> typing.Any
+.IDLInterfaceOrNamespace.isOnGlobalProtoChain: (self: WebIDL.IDLInterfaceOrNamespace) -> Bool
+.IDLInterfaceOrNamespace._getDependentObjects: (self: WebIDL.IDLInterfaceOrNamespace) -> Never
+.IDLInterfaceOrNamespace.hasMembersInSlots: (self: WebIDL.IDLInterfaceOrNamespace) -> Never
+.IDLInterfaceOrNamespace.conditionExtendedAttributes: global::List!({"Pref", "Func", "Trial", "ChromeOnly", "SecureContext"}, 5)
+.IDLInterfaceOrNamespace.isExposedConditionally: (self: WebIDL.IDLInterfaceOrNamespace, exclusions: Obj := Obj) -> Bool
+
+.IDLInterface: ClassType
+.IDLInterface <: OrNamespace
+.IDLInterface.classNameOverride: typing.Any
+.IDLInterface.__call__: (location: Obj, parentScope: Obj, name: Obj, parent: Obj, members: Obj, isKnownNonPartial: Obj, classNameOverride: Obj := Obj) -> WebIDL.IDLInterface
+.IDLInterface.__slots__: global::Tuple([{"classNameOverride"}])
+.IDLInterface.__str__: (self: WebIDL.IDLInterface) -> Str
+.IDLInterface.isInterface: (self: WebIDL.IDLInterface) -> {True}
+.IDLInterface.getClassName: (self: WebIDL.IDLInterface) -> Never
+.IDLInterface.addExtendedAttributes: (self: WebIDL.IDLInterface, attrs: global::Iterable(Structural({.location = Never; .identifier = (self: Obj) -> {"TreatNonCallableAsNull"}; .args = (self: Obj) -> Never; .hasValue = (self: Obj) -> Bool; .hasArgs = (self: Obj) -> Bool; .value = (self: Obj) -> Never; .noArguments = (self: Obj) -> Bool; .listValue = (self: Obj) -> Structural({.__len__ = (self: Never) -> Nat})}))) -> NoneType
+.IDLInterface.validate: (self: WebIDL.IDLInterface) -> NoneType
+.IDLInterface.isSerializable: (self: WebIDL.IDLInterface) -> typing.Any or Str
+.IDLInterface.setNonPartial: |Type_89745: Type, Type_89750: Type, T: Type|(self: WebIDL.IDLInterface, location: Type_89745, parent: Type_89750, members: global::Iterable(T)) -> NoneType
+
+.IDLNamespace: ClassType
+.IDLNamespace <: .IDLInterfaceOrNamespace
+.IDLNamespace.__call__: (location: Obj, parentScope: Obj, name: Obj, members: Obj, isKnownNonPartial: Obj) -> WebIDL.IDLNamespace
+.IDLNamespace.__slots__: global::Tuple([])
+.IDLNamespace.__str__: (self: WebIDL.IDLNamespace) -> Str
+.IDLNamespace.isNamespace: (self: WebIDL.IDLNamespace) -> {True}
+.IDLNamespace.addExtendedAttributes: (self: WebIDL.IDLNamespace, attrs: global::Iterable(Structural({.hasValue = (self: Obj) -> Bool; .identifier = (self: Obj) -> {"Exposed"}; .noArguments = (self: Obj) -> Bool; .listValue = (self: Obj) -> Structural({.__len__ = (self: Never) -> Nat})}))) -> NoneType
+.IDLNamespace.isSerializable: (self: WebIDL.IDLNamespace) -> {False}
+
+.IDLDictionary: ClassType
+.IDLDictionary <: .IDLObjectWithScope
+.IDLDictionary.needsConversionToJS: typing.Any
+.IDLDictionary._partialDictionaries: typing.Any
+.IDLDictionary.parent: typing.Any
+.IDLDictionary._extendedAttrDict: typing.Any
+.IDLDictionary._finished: typing.Any
+.IDLDictionary.members: typing.Any
+.IDLDictionary.needsEqualityOperator: typing.Any
+.IDLDictionary.needsConversionFromJS: typing.Any
+.IDLDictionary.__call__: (location: Obj, parentScope: Obj, name: Obj, parent: Obj, members: Obj) -> WebIDL.IDLDictionary
+.IDLDictionary.__slots__: global::Tuple([{"parent"}, {"_finished"}, {"members"}, {"_partialDictionaries"}, {"_extendedAttrDict"}, {"needsConversionToJS"}, {"needsConversionFromJS"}, {"needsEqualityOperator"}])
+.IDLDictionary.__str__: (self: WebIDL.IDLDictionary) -> Str
+.IDLDictionary.isDictionary: (self: WebIDL.IDLDictionary) -> {True}
+.IDLDictionary.canBeEmpty: (self: WebIDL.IDLDictionary) -> Bool
+.IDLDictionary.finish: (self: WebIDL.IDLDictionary, scope: Obj) -> NoneType
+.IDLDictionary.validate: (self: WebIDL.IDLDictionary) -> NoneType
+.IDLDictionary.getExtendedAttribute: |Type_89815 :> {"Unsorted", "GenerateEqualityOperator"}|(self: WebIDL.IDLDictionary, name: Type_89815) -> Never
+.IDLDictionary.addExtendedAttributes: |B <: Bool, T <: Structural({.noArguments = (self: Obj) -> B; .identifier = (self: Obj) -> {"GenerateInitFromJSON"}})|(self: WebIDL.IDLDictionary, attrs: global::Iterable(T)) -> NoneType
+.IDLDictionary._getDependentObjects: |Type_89820: Type|(self: WebIDL.IDLDictionary) -> Type_89820
+.IDLDictionary.addPartialDictionary: |Type_89825 <: Structural({.identifier = Type_108281}), Type_108281: Type|(self: WebIDL.IDLDictionary, partial: Type_89825) -> NoneType
+
+.IDLEnum: ClassType
+.IDLEnum <: .IDLObjectWithIdentifier
+.IDLEnum._values: typing.Any
+.IDLEnum.__call__: (location: Obj, parentScope: Obj, name: Obj, values: Obj) -> WebIDL.IDLEnum
+.IDLEnum.__slots__: global::Tuple([{"_values"}])
+.IDLEnum.values: (self: WebIDL.IDLEnum) -> typing.Any
+.IDLEnum.finish: (self: WebIDL.IDLEnum, scope: Obj) -> NoneType
+.IDLEnum.validate: (self: WebIDL.IDLEnum) -> NoneType
+.IDLEnum.isEnum: (self: WebIDL.IDLEnum) -> {True}
+.IDLEnum.addExtendedAttributes: |Type_89873 <: Structural({.__len__ = (self: Never) -> Nat})|(self: WebIDL.IDLEnum, attrs: Type_89873) -> NoneType
+.IDLEnum._getDependentObjects: (self: WebIDL.IDLEnum) -> Never
+
+.IDLType: ClassType
+.IDLType <: .IDLObject
+.IDLType.legacyNullToEmptyString: typing.Any
+.IDLType._clamp: typing.Any
+.IDLType._extendedAttrDict: typing.Any
+.IDLType.name: typing.Any
+.IDLType._enforceRange: typing.Any
+.IDLType.builtin: typing.Any
+.IDLType._allowShared: typing.Any
+.IDLType.__call__: (location: Obj, name: Obj) -> WebIDL.IDLType
+.IDLType.Tags: Never
+.IDLType.__slots__: global::Tuple([{"name"}, {"builtin"}, {"legacyNullToEmptyString"}, {"_clamp"}, {"_enforceRange"}, {"_allowShared"}, {"_extendedAttrDict"}])
+.IDLType.__hash__: (self: WebIDL.IDLType) -> Int
+.IDLType.__eq__: |R :> Bool, Type_89911 <: Structural({.__and__ = (self: Never, R) -> O; .builtin = E}), O: Type, E :> typing.Any|(self: WebIDL.IDLType, other: Type_89911) -> O
+.IDLType.__ne__: |E <: WebIDL.IDLType|(self: E, other: E) -> Bool
+.IDLType.__str__: (self: WebIDL.IDLType) -> Str
+.IDLType.prettyName: (self: WebIDL.IDLType) -> Str
+.IDLType.isType: (self: WebIDL.IDLType) -> {True}
+.IDLType.nullable: (self: WebIDL.IDLType) -> {False}
+.IDLType.isPrimitive: (self: WebIDL.IDLType) -> {False}
+.IDLType.isBoolean: (self: WebIDL.IDLType) -> {False}
+.IDLType.isNumeric: (self: WebIDL.IDLType) -> {False}
+.IDLType.isString: (self: WebIDL.IDLType) -> {False}
+.IDLType.isByteString: (self: WebIDL.IDLType) -> {False}
+.IDLType.isDOMString: (self: WebIDL.IDLType) -> {False}
+.IDLType.isUSVString: (self: WebIDL.IDLType) -> {False}
+.IDLType.isUTF8String: (self: WebIDL.IDLType) -> {False}
+.IDLType.isJSString: (self: WebIDL.IDLType) -> {False}
+.IDLType.isUndefined: (self: WebIDL.IDLType) -> {False}
+.IDLType.isSequence: (self: WebIDL.IDLType) -> {False}
+.IDLType.isRecord: (self: WebIDL.IDLType) -> {False}
+.IDLType.isArrayBuffer: (self: WebIDL.IDLType) -> {False}
+.IDLType.isArrayBufferView: (self: WebIDL.IDLType) -> {False}
+.IDLType.isTypedArray: (self: WebIDL.IDLType) -> {False}
+.IDLType.isBufferSource: (self: WebIDL.IDLType) -> Bool
+.IDLType.isCallbackInterface: (self: WebIDL.IDLType) -> {False}
+.IDLType.isNonCallbackInterface: (self: WebIDL.IDLType) -> {False}
+.IDLType.isGeckoInterface: (self: WebIDL.IDLType) -> Bool
+.IDLType.isSpiderMonkeyInterface: (self: WebIDL.IDLType) -> Bool
+.IDLType.isAny: (self: WebIDL.IDLType) -> Bool
+.IDLType.isObject: (self: WebIDL.IDLType) -> Bool
+.IDLType.isPromise: (self: WebIDL.IDLType) -> {False}
+.IDLType.isComplete: (self: WebIDL.IDLType) -> {True}
+.IDLType.includesRestrictedFloat: (self: WebIDL.IDLType) -> {False}
+.IDLType.isFloat: (self: WebIDL.IDLType) -> {False}
+.IDLType.isUnrestricted: (self: WebIDL.IDLType) -> NoneType
+.IDLType.isJSONType: (self: WebIDL.IDLType) -> {False}
+.IDLType.isObservableArray: (self: WebIDL.IDLType) -> {False}
+.IDLType.isDictionaryLike: (self: WebIDL.IDLType) -> Bool
+.IDLType.hasClamp: (self: WebIDL.IDLType) -> typing.Any
+.IDLType.hasEnforceRange: (self: WebIDL.IDLType) -> typing.Any
+.IDLType.hasAllowShared: (self: WebIDL.IDLType) -> typing.Any
+.IDLType.tag: (self: WebIDL.IDLType) -> NoneType
+.IDLType.treatNonCallableAsNull: (self: WebIDL.IDLType) -> Bool
+.IDLType.treatNonObjectAsNull: (self: WebIDL.IDLType) -> Bool
+.IDLType.withExtendedAttributes: |Type_90065 <: Structural({.__len__ = (self: Never) -> Nat}), Type_90059 <: WebIDL.IDLType|(self: Type_90059, attrs: Type_90065) -> Type_90059
+.IDLType.getExtendedAttribute: (self: WebIDL.IDLType, name: Obj) -> typing.Any or Str
+.IDLType.resolveType: (self: WebIDL.IDLType, parentScope: Obj) -> NoneType
+.IDLType.unroll: |Type_90082 <: WebIDL.IDLType|(self: Type_90082) -> Type_90082
+.IDLType.isDistinguishableFrom: (self: WebIDL.IDLType, other: Obj) -> NoneType
+.IDLType.isExposedInAllOf: (self: WebIDL.IDLType, exposureSet: Obj) -> {True}
+
+.IDLUnresolvedType: ClassType
+.IDLUnresolvedType <: .IDLType
+.IDLUnresolvedType.extraTypeAttributes: typing.Any
+.IDLUnresolvedType.__call__: (location: Obj, name: Obj, attrs: Obj := Obj) -> WebIDL.IDLUnresolvedType
+.IDLUnresolvedType.__slots__: global::Tuple([{"extraTypeAttributes"}])
+.IDLUnresolvedType.isComplete: (self: WebIDL.IDLUnresolvedType) -> {False}
+.IDLUnresolvedType.complete: (self: WebIDL.IDLUnresolvedType, scope: WebIDL.IDLScope) -> WebIDL.IDLWrapperType
+.IDLUnresolvedType.withExtendedAttributes: (self: WebIDL.IDLUnresolvedType, attrs: Obj) -> WebIDL.IDLUnresolvedType
+.IDLUnresolvedType.isDistinguishableFrom: (self: WebIDL.IDLUnresolvedType, other: Obj) -> NoneType
+
+.IDLParametrizedType: ClassType
+.IDLParametrizedType <: .IDLType
+.IDLParametrizedType.inner: typing.Any
+.IDLParametrizedType.builtin: typing.Any
+.IDLParametrizedType.__call__: (location: Obj, name: Obj, innerType: Obj) -> WebIDL.IDLParametrizedType
+.IDLParametrizedType.__slots__: global::Tuple([{"builtin"}, {"inner"}])
+.IDLParametrizedType.includesRestrictedFloat: (self: WebIDL.IDLParametrizedType) -> Never
+.IDLParametrizedType.resolveType: (self: WebIDL.IDLParametrizedType, parentScope: Obj) -> NoneType
+.IDLParametrizedType.isComplete: (self: WebIDL.IDLParametrizedType) -> {False, True}
+.IDLParametrizedType.unroll: (self: WebIDL.IDLParametrizedType) -> Never
+.IDLParametrizedType._getDependentObjects: (self: WebIDL.IDLParametrizedType) -> Never
+
+.IDLNullableType: ClassType
+.IDLNullableType <: .IDLParametrizedType
+.IDLNullableType.__call__: (location: Obj, innerType: Obj) -> WebIDL.IDLNullableType
+.IDLNullableType.__slots__: global::Tuple([])
+.IDLNullableType.__hash__: (self: WebIDL.IDLNullableType) -> Int
+.IDLNullableType.__eq__: |E :> typing.Any, Type_90224 <: Structural({.inner = E})|(self: WebIDL.IDLNullableType, other: Type_90224) -> Bool
+.IDLNullableType.__str__: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.prettyName: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.nullable: (self: WebIDL.IDLNullableType) -> {True}
+.IDLNullableType.isCallback: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isPrimitive: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isBoolean: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isNumeric: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isString: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isByteString: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isDOMString: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isUSVString: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isUTF8String: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isJSString: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isFloat: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isUnrestricted: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isInteger: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isUndefined: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isSequence: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isRecord: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isArrayBuffer: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isArrayBufferView: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isTypedArray: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isDictionary: (self: WebIDL.IDLNullableType) -> {True, False}
+.IDLNullableType.isInterface: (self: WebIDL.IDLNullableType) -> {False, True}
+.IDLNullableType.isPromise: (self: WebIDL.IDLNullableType) -> {False}
+.IDLNullableType.isCallbackInterface: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isNonCallbackInterface: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isEnum: (self: WebIDL.IDLNullableType) -> {True, False}
+.IDLNullableType.isUnion: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isJSONType: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isObservableArray: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.hasClamp: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.hasEnforceRange: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.hasAllowShared: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.isComplete: (self: WebIDL.IDLNullableType) -> {.self.name in {Type_v_global_42050: Obj | Type_v_global_42050 != None}}
+.IDLNullableType.tag: (self: WebIDL.IDLNullableType) -> Never
+.IDLNullableType.complete: |Type_90352 <: WebIDL.IDLNullableType|(self: Type_90352, scope: Obj) -> Type_90352
+.IDLNullableType.isDistinguishableFrom: (self: WebIDL.IDLNullableType, other: WebIDL.IDLType) -> Never
+.IDLNullableType.withExtendedAttributes: (self: WebIDL.IDLNullableType, attrs: Obj) -> WebIDL.IDLNullableType
+
+.IDLSequenceType: ClassType
+.IDLSequenceType <: .IDLParametrizedType
+.IDLSequenceType.__call__: (location: Obj, parameterType: Obj) -> WebIDL.IDLSequenceType
+.IDLSequenceType.__slots__: global::Tuple([{"name"}])
+.IDLSequenceType.__hash__: (self: WebIDL.IDLSequenceType) -> Int
+.IDLSequenceType.__eq__: |E :> typing.Any, Type_90394 <: Structural({.inner = E})|(self: WebIDL.IDLSequenceType, other: Type_90394) -> Bool
+.IDLSequenceType.__str__: (self: WebIDL.IDLSequenceType) -> Never
+.IDLSequenceType.prettyName: (self: WebIDL.IDLSequenceType) -> Str
+.IDLSequenceType.isSequence: (self: WebIDL.IDLSequenceType) -> {True}
+.IDLSequenceType.isJSONType: (self: WebIDL.IDLSequenceType) -> Never
+.IDLSequenceType.tag: (self: WebIDL.IDLSequenceType) -> Never
+.IDLSequenceType.complete: |Type_90417 <: WebIDL.IDLSequenceType|(self: Type_90417, scope: Obj) -> Type_90417
+.IDLSequenceType.isDistinguishableFrom: (self: WebIDL.IDLSequenceType, other: WebIDL.IDLType) -> Bool
+
+.IDLRecordType: ClassType
+.IDLRecordType <: .IDLParametrizedType
+.IDLRecordType.keyType: typing.Any
+.IDLRecordType.__call__: (location: Obj, keyType: Obj, valueType: Obj) -> WebIDL.IDLRecordType
+.IDLRecordType.__slots__: global::Tuple([{"keyType"}, {"name"}])
+.IDLRecordType.__hash__: (self: WebIDL.IDLRecordType) -> Int
+.IDLRecordType.__eq__: |Type_90460 <: Structural({.inner = E}), E :> typing.Any|(self: WebIDL.IDLRecordType, other: Type_90460) -> Bool
+.IDLRecordType.__str__: (self: WebIDL.IDLRecordType) -> Never
+.IDLRecordType.prettyName: (self: WebIDL.IDLRecordType) -> Str
+.IDLRecordType.isRecord: (self: WebIDL.IDLRecordType) -> {True}
+.IDLRecordType.isJSONType: (self: WebIDL.IDLRecordType) -> Never
+.IDLRecordType.tag: (self: WebIDL.IDLRecordType) -> Never
+.IDLRecordType.complete: |Type_90475 <: WebIDL.IDLRecordType|(self: Type_90475, scope: Obj) -> Type_90475
+.IDLRecordType.unroll: |Type_90481 <: WebIDL.IDLRecordType|(self: Type_90481) -> Type_90481
+.IDLRecordType.isDistinguishableFrom: (self: WebIDL.IDLRecordType, other: WebIDL.IDLType) -> Bool
+.IDLRecordType.isExposedInAllOf: (self: WebIDL.IDLRecordType, exposureSet: Obj) -> Never
+
+.IDLObservableArrayType: ClassType
+.IDLObservableArrayType <: .IDLParametrizedType
+.IDLObservableArrayType.__call__: (location: Obj, innerType: Obj) -> WebIDL.IDLObservableArrayType
+.IDLObservableArrayType.__slots__: global::Tuple([])
+.IDLObservableArrayType.__hash__: (self: WebIDL.IDLObservableArrayType) -> Int
+.IDLObservableArrayType.__eq__: |Type_90537 <: Structural({.inner = E}), E :> typing.Any|(self: WebIDL.IDLObservableArrayType, other: Type_90537) -> Bool
+.IDLObservableArrayType.__str__: (self: WebIDL.IDLObservableArrayType) -> Never
+.IDLObservableArrayType.prettyName: (self: WebIDL.IDLObservableArrayType) -> Str
+.IDLObservableArrayType.isJSONType: (self: WebIDL.IDLObservableArrayType) -> Never
+.IDLObservableArrayType.isObservableArray: (self: WebIDL.IDLObservableArrayType) -> {True}
+.IDLObservableArrayType.isComplete: (self: WebIDL.IDLObservableArrayType) -> {.self.name in {Type_v_global_42356: Obj | Type_v_global_42356 != None}}
+.IDLObservableArrayType.tag: (self: WebIDL.IDLObservableArrayType) -> Never
+.IDLObservableArrayType.complete: |Type_90562 <: WebIDL.IDLObservableArrayType|(self: Type_90562, scope: Obj) -> Type_90562
+.IDLObservableArrayType.isDistinguishableFrom: (self: WebIDL.IDLObservableArrayType, other: Obj) -> {False}
+
+.IDLUnionType: ClassType
+.IDLUnionType <: .IDLType
+.IDLUnionType._dictionaryType: typing.Any
+.IDLUnionType.memberTypes: typing.Any
+.IDLUnionType.flatMemberTypes: typing.Any
+.IDLUnionType.builtin: typing.Any
+.IDLUnionType.hasNullableType: typing.Any
+.IDLUnionType.__call__: (location: Obj, memberTypes: Obj) -> WebIDL.IDLUnionType
+.IDLUnionType.__slots__: global::Tuple([{"memberTypes"}, {"hasNullableType"}, {"_dictionaryType"}, {"flatMemberTypes"}, {"builtin"}])
+.IDLUnionType.__eq__: |Type_90616 <: Structural({.memberTypes = E}), E :> typing.Any|(self: WebIDL.IDLUnionType, other: Type_90616) -> Bool
+.IDLUnionType.__hash__: (self: WebIDL.IDLUnionType) -> Int
+.IDLUnionType.prettyName: (self: WebIDL.IDLUnionType) -> Str
+.IDLUnionType.isUnion: (self: WebIDL.IDLUnionType) -> {True}
+.IDLUnionType.isJSONType: (self: WebIDL.IDLUnionType) -> Bool
+.IDLUnionType.includesRestrictedFloat: (self: WebIDL.IDLUnionType) -> Bool
+.IDLUnionType.tag: (self: WebIDL.IDLUnionType) -> Never
+.IDLUnionType.resolveType: (self: WebIDL.IDLUnionType, parentScope: Obj) -> NoneType
+.IDLUnionType.isComplete: (self: WebIDL.IDLUnionType) -> {.self.flatMemberTypes in {Type_v_global_42437: Obj | Type_v_global_42437 != None}}
+.IDLUnionType.complete: |Type_111290 <: WebIDL.IDLUnionType|(self: Type_111290, scope: Obj) -> Type_111290
+.IDLUnionType.isDistinguishableFrom: (self: WebIDL.IDLUnionType, other: Never) -> {True}
+.IDLUnionType.isExposedInAllOf: (self: WebIDL.IDLUnionType, exposureSet: global::Iterable(Never)) -> {True}
+.IDLUnionType.hasDictionaryType: (self: WebIDL.IDLUnionType) -> {.self._dictionaryType in {Type_v_global_42769: Obj | Type_v_global_42769 != None}}
+.IDLUnionType.hasPossiblyEmptyDictionaryType: (self: WebIDL.IDLUnionType) -> Bool
+.IDLUnionType._getDependentObjects: (self: WebIDL.IDLUnionType) -> Never
+
+.IDLTypedefType: ClassType
+.IDLTypedefType <: .IDLType
+.IDLTypedefType.inner: typing.Any
+.IDLTypedefType.builtin: typing.Any
+.IDLTypedefType.__call__: (location: Obj, innerType: Obj, name: Obj) -> WebIDL.IDLTypedefType
+.IDLTypedefType.__slots__: global::Tuple([{"inner"}, {"builtin"}])
+.IDLTypedefType.__hash__: (self: WebIDL.IDLTypedefType) -> Int
+.IDLTypedefType.__eq__: |Type_90686 <: Structural({.inner = E}), E :> typing.Any|(self: WebIDL.IDLTypedefType, other: Type_90686) -> Bool
+.IDLTypedefType.__str__: (self: WebIDL.IDLTypedefType) -> typing.Any
+.IDLTypedefType.nullable: (self: WebIDL.IDLTypedefType) -> {False, True}
+.IDLTypedefType.isPrimitive: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isBoolean: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isNumeric: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isString: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isByteString: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isDOMString: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isUSVString: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isUTF8String: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isJSString: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isUndefined: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isJSONType: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isSequence: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isRecord: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isDictionary: (self: WebIDL.IDLTypedefType) -> {True, False}
+.IDLTypedefType.isArrayBuffer: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isArrayBufferView: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isTypedArray: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isInterface: (self: WebIDL.IDLTypedefType) -> {False, True}
+.IDLTypedefType.isCallbackInterface: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isNonCallbackInterface: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isComplete: (self: WebIDL.IDLTypedefType) -> {False}
+.IDLTypedefType.complete: (self: WebIDL.IDLTypedefType, parentScope: WebIDL.IDLScope) -> WebIDL.IDLType
+.IDLTypedefType.tag: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.unroll: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.isDistinguishableFrom: (self: WebIDL.IDLTypedefType, other: Obj) -> Never
+.IDLTypedefType._getDependentObjects: (self: WebIDL.IDLTypedefType) -> Never
+.IDLTypedefType.withExtendedAttributes: (self: WebIDL.IDLTypedefType, attrs: Obj) -> WebIDL.IDLTypedefType
+
+.IDLTypedef: ClassType
+.IDLTypedef <: .IDLObjectWithIdentifier
+.IDLTypedef.innerType: typing.Any
+.IDLTypedef.__call__: (location: Obj, parentScope: Obj, innerType: Obj, name: Obj) -> WebIDL.IDLTypedef
+.IDLTypedef.__slots__: global::Tuple([{"innerType"}])
+.IDLTypedef.__str__: (self: WebIDL.IDLTypedef) -> Str
+.IDLTypedef.finish: (self: WebIDL.IDLTypedef, parentScope: Obj) -> NoneType
+.IDLTypedef.validate: (self: WebIDL.IDLTypedef) -> NoneType
+.IDLTypedef.isTypedef: (self: WebIDL.IDLTypedef) -> {True}
+.IDLTypedef.addExtendedAttributes: |Type_90855 <: Structural({.__len__ = (self: Never) -> Nat})|(self: WebIDL.IDLTypedef, attrs: Type_90855) -> NoneType
+.IDLTypedef._getDependentObjects: (self: WebIDL.IDLTypedef) -> Never
+
+.IDLWrapperType: ClassType
+.IDLWrapperType <: .IDLType
+.IDLWrapperType.inner: typing.Any
+.IDLWrapperType._identifier: typing.Any
+.IDLWrapperType.builtin: typing.Any
+.IDLWrapperType.__call__: (location: Obj, inner: Obj) -> WebIDL.IDLWrapperType
+.IDLWrapperType.__slots__: global::Tuple([{"inner"}, {"_identifier"}, {"builtin"}])
+.IDLWrapperType.__hash__: (self: WebIDL.IDLWrapperType) -> Int
+.IDLWrapperType.__eq__: |E :> typing.Any, Type_90907 <: Structural({._identifier = E})|(self: WebIDL.IDLWrapperType, other: Type_90907) -> Bool
+.IDLWrapperType.__str__: (self: WebIDL.IDLWrapperType) -> Str
+.IDLWrapperType.isDictionary: (self: WebIDL.IDLWrapperType) -> {.self.inner in WebIDL.IDLDictionary}
+.IDLWrapperType.isInterface: (self: WebIDL.IDLWrapperType) -> {.self.inner in WebIDL.IDLExternalInterface or WebIDL.IDLInterface}
+.IDLWrapperType.isCallbackInterface: (self: WebIDL.IDLWrapperType) -> Bool
+.IDLWrapperType.isNonCallbackInterface: (self: WebIDL.IDLWrapperType) -> Bool
+.IDLWrapperType.isEnum: (self: WebIDL.IDLWrapperType) -> {.self.inner in WebIDL.IDLEnum}
+.IDLWrapperType.isJSONType: (self: WebIDL.IDLWrapperType) -> Never
+.IDLWrapperType.resolveType: (self: WebIDL.IDLWrapperType, parentScope: Obj) -> NoneType
+.IDLWrapperType.isComplete: (self: WebIDL.IDLWrapperType) -> {True}
+.IDLWrapperType.tag: (self: WebIDL.IDLWrapperType) -> NoneType
+.IDLWrapperType.isDistinguishableFrom: |Type_90082 <: WebIDL.IDLWrapperType|(self: Type_90082, other: Type_90082) -> {False}
+.IDLWrapperType.isExposedInAllOf: (self: WebIDL.IDLWrapperType, exposureSet: Obj) -> Never
+.IDLWrapperType._getDependentObjects: (self: WebIDL.IDLWrapperType) -> Never
+
+.IDLPromiseType: ClassType
+.IDLPromiseType <: .IDLParametrizedType
+.IDLPromiseType.__call__: (location: Obj, innerType: Obj) -> WebIDL.IDLPromiseType
+.IDLPromiseType.__slots__: global::Tuple([])
+.IDLPromiseType.__hash__: (self: WebIDL.IDLPromiseType) -> Int
+.IDLPromiseType.__eq__: |Type_91023 <: Structural({.promiseInnerType = (self: Obj) -> E}), E <: global::Hash|(self: WebIDL.IDLPromiseType, other: Type_91023) -> Bool
+.IDLPromiseType.__str__: (self: WebIDL.IDLPromiseType) -> Never
+.IDLPromiseType.prettyName: (self: WebIDL.IDLPromiseType) -> Str
+.IDLPromiseType.isPromise: (self: WebIDL.IDLPromiseType) -> {True}
+.IDLPromiseType.promiseInnerType: (self: WebIDL.IDLPromiseType) -> global::Hash
+.IDLPromiseType.tag: (self: WebIDL.IDLPromiseType) -> Never
+.IDLPromiseType.complete: |Type_112882 <: WebIDL.IDLPromiseType|(self: Type_112882, scope: Obj) -> Type_112882
+.IDLPromiseType.unroll: |Type_91053 <: WebIDL.IDLPromiseType|(self: Type_91053) -> Type_91053
+.IDLPromiseType.isDistinguishableFrom: (self: WebIDL.IDLPromiseType, other: Obj) -> {False}
+.IDLPromiseType.isExposedInAllOf: (self: WebIDL.IDLPromiseType, exposureSet: Obj) -> {True}
+
+.IDLBuiltinType: ClassType
+.IDLBuiltinType <: .IDLType
+.IDLBuiltinType._withAllowShared: typing.Any
+.IDLBuiltinType._withLegacyNullToEmptyString: typing.Any
+.IDLBuiltinType._typeTag: typing.Any
+.IDLBuiltinType._rangeEnforced: typing.Any
+.IDLBuiltinType.builtin: typing.Any
+.IDLBuiltinType._clamped: typing.Any
+.IDLBuiltinType.__call__: (location: Obj, name: Obj, Type: Obj, clamp: Obj := Obj, enforceRange: Obj := Obj, legacyNullToEmptyString: Obj := Obj, allowShared: Obj := Obj, attrLocation: Obj := Obj) -> WebIDL.IDLBuiltinType
+.IDLBuiltinType.Types: Never
+.IDLBuiltinType.TagLookup: Never
+.IDLBuiltinType.PrettyNames: Never
+.IDLBuiltinType.__slots__: global::Tuple([{"_typeTag"}, {"_clamped"}, {"_rangeEnforced"}, {"_withLegacyNullToEmptyString"}, {"_withAllowShared"}])
+.IDLBuiltinType.__str__: (self: WebIDL.IDLBuiltinType) -> Str
+.IDLBuiltinType.prettyName: (self: WebIDL.IDLBuiltinType) -> Str
+.IDLBuiltinType.clamped: (self: WebIDL.IDLBuiltinType, attrLocation: Obj) -> typing.Any
+.IDLBuiltinType.rangeEnforced: (self: WebIDL.IDLBuiltinType, attrLocation: Obj) -> typing.Any
+.IDLBuiltinType.withLegacyNullToEmptyString: (self: WebIDL.IDLBuiltinType, attrLocation: Obj) -> typing.Any
+.IDLBuiltinType.withAllowShared: (self: WebIDL.IDLBuiltinType, attrLocation: Obj) -> typing.Any
+.IDLBuiltinType.isPrimitive: (self: WebIDL.IDLBuiltinType) -> Never
+.IDLBuiltinType.isBoolean: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isUndefined: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isNumeric: (self: WebIDL.IDLBuiltinType) -> Never
+.IDLBuiltinType.isString: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isByteString: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isDOMString: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isUSVString: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isUTF8String: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isJSString: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isInteger: (self: WebIDL.IDLBuiltinType) -> Never
+.IDLBuiltinType.isArrayBuffer: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isArrayBufferView: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isTypedArray: Never
+.IDLBuiltinType.isInterface: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isNonCallbackInterface: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isFloat: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isUnrestricted: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.isJSONType: (self: WebIDL.IDLBuiltinType) -> Never
+.IDLBuiltinType.includesRestrictedFloat: (self: WebIDL.IDLBuiltinType) -> Bool
+.IDLBuiltinType.tag: (self: WebIDL.IDLBuiltinType) -> Never
+.IDLBuiltinType.isDistinguishableFrom: |Type_113730: Type, Type_113755 <: Structural({.__or__ = (self: Never, R) -> B}), Type_91230 <: Structural({.isNumeric = (self: Obj) -> Type_113849; .isDistinguishableFrom = (self: Obj, Type_91183) -> Type_113730; .isUnion = (self: Obj) -> Type_113717; .isUndefined = (self: Obj) -> Type_113755 and (self: Obj) -> Type_113795; .isString = (self: Obj) -> R; .isBoolean = (self: Obj) -> Type_113882; .isPrimitive = (self: Obj) -> R and (self: Obj) -> R; .isDictionaryLike = (self: Obj) -> R; .isPromise = (self: Obj) -> Type_113704}), O <: Bool, Type_91183 <: WebIDL.IDLBuiltinType, B <: Bool, Type_113882: Type, Type_113704 <: Bool, O: Type, Type_113717 <: Bool, R: Type, Type_113849: Type, Type_113795 <: Structural({.__or__ = (self: Never, R) -> O})|(self: Type_91183, other: Type_91230) -> O
+.IDLBuiltinType._getDependentObjects: (self: WebIDL.IDLBuiltinType) -> Never
+.IDLBuiltinType.withExtendedAttributes: |Type_91164 <: WebIDL.IDLBuiltinType|(self: Type_91164, attrs: global::Iterable(Structural({.hasValue = (self: Obj) -> Bool; .location = Never; .identifier = (self: Obj) -> {"Clamp"}; .noArguments = (self: Obj) -> Bool}))) -> Type_91164
+
+.BuiltinTypes: global::Dict!({Never: WebIDL.IDLBuiltinType})
+.integerTypeSizes: global::Dict!({Never: global::Tuple([Int, {127, 255, 32767, 9223372036854775807, 65535, 2147483647, 4294967295, 18446744073709551615}])})
+.matchIntegerValueToType: |R :> {127, 255, 32767, 9223372036854775807, 65535, 2147483647, 4294967295, 18446744073709551615}, R :> R or {0}, R :> Int, Type_91241 <: Structural({.__le__ = (self: Never, R) -> Bool; .__ge__ = (self: Never, R) -> Bool})|(value: Type_91241) -> {None}
+.NoCoercionFoundError: ClassType
+.NoCoercionFoundError <: .WebIDLError
+
+.IDLValue: ClassType
+.IDLValue <: .IDLObject
+.IDLValue.value: typing.Any
+.IDLValue.type: typing.Any
+.IDLValue.__call__: (location: Obj, Type: Obj, value: Obj) -> WebIDL.IDLValue
+.IDLValue.__slots__: global::Tuple([{"type"}, {"value"}])
+.IDLValue.coerceToType: (self: WebIDL.IDLValue, Type: Obj, location: Obj) -> Never
+.IDLValue._getDependentObjects: (self: WebIDL.IDLValue) -> Never
+
+.IDLNullValue: ClassType
+.IDLNullValue <: .IDLObject
+.IDLNullValue.value: typing.Any
+.IDLNullValue.type: typing.Any
+.IDLNullValue.__call__: (location: Obj) -> WebIDL.IDLNullValue
+.IDLNullValue.__slots__: global::Tuple([{"type"}, {"value"}])
+.IDLNullValue.coerceToType: (self: WebIDL.IDLNullValue, Type: Obj, location: Obj) -> WebIDL.IDLNullValue
+.IDLNullValue._getDependentObjects: (self: WebIDL.IDLNullValue) -> Never
+
+.IDLEmptySequenceValue: ClassType
+.IDLEmptySequenceValue <: .IDLObject
+.IDLEmptySequenceValue.value: typing.Any
+.IDLEmptySequenceValue.type: typing.Any
+.IDLEmptySequenceValue.__call__: (location: Obj) -> WebIDL.IDLEmptySequenceValue
+.IDLEmptySequenceValue.__slots__: global::Tuple([{"type"}, {"value"}])
+.IDLEmptySequenceValue.coerceToType: (self: WebIDL.IDLEmptySequenceValue, Type: Obj, location: Obj) -> WebIDL.IDLEmptySequenceValue
+.IDLEmptySequenceValue._getDependentObjects: (self: WebIDL.IDLEmptySequenceValue) -> Never
+
+.IDLDefaultDictionaryValue: ClassType
+.IDLDefaultDictionaryValue <: .IDLObject
+.IDLDefaultDictionaryValue.value: typing.Any
+.IDLDefaultDictionaryValue.type: typing.Any
+.IDLDefaultDictionaryValue.__call__: (location: Obj) -> WebIDL.IDLDefaultDictionaryValue
+.IDLDefaultDictionaryValue.__slots__: global::Tuple([{"type"}, {"value"}])
+.IDLDefaultDictionaryValue.coerceToType: (self: WebIDL.IDLDefaultDictionaryValue, Type: Obj, location: Obj) -> WebIDL.IDLDefaultDictionaryValue
+.IDLDefaultDictionaryValue._getDependentObjects: (self: WebIDL.IDLDefaultDictionaryValue) -> Never
+
+.IDLUndefinedValue: ClassType
+.IDLUndefinedValue <: .IDLObject
+.IDLUndefinedValue.value: typing.Any
+.IDLUndefinedValue.type: typing.Any
+.IDLUndefinedValue.__call__: (location: Obj) -> WebIDL.IDLUndefinedValue
+.IDLUndefinedValue.__slots__: global::Tuple([{"type"}, {"value"}])
+.IDLUndefinedValue.coerceToType: (self: WebIDL.IDLUndefinedValue, Type: Obj, location: Obj) -> WebIDL.IDLUndefinedValue
+.IDLUndefinedValue._getDependentObjects: (self: WebIDL.IDLUndefinedValue) -> Never
+
+.IDLInterfaceMember: ClassType
+.IDLInterfaceMember <: .IDLObjectWithIdentifier
+.IDLInterfaceMember.tag: typing.Any
+.IDLInterfaceMember.__call__: (location: Obj, identifier: Obj, tag: Obj, extendedAttrDict: Obj := Obj) -> WebIDL.IDLInterfaceMember
+.IDLInterfaceMember.Tags: Never
+.IDLInterfaceMember.Special: Never
+.IDLInterfaceMember.AffectsValues: {Type_v_global_36349: global::Tuple([Str, Str]) | Type_v_global_36349 == ("Nothing", "Everything")}
+.IDLInterfaceMember.DependsOnValues: {Type_v_global_36351: global::Tuple([Str, Str, Str, Str]) | Type_v_global_36351 == ("Nothing", "DOMState", "DeviceState", "Everything")}
+.IDLInterfaceMember.isMethod: (self: WebIDL.IDLInterfaceMember) -> Bool
+.IDLInterfaceMember.isAttr: (self: WebIDL.IDLInterfaceMember) -> Bool
+.IDLInterfaceMember.isConst: (self: WebIDL.IDLInterfaceMember) -> Bool
+.IDLInterfaceMember.isMaplikeOrSetlikeOrIterable: (self: WebIDL.IDLInterfaceMember) -> Bool
+.IDLInterfaceMember.isMaplikeOrSetlike: (self: WebIDL.IDLInterfaceMember) -> Bool
+.IDLInterfaceMember.addExtendedAttributes: (self: WebIDL.IDLInterfaceMember, attrs: global::Iterable(Structural({.listValue = (self: Obj) -> Structural({.__len__ = (self: Never) -> Nat}); .identifier = (self: Obj) -> Never}))) -> NoneType
+.IDLInterfaceMember.handleExtendedAttribute: |Type_116456 <: Structural({.listValue = (self: Obj) -> T; .identifier = (self: Obj) -> Type_116443}), Type_116443: Type, T <: Structural({.__len__ = (self: Never) -> Nat})|(self: WebIDL.IDLInterfaceMember, attr: Type_116456) -> NoneType
+.IDLInterfaceMember.getExtendedAttribute: (self: WebIDL.IDLInterfaceMember, name: Obj) -> Never
+.IDLInterfaceMember.finish: (self: WebIDL.IDLInterfaceMember, scope: Obj) -> NoneType
+.IDLInterfaceMember.validate: (self: WebIDL.IDLInterfaceMember) -> NoneType
+.IDLInterfaceMember._setDependsOn: (self: WebIDL.IDLInterfaceMember, dependsOn: Obj) -> NoneType
+.IDLInterfaceMember._setAffects: (self: WebIDL.IDLInterfaceMember, affects: Obj) -> NoneType
+.IDLInterfaceMember._addAlias: (self: WebIDL.IDLInterfaceMember, alias: Obj) -> NoneType
+.IDLInterfaceMember._addBindingAlias: (self: WebIDL.IDLInterfaceMember, bindingAlias: Obj) -> NoneType
+
+.IDLMaplikeOrSetlikeOrIterableBase: ClassType
+.IDLMaplikeOrSetlikeOrIterableBase <: .IDLInterfaceMember
+.IDLMaplikeOrSetlikeOrIterableBase.maplikeOrSetlikeOrIterableType: typing.Any
+.IDLMaplikeOrSetlikeOrIterableBase.keyType: typing.Any
+.IDLMaplikeOrSetlikeOrIterableBase.disallowedMemberNames: typing.Any
+.IDLMaplikeOrSetlikeOrIterableBase.disallowedNonMethodNames: typing.Any
+.IDLMaplikeOrSetlikeOrIterableBase.valueType: typing.Any
+.IDLMaplikeOrSetlikeOrIterableBase.__call__: (location: Obj, identifier: Obj, ifaceType: Obj, keyType: Obj, valueType: Obj, ifaceKind: Obj) -> WebIDL.IDLMaplikeOrSetlikeOrIterableBase
+.IDLMaplikeOrSetlikeOrIterableBase.__slots__: global::Tuple([{"keyType"}, {"valueType"}, {"maplikeOrSetlikeOrIterableType"}, {"disallowedMemberNames"}, {"disallowedNonMethodNames"}])
+.IDLMaplikeOrSetlikeOrIterableBase.isMaplike: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase) -> Never
+.IDLMaplikeOrSetlikeOrIterableBase.isSetlike: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase) -> Never
+.IDLMaplikeOrSetlikeOrIterableBase.isIterable: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase) -> Never
+.IDLMaplikeOrSetlikeOrIterableBase.isAsyncIterable: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase) -> Never
+.IDLMaplikeOrSetlikeOrIterableBase.hasKeyType: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase) -> {.self.keyType in {Type_v_global_44346: Obj | Type_v_global_44346 != None}}
+.IDLMaplikeOrSetlikeOrIterableBase.hasValueType: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase) -> {.self.valueType in {Type_v_global_44348: Obj | Type_v_global_44348 != None}}
+.IDLMaplikeOrSetlikeOrIterableBase.checkCollisions: |Type_91673 <: Structural({.__or__ = (self: Never, R) -> O}), O <: Structural({.__or__ = (self: Never, R) -> R}), O <: Structural({.__and__ = (self: Never, R) -> O}), R <: Bool, O <: Bool, R: Type|(self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase, members: global::Iterable(Structural({.isStatic = (self: Obj) -> Structural({.__or__ = (self: Never, R) -> R}); .isAttr = (self: Obj) -> R and (self: Obj) -> Structural({.__and__ = (self: Never, R) -> R}); .isMaplikeOrSetlikeAttr = (self: Obj) -> R; .identifier = Never; .isMethod = (self: Obj) -> Structural({.__and__ = (self: Never, R) -> O}); .isMaplikeOrSetlikeOrIterableMethod = (self: Obj) -> R})), isAncestor: Type_91673) -> NoneType
+.IDLMaplikeOrSetlikeOrIterableBase.addMethod: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase, name: Str, members: Never, allowExistingOperations: Bool, returnType: Obj, args: Obj := Obj, chromeOnly: Bool := Bool, isPure: Bool := Bool, affectsNothing: Bool := Bool, newObject: Bool := Bool, isIteratorAlias: Bool := Bool) -> NoneType
+.IDLMaplikeOrSetlikeOrIterableBase.resolve: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase, parentScope: Obj) -> NoneType
+.IDLMaplikeOrSetlikeOrIterableBase.finish: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase, scope: Obj) -> NoneType
+.IDLMaplikeOrSetlikeOrIterableBase.validate: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase) -> NoneType
+.IDLMaplikeOrSetlikeOrIterableBase.handleExtendedAttribute: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase, attr: Obj) -> NoneType
+.IDLMaplikeOrSetlikeOrIterableBase._getDependentObjects: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase) -> Never
+.IDLMaplikeOrSetlikeOrIterableBase.getForEachArguments: (self: WebIDL.IDLMaplikeOrSetlikeOrIterableBase) -> global::List!(WebIDL.IDLArgument, 2)
+
+.IDLIterable: ClassType
+.IDLIterable <: .IDLMaplikeOrSetlikeOrIterableBase
+.IDLIterable.iteratorType: typing.Any
+.IDLIterable.__call__: (location: Obj, identifier: Obj, keyType: Obj, valueType: Obj, scope: Obj) -> WebIDL.IDLIterable
+.IDLIterable.__slots__: global::Tuple([{"iteratorType"}])
+.IDLIterable.__str__: (self: WebIDL.IDLIterable) -> Str
+.IDLIterable.expand: (self: WebIDL.IDLIterable, members: Never) -> NoneType
+.IDLIterable.isValueIterator: (self: WebIDL.IDLIterable) -> {.self.keyType in {Type_v_global_44346: Obj | Type_v_global_44346 != None}}
+.IDLIterable.isPairIterator: (self: WebIDL.IDLIterable) -> {.self.keyType in {Type_v_global_44346: Obj | Type_v_global_44346 != None}}
+
+.IDLAsyncIterable: ClassType
+.IDLAsyncIterable <: .IDLMaplikeOrSetlikeOrIterableBase
+.IDLAsyncIterable.argList: typing.Any
+.IDLAsyncIterable.iteratorType: typing.Any
+.IDLAsyncIterable.__call__: (location: Obj, identifier: Obj, keyType: Obj, valueType: Obj, argList: Obj, scope: Obj) -> WebIDL.IDLAsyncIterable
+.IDLAsyncIterable.__slots__: global::Tuple([{"iteratorType"}, {"argList"}])
+.IDLAsyncIterable.__str__: (self: WebIDL.IDLAsyncIterable) -> Str
+.IDLAsyncIterable.expand: (self: WebIDL.IDLAsyncIterable, members: Never) -> NoneType
+.IDLAsyncIterable.isValueIterator: (self: WebIDL.IDLAsyncIterable) -> {.self.keyType in {Type_v_global_44346: Obj | Type_v_global_44346 != None}}
+.IDLAsyncIterable.isPairIterator: (self: WebIDL.IDLAsyncIterable) -> {.self.keyType in {Type_v_global_44346: Obj | Type_v_global_44346 != None}}
+
+.IDLMaplikeOrSetlike: ClassType
+.IDLMaplikeOrSetlike <: OrIterableBase
+.IDLMaplikeOrSetlike.slotIndices: typing.Any
+.IDLMaplikeOrSetlike.readonly: typing.Any
+.IDLMaplikeOrSetlike.__call__: (location: Obj, identifier: Obj, maplikeOrSetlikeType: Obj, readonly: Obj, keyType: Obj, valueType: Obj) -> WebIDL.IDLMaplikeOrSetlike
+.IDLMaplikeOrSetlike.__slots__: global::Tuple([{"readonly"}, {"slotIndices"}, {"prefix"}])
+.IDLMaplikeOrSetlike.__str__: (self: WebIDL.IDLMaplikeOrSetlike) -> Str
+.IDLMaplikeOrSetlike.expand: (self: WebIDL.IDLMaplikeOrSetlike, members: Never) -> NoneType
+
+.IDLConst: ClassType
+.IDLConst <: .IDLInterfaceMember
+.IDLConst.value: typing.Any
+.IDLConst.type: typing.Any
+.IDLConst.__call__: (location: Obj, identifier: Obj, Type: Obj, value: Obj) -> WebIDL.IDLConst
+.IDLConst.__slots__: global::Tuple([{"type"}, {"value"}])
+.IDLConst.__str__: (self: WebIDL.IDLConst) -> Str
+.IDLConst.finish: (self: WebIDL.IDLConst, scope: Obj) -> NoneType
+.IDLConst.validate: (self: WebIDL.IDLConst) -> NoneType
+.IDLConst.handleExtendedAttribute: |Type_91922 <: Structural({.identifier = (self: Obj) -> {"Exposed"}})|(self: WebIDL.IDLConst, attr: Type_91922) -> NoneType
+.IDLConst._getDependentObjects: (self: WebIDL.IDLConst) -> global::Set!(typing.Any, _: Nat)
+
+.IDLAttribute: ClassType
+.IDLAttribute <: .IDLInterfaceMember
+.IDLAttribute._static: typing.Any
+.IDLAttribute._legacyUnforgeable: typing.Any
+.IDLAttribute.maplikeOrSetlike: typing.Any
+.IDLAttribute.bindingAliases: typing.Any
+.IDLAttribute.stringifier: typing.Any
+.IDLAttribute.type: typing.Any
+.IDLAttribute.legacyLenientThis: typing.Any
+.IDLAttribute.readonly: typing.Any
+.IDLAttribute.inherit: typing.Any
+.IDLAttribute.slotIndices: typing.Any
+.IDLAttribute.affects: typing.Any
+.IDLAttribute.dependsOn: typing.Any
+.IDLAttribute.__call__: |Type_91984 :> {False}, Type_91990 :> {None}, Type_91979 :> {False}, Type_91986 :> {False}|(location: Obj, identifier: Obj, Type: Obj, readonly: Obj, inherit: Type_91979 := Type_91979 and Type_91979, static: Type_91984 := Type_91984 and Type_91984, stringifier: Type_91986 := Type_91986 and Type_91986, maplikeOrSetlike: WebIDL.IDLMaplikeOrSetlike := WebIDL.IDLMaplikeOrSetlike, extendedAttrDict: Type_91990 := Type_91990 and Type_91990) -> WebIDL.IDLAttribute
+.IDLAttribute.__slots__: global::Tuple([{"type"}, {"readonly"}, {"inherit"}, {"_static"}, {"legacyLenientThis"}, {"_legacyUnforgeable"}, {"stringifier"}, {"slotIndices"}, {"maplikeOrSetlike"}, {"dependsOn"}, {"affects"}, {"bindingAliases"}])
+.IDLAttribute.isStatic: (self: WebIDL.IDLAttribute) -> typing.Any
+.IDLAttribute.forceStatic: (self: WebIDL.IDLAttribute) -> NoneType
+.IDLAttribute.__str__: (self: WebIDL.IDLAttribute) -> Str
+.IDLAttribute.finish: (self: WebIDL.IDLAttribute, scope: Obj) -> NoneType
+.IDLAttribute.validate: (self: WebIDL.IDLAttribute) -> NoneType
+.IDLAttribute.handleExtendedAttribute: |Type_96668 <: Bool, T: Type, Type_92013 <: Structural({.hasValue = (self: Obj) -> Type_96668; .value = (self: Obj) -> T; .identifier = (self: Obj) -> {"SetterThrows"}; .noArguments = (self: Obj) -> B}), B <: Bool|(self: WebIDL.IDLAttribute, attr: Type_92013) -> NoneType
+.IDLAttribute.getExtendedAttributes: (self: WebIDL.IDLAttribute) -> Never
+.IDLAttribute.resolve: (self: WebIDL.IDLAttribute, parentScope: Obj) -> NoneType
+.IDLAttribute.hasLegacyLenientThis: (self: WebIDL.IDLAttribute) -> typing.Any
+.IDLAttribute.isMaplikeOrSetlikeAttr: (self: WebIDL.IDLAttribute) -> {.self.maplikeOrSetlike in {Type_v_global_45745: Obj | Type_v_global_45745 != None}}
+.IDLAttribute.isLegacyUnforgeable: (self: WebIDL.IDLAttribute) -> typing.Any
+.IDLAttribute._getDependentObjects: (self: WebIDL.IDLAttribute) -> global::Set!(typing.Any, _: Nat)
+.IDLAttribute.expand: (self: WebIDL.IDLAttribute, members: RefMut(global::ByteArray!) or RefMut(global::List!(WebIDL.IDLMethod, _: Nat) ~> global::List!(WebIDL.IDLMethod, _: Nat + 1))) -> NoneType
+
+.IDLArgument: ClassType
+.IDLArgument <: .IDLObjectWithIdentifier
+.IDLArgument.allowTypeAttributes: typing.Any
+.IDLArgument.defaultValue: typing.Any
+.IDLArgument.optional: typing.Any
+.IDLArgument._isComplete: typing.Any
+.IDLArgument.dictionaryMember: typing.Any
+.IDLArgument._extendedAttrDict: typing.Any
+.IDLArgument._allowTreatNonCallableAsNull: typing.Any
+.IDLArgument.variadic: typing.Any
+.IDLArgument.type: typing.Any
+.IDLArgument.__call__: |Type_92093 :> {False}, Type_92090 :> {False}, Type_92082 :> {False, True}, Type_92084 :> {None}, Type_92086 :> {False}|(location: Obj, identifier: Obj, Type: Obj, optional: Type_92082 := Type_92082 and Type_92082, defaultValue: Type_92084 := Type_92084 and Type_92084, variadic: Type_92086 := Type_92086 and Type_92086, dictionaryMember: Type_92090 := Type_92090 and Type_92090, allowTypeAttributes: Type_92093 := Type_92093 and Type_92093) -> WebIDL.IDLArgument
+.IDLArgument.__slots__: global::Tuple([{"type"}, {"optional"}, {"defaultValue"}, {"variadic"}, {"dictionaryMember"}, {"_isComplete"}, {"_allowTreatNonCallableAsNull"}, {"_extendedAttrDict"}, {"allowTypeAttributes"}])
+.IDLArgument.addExtendedAttributes: (self: WebIDL.IDLArgument, attrs: global::Iterable(Structural({.listValue = (self: Obj) -> Structural({.__len__ = (self: Never) -> Nat}); .identifier = (self: Obj) -> {"EnforceRange"}}))) -> NoneType
+.IDLArgument.getExtendedAttribute: (self: WebIDL.IDLArgument, name: Obj) -> typing.Any or Str
+.IDLArgument.isComplete: (self: WebIDL.IDLArgument) -> typing.Any
+.IDLArgument.complete: (self: WebIDL.IDLArgument, scope: Obj) -> NoneType
+.IDLArgument.allowTreatNonCallableAsNull: (self: WebIDL.IDLArgument) -> typing.Any
+.IDLArgument._getDependentObjects: (self: WebIDL.IDLArgument) -> global::Set!(typing.Any, _: Nat)
+.IDLArgument.canHaveMissingValue: (self: WebIDL.IDLArgument) -> Never
+
+.IDLCallback: ClassType
+.IDLCallback <: .IDLObjectWithScope
+.IDLCallback._isConstructor: typing.Any
+.IDLCallback._arguments: typing.Any
+.IDLCallback._isRunScriptBoundary: typing.Any
+.IDLCallback._treatNonCallableAsNull: typing.Any
+.IDLCallback._returnType: typing.Any
+.IDLCallback._treatNonObjectAsNull: typing.Any
+.IDLCallback.__call__: (location: Obj, parentScope: Obj, identifier: Obj, returnType: Obj, arguments: Obj, isConstructor: Obj) -> WebIDL.IDLCallback
+.IDLCallback.__slots__: global::Tuple([{"_returnType"}, {"_arguments"}, {"_treatNonCallableAsNull"}, {"_treatNonObjectAsNull"}, {"_isRunScriptBoundary"}, {"_isConstructor"}])
+.IDLCallback.isCallback: (self: WebIDL.IDLCallback) -> {True}
+.IDLCallback.isConstructor: (self: WebIDL.IDLCallback) -> typing.Any
+.IDLCallback.signatures: (self: WebIDL.IDLCallback) -> global::List!(global::Tuple([typing.Any, typing.Any]), 1)
+.IDLCallback.finish: (self: WebIDL.IDLCallback, scope: Obj) -> NoneType
+.IDLCallback.validate: (self: WebIDL.IDLCallback) -> NoneType
+.IDLCallback.addExtendedAttributes: (self: WebIDL.IDLCallback, attrs: global::Iterable(Structural({.identifier = (self: Obj) -> Never and (self: Obj) -> Str}))) -> NoneType
+.IDLCallback._getDependentObjects: (self: WebIDL.IDLCallback) -> global::Set!(Never, _: Nat)
+.IDLCallback.isRunScriptBoundary: (self: WebIDL.IDLCallback) -> typing.Any
+
+.IDLCallbackType: ClassType
+.IDLCallbackType <: .IDLType
+.IDLCallbackType.callback: typing.Any
+.IDLCallbackType.__call__: (location: Obj, callback: Obj) -> WebIDL.IDLCallbackType
+.IDLCallbackType.__slots__: global::Tuple([{"callback"}])
+.IDLCallbackType.isCallback: (self: WebIDL.IDLCallbackType) -> {True}
+.IDLCallbackType.tag: (self: WebIDL.IDLCallbackType) -> Never
+.IDLCallbackType.isDistinguishableFrom: |Type_120047 <: Bool, Type_120054 <: Bool, Type_120059: Type, O: Type, Type_120069 <: Bool, Type_92203 <: Structural({.isPrimitive = (self: Obj) -> R; .isDistinguishableFrom = (self: Obj, Type_92202) -> Type_120059; .isPromise = (self: Obj) -> Type_120047; .isDictionaryLike = (self: Obj) -> Type_120069; .isUnion = (self: Obj) -> Type_120054; .isUndefined = (self: Obj) -> Type_120081}), Type_120081 <: Structural({.__or__ = (self: Never, R) -> O}), R: Type, Type_92202 <: WebIDL.IDLCallbackType|(self: Type_92202, other: Type_92203) -> O
+.IDLCallbackType._getDependentObjects: (self: WebIDL.IDLCallbackType) -> Never
+
+.IDLMethodOverload: ClassType
+.IDLMethodOverload.arguments: typing.Any
+.IDLMethodOverload.location: typing.Any
+.IDLMethodOverload.returnType: typing.Any
+.IDLMethodOverload.__call__: (returnType: Obj, arguments: Obj, location: Obj) -> WebIDL.IDLMethodOverload
+.IDLMethodOverload.__slots__: global::Tuple([{"returnType"}, {"arguments"}, {"location"}])
+.IDLMethodOverload._getDependentObjects: (self: WebIDL.IDLMethodOverload) -> Never
+.IDLMethodOverload.includesRestrictedFloatArgument: (self: WebIDL.IDLMethodOverload) -> Bool
+
+.IDLMethod: ClassType
+.IDLMethod <: .IDLInterfaceMember
+.IDLMethod._static: typing.Any
+.IDLMethod._legacycaller: typing.Any
+.IDLMethod.underlyingAttr: typing.Any
+.IDLMethod.maplikeOrSetlikeOrIterable: typing.Any
+.IDLMethod._setter: typing.Any
+.IDLMethod._specialType: typing.Any
+.IDLMethod.dependsOn: typing.Any
+.IDLMethod._legacyUnforgeable: typing.Any
+.IDLMethod._stringifier: typing.Any
+.IDLMethod._hasOverloads: typing.Any
+.IDLMethod._deleter: typing.Any
+.IDLMethod.aliases: typing.Any
+.IDLMethod._overloads: typing.Any
+.IDLMethod.affects: typing.Any
+.IDLMethod._htmlConstructor: typing.Any
+.IDLMethod._getter: typing.Any
+.IDLMethod.__call__: |Type_92332 :> {False}, Type_92339 :> {False}, Type_92343: Type, Type_92345 :> {False}, Type_92351 :> WebIDL.IDLAttribute, Type_92330 :> {False}, Type_92347 :> {False, True}, Type_92328 :> {False}|(location: Obj, identifier: Obj, returnType: Obj, arguments: Obj, static: Type_92328 := Type_92328 and Type_92328, getter: Type_92330 := Type_92330 and Type_92330, setter: Type_92332 := Type_92332 and Type_92332, deleter: Type_92339 := Type_92339 and Type_92339, specialType: Type_92343 := Type_92343 and Type_92343, legacycaller: Type_92345 := Type_92345 and Type_92345, stringifier: Type_92347 := Type_92347 and Type_92347, maplikeOrSetlikeOrIterable: WebIDL.IDLMaplikeOrSetlikeOrIterableBase := WebIDL.IDLMaplikeOrSetlikeOrIterableBase, underlyingAttr: Type_92351 := Type_92351 and Type_92351) -> WebIDL.IDLMethod
+.IDLMethod.Special: Never
+.IDLMethod.NamedOrIndexed: Never
+.IDLMethod.__slots__: global::Tuple([{"_hasOverloads"}, {"_overloads"}, {"_static"}, {"_getter"}, {"_setter"}, {"_deleter"}, {"_legacycaller"}, {"_stringifier"}, {"maplikeOrSetlikeOrIterable"}, {"_htmlConstructor"}, {"underlyingAttr"}, {"_specialType"}, {"_legacyUnforgeable"}, {"dependsOn"}, {"affects"}, {"aliases"}])
+.IDLMethod.__str__: (self: WebIDL.IDLMethod) -> Str
+.IDLMethod.assertSignatureConstraints: (self: WebIDL.IDLMethod) -> NoneType
+.IDLMethod.isStatic: (self: WebIDL.IDLMethod) -> Bool
+.IDLMethod.forceStatic: (self: WebIDL.IDLMethod) -> NoneType
+.IDLMethod.isGetter: (self: WebIDL.IDLMethod) -> typing.Any
+.IDLMethod.isSetter: (self: WebIDL.IDLMethod) -> typing.Any
+.IDLMethod.isDeleter: (self: WebIDL.IDLMethod) -> typing.Any
+.IDLMethod.isNamed: (self: WebIDL.IDLMethod) -> Bool
+.IDLMethod.isIndexed: (self: WebIDL.IDLMethod) -> Bool
+.IDLMethod.isLegacycaller: (self: WebIDL.IDLMethod) -> typing.Any
+.IDLMethod.isStringifier: (self: WebIDL.IDLMethod) -> typing.Any
+.IDLMethod.isToJSON: (self: WebIDL.IDLMethod) -> {.self.identifier.name in {"toJSON"}}
+.IDLMethod.isDefaultToJSON: (self: WebIDL.IDLMethod) -> Bool
+.IDLMethod.isMaplikeOrSetlikeOrIterableMethod: (self: WebIDL.IDLMethod) -> {.self.maplikeOrSetlikeOrIterable in {Type_v_global_46072: Obj | Type_v_global_46072 != None}}
+.IDLMethod.isSpecial: (self: WebIDL.IDLMethod) -> Never
+.IDLMethod.isHTMLConstructor: (self: WebIDL.IDLMethod) -> typing.Any
+.IDLMethod.hasOverloads: (self: WebIDL.IDLMethod) -> typing.Any
+.IDLMethod.isIdentifierLess: (self: WebIDL.IDLMethod) -> Bool
+.IDLMethod.resolve: (self: WebIDL.IDLConstructor, parentScope: Obj) -> NoneType
+.IDLMethod.addOverload: |E: Type, V <: WebIDL.IDLMethodOverload, Type_120408 <: Structural({.__len__ = (self: Never) -> Nat}), E :> typing.Any, Type_92421 <: Structural({.isStatic = (self: Obj) -> E; ._extendedAttrDict = E and Type_120416; .isGetter = (self: Obj) -> R; ._overloads = Type_120408 and Self; .isLegacycaller = (self: Obj) -> E; .isHTMLConstructor = (self: Obj) -> R}), Type_120416 <: global::Dict(D), K :> {0}, D: global::GenericDict, R: Type, E <: Bool, Self <: global::Indexable(K, V)|(self: WebIDL.IDLMethod, method: Type_92421) -> WebIDL.IDLMethod
+.IDLMethod.signatures: (self: WebIDL.IDLMethod) -> global::List!(global::Tuple([Never, Never]), _: Nat)
+.IDLMethod.finish: (self: WebIDL.IDLMethod, scope: Obj) -> NoneType
+.IDLMethod.validate: (self: WebIDL.IDLMethod) -> NoneType
+.IDLMethod.overloadsForArgCount: (self: WebIDL.IDLMethod, argc: Float) -> global::List!(Structural({.arguments = Structural({.__len__ = (self: Never) -> Nat})}), _: Nat)
+.IDLMethod.signaturesForArgCount: (self: WebIDL.IDLMethod, argc: Float) -> global::List!(global::Tuple([Never, Never]), _: Nat)
+.IDLMethod.locationsForArgCount: (self: WebIDL.IDLMethod, argc: Float) -> global::List!(Never, _: Nat)
+.IDLMethod.distinguishingIndexForArgCount: (self: WebIDL.IDLMethod, argc: Int) -> {_: Int}
+.IDLMethod.handleExtendedAttribute: |B <: Bool, Type_92460 <: Structural({.hasValue = (self: Obj) -> B; .value = (self: Obj) -> T; .identifier = (self: Obj) -> {"GetterThrows"}; .noArguments = (self: Obj) -> B}), T: Type|(self: WebIDL.IDLMethod, attr: Type_92460) -> NoneType
+.IDLMethod.returnsPromise: (self: WebIDL.IDLMethod) -> Never
+.IDLMethod.isLegacyUnforgeable: (self: WebIDL.IDLMethod) -> typing.Any
+.IDLMethod._getDependentObjects: (self: WebIDL.IDLMethod) -> Never
+
+.IDLConstructor: ClassType
+.IDLConstructor <: .IDLMethod
+.IDLConstructor._inited: typing.Any
+.IDLConstructor._initArgs: typing.Any
+.IDLConstructor._initExtendedAttrs: typing.Any
+.IDLConstructor._initLocation: typing.Any
+.IDLConstructor._initName: typing.Any
+.IDLConstructor.__call__: (location: Obj, args: Obj, name: Obj) -> WebIDL.IDLConstructor
+.IDLConstructor.__slots__: global::Tuple([{"_initLocation"}, {"_initArgs"}, {"_initName"}, {"_inited"}, {"_initExtendedAttrs"}])
+.IDLConstructor.addExtendedAttributes: (self: WebIDL.IDLConstructor, attrs: global::Iterable(WebIDL.IDLExtendedAttribute)) -> Never
+.IDLConstructor.handleExtendedAttribute: |B <: Bool, Type_92513 <: Structural({.noArguments = (self: Obj) -> B; .identifier = (self: Obj) -> {"BinaryName"}})|(self: WebIDL.IDLConstructor, attr: Type_92513) -> NoneType
+.IDLConstructor.reallyInit: |Type_90893 :> {None}, Type_90893 <: Structural({.location = Type_90892}), Type_90892 :> typing.Any|(self: WebIDL.IDLConstructor, parentInterface: Type_90893) -> NoneType
+
+.IDLIncludesStatement: ClassType
+.IDLIncludesStatement <: .IDLObject
+.IDLIncludesStatement.interface: typing.Any
+.IDLIncludesStatement.mixin: typing.Any
+.IDLIncludesStatement._finished: typing.Any
+.IDLIncludesStatement.__call__: (location: Obj, interface: Obj, mixin: Obj) -> WebIDL.IDLIncludesStatement
+.IDLIncludesStatement.__slots__: global::Tuple([{"interface"}, {"mixin"}, {"_finished"}])
+.IDLIncludesStatement.finish: (self: WebIDL.IDLIncludesStatement, scope: Obj) -> NoneType
+.IDLIncludesStatement.validate: (self: WebIDL.IDLIncludesStatement) -> NoneType
+.IDLIncludesStatement.addExtendedAttributes: |Type_92547 <: Structural({.__len__ = (self: Never) -> Nat})|(self: WebIDL.IDLIncludesStatement, attrs: Type_92547) -> NoneType
+
+.IDLExtendedAttribute: ClassType
+.IDLExtendedAttribute <: .IDLObject
+.IDLExtendedAttribute._tuple: typing.Any
+.IDLExtendedAttribute.__call__: (location: Obj, GenericTuple: Obj) -> WebIDL.IDLExtendedAttribute
+.IDLExtendedAttribute.__slots__: global::Tuple([{"_tuple"}])
+.IDLExtendedAttribute.identifier: (self: WebIDL.IDLExtendedAttribute) -> Never
+.IDLExtendedAttribute.noArguments: (self: WebIDL.IDLExtendedAttribute) -> {.len(.self._tuple) in {1}}
+.IDLExtendedAttribute.hasValue: (self: WebIDL.IDLExtendedAttribute) -> {.len(.self._tuple) in {Type_v_global_46653: Nat | Type_v_global_46653 >= 2}} and {.self._tuple.__getitem__(1) in Str}
+.IDLExtendedAttribute.value: (self: WebIDL.IDLExtendedAttribute) -> Never
+.IDLExtendedAttribute.hasArgs: (self: WebIDL.IDLExtendedAttribute) -> Never
+.IDLExtendedAttribute.args: (self: WebIDL.IDLExtendedAttribute) -> Never
+.IDLExtendedAttribute.listValue: (self: WebIDL.IDLExtendedAttribute) -> Structural({.__len__ = (self: Never) -> Nat})
+
+.Tokenizer: ClassType
+.Tokenizer <: Obj
+.Tokenizer.__call__: (outputdir: Obj, lexer: Obj := Obj) -> WebIDL.Tokenizer
+.Tokenizer.tokens: global::List!({"COMMENTS", "FLOATLITERAL", "IDENTIFIER", "INTEGER", "STRING", "OTHER"}, 6)
+.Tokenizer.t_FLOATLITERAL: |Type_92652 <: Structural({.value = Type_122634 and Type_122635}), Type_122635: Type, Type_122634 :> Float|(self: WebIDL.Tokenizer, t: Type_92652) -> Type_92652
+.Tokenizer.t_INTEGER: |Type_122642 <: Never, Type_92657 <: Structural({.value = Type_122641 and Type_122642}), Type_92657 <: Structural({.value = Type_122641 and Type_122642}), Type_122642: Type, Type_122641 :> Int|(self: WebIDL.Tokenizer, t: Type_92657) -> Type_92657
+.Tokenizer.t_IDENTIFIER: |Type_122650 <: Ref(Obj), Type_122648: Type, Type_92660 <: Structural({.value = Type_122650; .type = Type_122648})|(self: WebIDL.Tokenizer, t: Type_92660) -> Type_92660
+.Tokenizer.t_STRING: |Self <: global::Indexable(K, V), Type_92664 <: Structural({.value = V and Self}), V: Type, K :> global::Slice|(self: WebIDL.Tokenizer, t: Type_92664) -> Type_92664
+.Tokenizer.t_ignore: {"	\n\r "}
+.Tokenizer.t_COMMENTS: (self: WebIDL.Tokenizer, t: Obj) -> NoneType
+.Tokenizer.t_ELLIPSIS: |Type_122686 :> {"ELLIPSIS"}, Type_92670 <: Structural({.type = Type_122686})|(self: WebIDL.Tokenizer, t: Type_92670) -> Type_92670
+.Tokenizer.t_OTHER: |Type_122691: Type, Type_92674 <: Structural({.value = Type_122693; .type = Type_122691}), Type_122693 <: Ref(Obj)|(self: WebIDL.Tokenizer, t: Type_92674) -> Type_92674
+.Tokenizer.keywords: global::Dict!({{"double"}: {"DOUBLE"}, {"::"}: {"SCOPE"}, {"mixin"}: {"MIXIN"}, {"iterable"}: {"ITERABLE"}, {"Promise"}: {"PROMISE"}, {"}"}: {"RBRACE"}, {"attribute"}: {"ATTRIBUTE"}, {"boolean"}: {"BOOLEAN"}, {"exception"}: {"EXCEPTION"}, {"UTF8String"}: {"UTF8STRING"}, {"*"}: {"ASTERISK"}, {"byte"}: {"BYTE"}, {"record"}: {"RECORD"}, {"readonly"}: {"READONLY"}, {">"}: {"GT"}, {"false"}: {"FALSE"}, {"USVString"}: {"USVSTRING"}, {"null"}: {"NULL"}, {"typedef"}: {"TYPEDEF"}, {"object"}: {"OBJECT"}, {"]"}: {"RBRACKET"}, {"?"}: {"QUESTIONMARK"}, {"octet"}: {"OCTET"}, {"static"}: {"STATIC"}, {","}: {"COMMA"}, {"setlike"}: {"SETLIKE"}, {":"}: {"COLON"}, {"undefined"}: {"UNDEFINED"}, {"includes"}: {"INCLUDES"}, {"partial"}: {"PARTIAL"}, {"symbol"}: {"SYMBOL"}, {"enum"}: {"ENUM"}, {"float"}: {"FLOAT"}, {"unsigned"}: {"UNSIGNED"}, {"JSString"}: {"JSSTRING"}, {"setter"}: {"SETTER"}, {"unrestricted"}: {"UNRESTRICTED"}, {"stringifier"}: {"STRINGIFIER"}, {"const"}: {"CONST"}, {"ArrayBuffer"}: {"ARRAYBUFFER"}, {"dictionary"}: {"DICTIONARY"}, {"sequence"}: {"SEQUENCE"}, {"callback"}: {"CALLBACK"}, {"namespace"}: {"NAMESPACE"}, {"constructor"}: {"CONSTRUCTOR"}, {"any"}: {"ANY"}, {"("}: {"LPAREN"}, {"long"}: {"LONG"}, {"true"}: {"TRUE"}, {"interface"}: {"INTERFACE"}, {"..."}: {"ELLIPSIS"}, {";"}: {"SEMICOLON"}, {"optional"}: {"OPTIONAL"}, {"ByteString"}: {"BYTESTRING"}, {"{"}: {"LBRACE"}, {")"}: {"RPAREN"}, {"ObservableArray"}: {"OBSERVABLEARRAY"}, {"="}: {"EQUALS"}, {"inherit"}: {"INHERIT"}, {"["}: {"LBRACKET"}, {"serializer"}: {"SERIALIZER"}, {"required"}: {"REQUIRED"}, {"<"}: {"LT"}, {"getter"}: {"GETTER"}, {"or"}: {"OR"}, {"async"}: {"ASYNC"}, {"DOMString"}: {"DOMSTRING"}, {"deleter"}: {"DELETER"}, {"maplike"}: {"MAPLIKE"}, {"short"}: {"SHORT"}, {"legacycaller"}: {"LEGACYCALLER"}})
+.Tokenizer.t_error: (self: WebIDL.Tokenizer, t: Obj) -> NoneType
+
+.SqueakyCleanLogger: ClassType
+.SqueakyCleanLogger <: Obj
+.SqueakyCleanLogger.errors: typing.Any
+.SqueakyCleanLogger.__call__: () -> WebIDL.SqueakyCleanLogger
+.SqueakyCleanLogger.errorWhitelist: global::List!({"Token \'COMMENTS\' defined, but not used", "Rule \'OtherOrComma\' defined, but not used", "There is 1 unused rule", "There is 1 unused token", "Symbol \'Other\' is unreachable", "Symbol \'OtherOrComma\' is unreachable"}, 6)
+.SqueakyCleanLogger.debug: (self: WebIDL.SqueakyCleanLogger, msg: Obj, *args: Obj, **kwargs := Obj) -> NoneType
+.SqueakyCleanLogger.info: (self: WebIDL.SqueakyCleanLogger, msg: Obj, *args: Obj, **kwargs := Obj) -> NoneType
+.SqueakyCleanLogger.warning: (self: WebIDL.SqueakyCleanLogger, msg: {"Type_s:Type_d: Rule Type_r defined, but not used"}, *args: Obj, **kwargs := Obj) -> NoneType
+.SqueakyCleanLogger.error: (self: WebIDL.SqueakyCleanLogger, msg: {"Type_s:Type_d: Rule Type_r defined, but not used"}, *args: Obj, **kwargs := Obj) -> NoneType
+.SqueakyCleanLogger.reportGrammarErrors: (self: WebIDL.SqueakyCleanLogger) -> NoneType
+
+.Parser: ClassType
+.Parser <: .Tokenizer
+.Parser._filename: typing.Any
+.Parser._globalScope: typing.Any
+.Parser._productions: typing.Any
+.Parser.__call__: (outputdir: Obj := Obj, lexer: Obj := Obj) -> WebIDL.Parser
+.Parser.getLocation: |Type_92766: Type, Type_92765 <: Structural({.lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_88839: Type, Type_88838: Type|(self: WebIDL.Parser, p: Type_92765, i: Type_92766) -> WebIDL.Location
+.Parser.globalScope: (self: WebIDL.Parser) -> typing.Any
+.Parser.p_Definitions: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Obj, 1)})) -> NoneType
+.Parser.p_DefinitionsEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_Definition: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_CallbackOrInterfaceOrMixinCallback: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_CallbackOrInterfaceOrMixinInterfaceOrMixin: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_CallbackRestOrInterface: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.handleNonPartialObject: |Type_123464: Type, Type_92791 <: Structural({.__add__ = (self: Never, R) -> O}), R :> global::List!({True}, 1), O: Type|(self: WebIDL.Parser, location: Obj, identifier: Obj, constructor: () -> Type_123464, constructorArgs: Type_92791, nonPartialArgs: Obj) -> Type_123464
+.Parser.p_InterfaceOrMixin: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_CallbackInterface: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_InterfaceRest: |Type_123608 :> {1, 4}, Type_123623 :> {4}, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_123608) -> Type_89109 and (self: Obj, Type_123623) -> Type_123624; .__setitem__ = (self: Obj, Type_123711, Type_123464) -> Type_123713; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_123624: Type, Type_123711 :> {0}, Type_123464: Type, Type_123713 <: NoneType, Type_92766 :> {1}, Type_88839: Type, Type_88838: Type, Type_89109: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_InterfaceForwardDecl: |Type_123787 :> {0}, Type_123788 :> WebIDL.IDLExternalInterface, Type_123789: Type, Type_123803 :> {0}, Type_92766 :> {1}, Type_88839: Type, Type_88838: Type, Type_89109: Type, Type_123838: Type, Type_123804: Type, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_123756) -> Type_89109 and (self: Obj, Type_123803) -> Type_123804; .__setitem__ = (self: Obj, Type_123787, Type_123788) -> Type_123789 and (self: Obj, Type_123836, Type_123837) -> Type_123838; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_123756 :> {1, 0}, Type_123837 :> WebIDL.IDLExternalInterface, Type_123836 :> {0}|(self: WebIDL.Parser, p: Type_92765) -> Type_123838
+.Parser.p_MixinRest: |Type_88838: Type, Type_92766 :> {1}, Type_123913: Type, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_123897) -> Type_89109 and (self: Obj, Type_123912) -> Type_123913; .__setitem__ = (self: Obj, Type_123989, Type_123464) -> Type_123991; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_123464: Type, Type_123897 :> {2, 4}, Type_123991 <: NoneType, Type_88839: Type, Type_123912 :> {4}, Type_123989 :> {0}, Type_89109: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_Namespace: |Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_124044) -> Type_89109 and (self: Obj, Type_124059) -> Type_124060; .__setitem__ = (self: Obj, Type_124136, Type_123464) -> Type_124138; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_124059 :> {4}, Type_124138 <: NoneType, Type_124044 :> {4, 2}, Type_123464: Type, Type_124136 :> {0}, Type_124060: Type, Type_92766 :> {1}, Type_88839: Type, Type_88838: Type, Type_89109: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_Partial: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_PartialDefinitionInterface: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_PartialDefinition: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.handlePartialObject: |R :> global::List!({None}, 1), Type_92833 <: Structural({.__add__ = (self: Never, R) -> O and (self: Never, R) -> O}), O: Type|(self: WebIDL.Parser, location: Obj, identifier: Obj, nonPartialConstructor: () -> {None}, nonPartialConstructorArgs: Obj, partialConstructorArgs: Type_92833) -> {None}
+.Parser.p_PartialInterfaceOrPartialMixin: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_PartialInterfaceRest: |Type_124603 :> {0}, Type_89109: Type, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_124509) -> Type_89109 and (self: Obj, Type_124524) -> Type_124525; .__setitem__ = (self: Obj, Type_124603, Type_92834) -> Type_124605; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_124525: Type, Type_124509 :> {3, 1}, Type_92766 :> {1}, Type_124524 :> {3}, Type_88839: Type, Type_88838: Type, Type_92834 :> {None}, Type_124605 <: NoneType|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_PartialMixinRest: |Type_88838: Type, Type_124752 :> {0}, Type_124658 :> {4, 2}, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_124658) -> Type_89109 and (self: Obj, Type_124673) -> Type_124674; .__setitem__ = (self: Obj, Type_124752, Type_92834) -> Type_124754; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_124673 :> {4}, Type_124674: Type, Type_92766 :> {1}, Type_88839: Type, Type_124754 <: NoneType, Type_92834 :> {None}, Type_89109: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_PartialNamespace: |Type_88838: Type, Type_124807 :> {4, 2}, Type_89109: Type, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_124807) -> Type_89109 and (self: Obj, Type_124822) -> Type_124823; .__setitem__ = (self: Obj, Type_124901, Type_92834) -> Type_124903; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_124822 :> {4}, Type_124901 :> {0}, Type_92766 :> {1}, Type_88839: Type, Type_124823: Type, Type_92834 :> {None}, Type_124903 <: NoneType|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_PartialDictionary: |Type_89109: Type, Type_88838: Type, Type_124956 :> {4, 2}, Type_125050 :> {0}, Type_124972: Type, Type_92766 :> {1}, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_124956) -> Type_89109 and (self: Obj, Type_124971) -> Type_124972; .__setitem__ = (self: Obj, Type_125050, Type_92834) -> Type_125052; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_124971 :> {4}, Type_88839: Type, Type_92834 :> {None}, Type_125052 <: NoneType|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_Inheritance: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLIdentifierPlaceholder})) -> NoneType
+.Parser.p_InheritanceEmpty: (self: WebIDL.Parser, p: Obj) -> NoneType
+.Parser.p_InterfaceMembers: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Obj, 1)})) -> NoneType
+.Parser.p_InterfaceMembersEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_InterfaceMember: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_Constructor: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLConstructor})) -> NoneType
+.Parser.p_PartialInterfaceMembers: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Obj, 1)})) -> NoneType
+.Parser.p_PartialInterfaceMembersEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_PartialInterfaceMember: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_MixinMembersEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_MixinMembers: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Obj, 1)})) -> NoneType
+.Parser.p_MixinMember: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_Dictionary: |Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_126067) -> Type_89109 and (self: Obj, Type_126082) -> Type_89800; .__setitem__ = (self: Obj, Type_126113, Type_126114) -> Type_126115; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_126067 :> {5, 2}, Type_126115 <: NoneType, Type_126082 :> {5}, Type_89800: Type, Type_126113 :> {0}, Type_126114 :> WebIDL.IDLDictionary, Type_92766 :> {1}, Type_88838: Type, Type_88839: Type, Type_89109: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_DictionaryMembers: |Type_126156 <: WebIDL.IDLObject, Type_126155 :> {1, 2}, Type_126203 :> global::List!(Type_126185, 1), Type_88946 <: global::Iterable(T) or Type_88946, Type_126185: Type, T <: Structural({.identifier = (self: Obj) -> {"LegacyFactoryFunction"}}), Type_126204: Type, Type_126202 :> {0}, Type_126147 :> global::List(Type_126144, 0), Type_88946: Type, Type_126146 :> {0}, Type_126170 :> {1}, Type_126148: Type, Type_92892 <: Structural({.__len__ = (self: Never) -> Nat; .__setitem__ = (self: Obj, Type_126146, Type_126147) -> Type_126148 and (self: Obj, Type_126202, Type_126203) -> Type_126204; .__getitem__ = (self: Obj, Type_126155) -> Type_126156 and (self: Obj, Type_126170) -> Type_88946}), Type_126144: Type|(self: WebIDL.Parser, p: Type_92892) -> NoneType
+.Parser.p_DictionaryMemberRequired: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_DictionaryMember: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_Default: |U <: NoneType, Type_126556 :> {2}, Type_92900 <: Structural({.__len__ = (self: Never) -> Nat; .__setitem__ = (self: Obj, Type_126561, Type_126557) -> U and (self: Obj, Type_126570, Type_126571) -> U; .__getitem__ = (self: Obj, Type_126556) -> Type_126557}), Type_126571 :> {None}, Type_126561 :> {0}, Type_126557 :> {None}, Type_126570 :> {0}|(self: WebIDL.Parser, p: Type_92900) -> NoneType
+.Parser.p_DefaultValue: |E :> {"["}, Type_126637 :> {0}, Type_126601 :> {0}, Type_126638 :> WebIDL.IDLEmptySequenceValue, Type_92902 <: Structural({.__len__ = (self: Never) -> Nat; .__setitem__ = (self: Obj, Type_126601, Type_126597) -> T and (self: Obj, Type_126637, Type_126638) -> T; .__getitem__ = (self: Obj, Type_126596) -> Type_126597 and (self: Obj, Type_126613) -> E}), T <: NoneType, Type_126596 :> {1}, Type_126597 :> WebIDL.IDLEmptySequenceValue, Type_126613 :> {1}|(self: WebIDL.Parser, p: Type_92902) -> NoneType
+.Parser.p_DefaultValueNull: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLNullValue})) -> NoneType
+.Parser.p_DefaultValueUndefined: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLUndefinedValue})) -> NoneType
+.Parser.p_Exception: (self: WebIDL.Parser, p: Obj) -> NoneType
+.Parser.p_Enum: |Type_88838: Type, Type_89861 <: Bool, Type_126859 :> {0}, Type_126860 :> WebIDL.IDLEnum, Type_126840 :> {4}, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_126825) -> Type_89109 and (self: Obj, Type_126840) -> Type_89861; .__setitem__ = (self: Obj, Type_126859, Type_126860) -> Type_126861; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_92766 :> {1}, Type_88839: Type, Type_126825 :> {2, 4}, Type_126861 <: NoneType, Type_89109: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_EnumValueList: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Obj, 1)})) -> NoneType
+.Parser.p_EnumValueListComma: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_EnumValueListCommaEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_EnumValueListString: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Obj, 1)})) -> NoneType
+.Parser.p_EnumValueListStringEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_CallbackRest: |Type_88838: Type, Type_127284 <: NoneType, Type_127283 :> WebIDL.IDLCallback, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_127223) -> Type_89109 and (self: Obj, Type_127254) -> Type_92133; .__setitem__ = (self: Obj, Type_127282, Type_127283) -> Type_127284; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_92133: Type, Type_92766 :> {1}, Type_127282 :> {0}, Type_88839: Type, Type_127223 :> {1, 3}, Type_127254 :> {3}, Type_89109: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_CallbackConstructorRest: |Type_127383 :> WebIDL.IDLCallback, Type_127382 :> {0}, Type_92766 :> {2}, Type_127354 :> {4}, Type_92133: Type, Type_127323 :> {4, 2}, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_127323) -> Type_89109 and (self: Obj, Type_127354) -> Type_92133; .__setitem__ = (self: Obj, Type_127382, Type_127383) -> Type_127384; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_127384 <: NoneType, Type_88838: Type, Type_88839: Type, Type_89109: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_ExceptionMembers: (self: WebIDL.Parser, p: Obj) -> NoneType
+.Parser.p_Typedef: |Type_127455 :> WebIDL.IDLTypedef, Type_90839: Type, Type_127439 :> {3}, Type_90840: Type, Type_127454 :> {0}, Type_92766 :> {1}, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_127430) -> Type_90839 and (self: Obj, Type_127439) -> Type_90840; .__setitem__ = (self: Obj, Type_127454, Type_127455) -> Type_127456; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_127456 <: NoneType, Type_88839: Type, Type_88838: Type, Type_127430 :> {3, 2}|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_IncludesStatement: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLIncludesStatement})) -> NoneType
+.Parser.p_Const: |Type_127677 :> WebIDL.IDLConst, Type_89109: Type, Type_127678 <: NoneType, Type_127624 <: {<failure>}, Type_127644 :> {3}, Type_127623 :> {3, 2}, Type_92766 :> {1}, Type_88839: Type, Type_88838: Type, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_127623) -> Type_127624 and (self: Obj, Type_127644) -> Type_89109; .__setitem__ = (self: Obj, Type_127676, Type_127677) -> Type_127678; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_127676 :> {0}|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_ConstValueBoolean: |Type_91284: Type, Type_127735 :> WebIDL.IDLValue, Type_127722 :> {1}, Type_127736 <: NoneType, Type_92766 :> {1}, Type_88839: Type, Type_88838: Type, Type_127734 :> {0}, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_127722) -> Type_91284; .__setitem__ = (self: Obj, Type_127734, Type_127735) -> Type_127736; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839})|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_ConstValueInteger: |Type_91284: Type, Type_127774 :> {1}, Type_127806 :> WebIDL.IDLValue, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_127774) -> Type_91241 and (self: Obj, Type_127789) -> Type_91284; .__setitem__ = (self: Obj, Type_127805, Type_127806) -> Type_127807; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), R :> {127, 255, 32767, 9223372036854775807, 65535, 2147483647, 4294967295, 18446744073709551615}, Type_91241 <: Structural({.__le__ = (self: Never, R) -> Bool; .__ge__ = (self: Never, R) -> Bool}), Type_127789 :> {1}, Type_92766 :> {1}, Type_127807 <: NoneType, Type_88838: Type, Type_127805 :> {0}, Type_88839: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_ConstValueFloat: |Type_91284: Type, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_127853) -> Type_91284; .__setitem__ = (self: Obj, Type_127865, Type_127866) -> Type_127867; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_127865 :> {0}, Type_127853 :> {1}, Type_92766 :> {1}, Type_88839: Type, Type_88838: Type, Type_127866 :> WebIDL.IDLValue, Type_127867 <: NoneType|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_ConstValueString: |Type_91284: Type, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_127907) -> Type_91284; .__setitem__ = (self: Obj, Type_127919, Type_127920) -> Type_127921; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_127907 :> {1}, Type_127921 <: NoneType, Type_92766 :> {1}, Type_127920 :> WebIDL.IDLValue, Type_88838: Type, Type_127919 :> {0}, Type_88839: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_BooleanLiteralTrue: (self: WebIDL.Parser, p: global::Dict!({{0}: {True}})) -> NoneType
+.Parser.p_BooleanLiteralFalse: (self: WebIDL.Parser, p: global::Dict!({{0}: {False}})) -> NoneType
+.Parser.p_AttributeOrOperationOrMaplikeOrSetlikeOrIterable: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_Iterable: |Type_128138 :> WebIDL.IDLIterable, Type_128093 :> {3, 5}, Type_128103: Type, Type_128102 :> {5}, Type_128094: Type, Type_128137 :> {0}, Type_92765 <: Structural({.lexpos = (self: Obj, Type_92766) -> Type_88839; .__len__ = (self: Never) -> Nat; .__setitem__ = (self: Obj, Type_128137, Type_128138) -> Type_128139; .lineno = (self: Obj, Type_92766) -> Type_88838; .__getitem__ = (self: Obj, Type_128093) -> Type_128094 and (self: Obj, Type_128102) -> Type_128103}), Type_128139 <: NoneType, Type_88839: Type, Type_88838: Type, Type_92766 :> {2}|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_AsyncIterable: |Type_128312 :> {0}, Type_128314 <: NoneType, Type_128203 :> {6}, Type_92765 <: Structural({.lexpos = (self: Obj, Type_92766) -> Type_88839; .__len__ = (self: Never) -> Nat; .__setitem__ = (self: Obj, Type_128312, Type_128313) -> Type_128314; .lineno = (self: Obj, Type_92766) -> Type_88838; .__getitem__ = (self: Obj, Type_128194) -> Type_91812 and (self: Obj, Type_128203) -> Type_91813}), Type_128313 :> WebIDL.IDLAsyncIterable, Type_91812 :> {None}, Type_128194 :> {6, 4}, Type_88839: Type, Type_88838: Type, Type_91813: Type, Type_92766 :> {2}|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_Setlike: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLMaplikeOrSetlike})) -> NoneType
+.Parser.p_Maplike: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLMaplikeOrSetlike})) -> NoneType
+.Parser.p_AttributeWithQualifier: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_AttributeInherited: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_Attribute: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_AttributeRest: |Type_129004 :> global::Tuple([Type_92767, WebIDL.IDLUnresolvedIdentifier, Type_128964, Type_128955]), Type_129005 <: NoneType, Type_128964: Type, Type_92766 :> {2}, Type_129003 :> {0}, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_128954) -> Type_128955 and (self: Obj, Type_128963) -> Type_128964; .__setitem__ = (self: Obj, Type_129003, Type_129004) -> Type_129005; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_92767 :> WebIDL.Location, Type_128954 :> {1, 3}, Type_88839: Type, Type_88838: Type, Type_128963 :> {3}, Type_128955: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_ReadOnly: (self: WebIDL.Parser, p: global::Dict!({{0}: {True}})) -> NoneType
+.Parser.p_ReadOnlyEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: {False}})) -> NoneType
+.Parser.p_Operation: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_Stringifier: |Type_129508 :> {0}, Type_129510 <: NoneType, Type_92766 :> {1}, Type_92765 <: Structural({.__setitem__ = (self: Obj, Type_129508, Type_129509) -> Type_129510; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_88838: Type, Type_88839: Type, Type_129509: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_QualifierStatic: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Obj, 1)})) -> NoneType
+.Parser.p_QualifierStringifier: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Obj, 1)})) -> NoneType
+.Parser.p_Qualifiers: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_Specials: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Obj, 1)})) -> NoneType
+.Parser.p_SpecialsEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_SpecialGetter: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_SpecialSetter: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_SpecialDeleter: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_SpecialLegacyCaller: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_OperationRest: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_OptionalIdentifier: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLUnresolvedIdentifier})) -> NoneType
+.Parser.p_OptionalIdentifierEmpty: (self: WebIDL.Parser, p: Obj) -> NoneType
+.Parser.p_ArgumentList: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0) or global::List!(Obj, 1)})) -> NoneType
+.Parser.p_ArgumentListEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_Arguments: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0) or global::List!(Obj, 1)})) -> NoneType
+.Parser.p_ArgumentsEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_Argument: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_ArgumentRestOptional: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ArgumentRest: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ArgumentName: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_ArgumentNameKeyword: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_AttributeName: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_AttributeNameKeyword: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_Ellipsis: (self: WebIDL.Parser, p: global::Dict!({{0}: {True}})) -> NoneType
+.Parser.p_EllipsisEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: {False}})) -> NoneType
+.Parser.p_ExceptionMember: (self: WebIDL.Parser, p: Obj) -> NoneType
+.Parser.p_ExceptionField: (self: WebIDL.Parser, p: Obj) -> NoneType
+.Parser.p_ExtendedAttributeList: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Obj, 1)})) -> NoneType
+.Parser.p_ExtendedAttributeListEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_ExtendedAttribute: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ExtendedAttributeEmpty: (self: WebIDL.Parser, p: Obj) -> NoneType
+.Parser.p_ExtendedAttributes: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0) or global::List!(Obj, 1)})) -> NoneType
+.Parser.p_ExtendedAttributesEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_Other: (self: WebIDL.Parser, p: Obj) -> NoneType
+.Parser.p_OtherOrComma: (self: WebIDL.Parser, p: Obj) -> NoneType
+.Parser.p_TypeSingleType: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_TypeUnionType: (self: WebIDL.Parser, p: global::Dict!({{0}: {Type}})) -> NoneType
+.Parser.p_TypeWithExtendedAttributes: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_SingleTypeDistinguishableType: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_SingleTypeAnyType: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLBuiltinType})) -> NoneType
+.Parser.p_SingleTypePromiseType: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLPromiseType})) -> NoneType
+.Parser.p_UnionType: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLUnionType})) -> NoneType
+.Parser.p_UnionMemberTypeDistinguishableType: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_UnionMemberType: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_UnionMemberTypes: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Obj, 1)})) -> NoneType
+.Parser.p_UnionMemberTypesEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_DistinguishableType: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_DistinguishableTypeStringType: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_DistinguishableTypeSequenceType: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_DistinguishableTypeRecordType: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_DistinguishableTypeObservableArrayType: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_DistinguishableTypeScopedName: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ConstType: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLBuiltinType})) -> NoneType
+.Parser.p_ConstTypeIdentifier: |Type_133236 :> {1}, Type_133269 :> WebIDL.IDLUnresolvedType, Type_92765 <: Structural({.__getitem__ = (self: Obj, Type_133236) -> Type_89109; .__setitem__ = (self: Obj, Type_133268, Type_133269) -> Type_133270; .lineno = (self: Obj, Type_92766) -> Type_88838; .lexpos = (self: Obj, Type_92766) -> Type_88839}), Type_133270 <: NoneType, Type_92766 :> {1}, Type_133268 :> {0}, Type_88839: Type, Type_88838: Type, Type_89109: Type|(self: WebIDL.Parser, p: Type_92765) -> NoneType
+.Parser.p_PrimitiveTypeUint: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_PrimitiveTypeBoolean: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_PrimitiveTypeByte: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_PrimitiveTypeOctet: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_PrimitiveTypeFloat: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_PrimitiveTypeUnrestictedFloat: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_PrimitiveTypeDouble: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_PrimitiveTypeUnrestictedDouble: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_StringType: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLBuiltinType})) -> NoneType
+.Parser.p_BuiltinStringTypeDOMString: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_BuiltinStringTypeBytestring: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_BuiltinStringTypeUSVString: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_BuiltinStringTypeUTF8String: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_BuiltinStringTypeJSString: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_UnsignedIntegerTypeUnsigned: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_UnsignedIntegerType: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_IntegerTypeShort: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_IntegerTypeLong: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_OptionalLong: (self: WebIDL.Parser, p: global::Dict!({{0}: {True}})) -> NoneType
+.Parser.p_OptionalLongEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: {False}})) -> NoneType
+.Parser.p_Null: |Type_92767 :> WebIDL.Location, Type_134090 :> {None}, Type_93375 <: Structural({.__len__ = (self: Never) -> Nat; .__setitem__ = (self: Obj, Type_134082, Type_92767) -> U and (self: Obj, Type_134089, Type_134090) -> U}), Type_134082 :> {0}, Type_134089 :> {0}, U <: NoneType|(self: WebIDL.Parser, p: Type_93375) -> NoneType
+.Parser.p_ScopedName: (self: WebIDL.Parser, p: global::Dict!({{0}: Obj})) -> NoneType
+.Parser.p_AbsoluteScopedName: (self: WebIDL.Parser, p: Obj) -> NoneType
+.Parser.p_RelativeScopedName: (self: WebIDL.Parser, p: global::Dict!({{0}: WebIDL.IDLUnresolvedIdentifier})) -> NoneType
+.Parser.p_ScopedNameParts: (self: WebIDL.Parser, p: Obj) -> NoneType
+.Parser.p_ScopedNamePartsEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: {None}})) -> NoneType
+.Parser.p_ExtendedAttributeNoArgs: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ExtendedAttributeArgList: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ExtendedAttributeIdent: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ExtendedAttributeWildcard: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ExtendedAttributeNamedArgList: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ExtendedAttributeIdentList: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_IdentifierList: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!({"_"}, _: Nat)})) -> NoneType
+.Parser.p_IdentifiersList: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!({"_"}, _: Nat)})) -> NoneType
+.Parser.p_IdentifiersEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_error: (self: WebIDL.Parser, p: Bool) -> NoneType
+.Parser._installBuiltins: (self: WebIDL.Parser, scope: Obj) -> NoneType
+.Parser.handleNullable: (Type: Obj, questionMarkLocation: Obj) -> {Type}
+.Parser.parse: (self: WebIDL.Parser, t: Obj, filename: typing.Any := typing.Any) -> NoneType
+.Parser.finish: (self: WebIDL.Parser) -> global::List!(Never, _: Nat)
+.Parser.reset: (self: WebIDL.Parser) -> WebIDL.Parser
+.Parser._builtins: {"\n        typedef (ArrayBufferView or ArrayBuffer) BufferSource;\n    "}
+
+.main: () -> NoneType
+
+
+
+
+}})) -> NoneType
+.Parser.p_ExtendedAttributeNoArgs: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ExtendedAttributeArgList: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ExtendedAttributeIdent: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ExtendedAttributeWildcard: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ExtendedAttributeNamedArgList: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_ExtendedAttributeIdentList: (self: WebIDL.Parser, p: global::Dict!({{0}: Never})) -> NoneType
+.Parser.p_IdentifierList: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!({"_"}, _: Nat)})) -> NoneType
+.Parser.p_IdentifiersList: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!({"_"}, _: Nat)})) -> NoneType
+.Parser.p_IdentifiersEmpty: (self: WebIDL.Parser, p: global::Dict!({{0}: global::List!(Never, 0)})) -> NoneType
+.Parser.p_error: (self: WebIDL.Parser, p: Bool) -> NoneType
+.Parser._installBuiltins: (self: WebIDL.Parser, scope: Obj) -> NoneType
+.Parser.handleNullable: (Type: Obj, questionMarkLocation: Obj) -> {Type}
+.Parser.parse: (self: WebIDL.Parser, t: Obj, filename: typing.Any := typing.Any) -> NoneType
+.Parser.finish: (self: WebIDL.Parser) -> global::List!(Never, _: Nat)
+.Parser.reset: (self: WebIDL.Parser) -> WebIDL.Parser
+.Parser._builtins: {"\n        typedef (ArrayBufferView or ArrayBuffer) BufferSource;\n    "}
+
+.main: () -> NoneType
+
+
+
+
