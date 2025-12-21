@@ -18,14 +18,14 @@ use keyboard_types::ShortcutMatcher;
 use log::{debug, info};
 use raw_window_handle::{HasDisplayHandle, HasWindowHandle, RawWindowHandle};
 use servo::{
-    AuthenticationRequest, Cursor, DeviceIndependentIntRect, DeviceIndependentPixel,
-    DeviceIntPoint, DeviceIntRect, DeviceIntSize, DevicePixel, DevicePoint, EmbedderControl,
-    EmbedderControlId, GenericSender, ImeEvent, InputEvent, InputEventId, InputEventResult,
-    InputMethodControl, Key, KeyState, KeyboardEvent, Modifiers, MouseButton as ServoMouseButton,
-    MouseButtonAction, MouseButtonEvent, MouseLeftViewportEvent, MouseMoveEvent, NamedKey,
-    OffscreenRenderingContext, PermissionRequest, RenderingContext, ScreenGeometry, Theme,
-    TouchEvent, TouchEventType, TouchId, WebRenderDebugOption, WebView, WebViewId, WheelDelta,
-    WheelEvent, WheelMode, WindowRenderingContext, convert_rect_to_css_pixel,
+    AuthenticationRequest, Cursor, DeviceIndependentPixel, DeviceIntPoint, DeviceIntRect,
+    DeviceIntSize, DevicePixel, DevicePoint, EmbedderControl, EmbedderControlId, GenericSender,
+    ImeEvent, InputEvent, InputEventId, InputEventResult, InputMethodControl, Key, KeyState,
+    KeyboardEvent, Modifiers, MouseButton as ServoMouseButton, MouseButtonAction, MouseButtonEvent,
+    MouseLeftViewportEvent, MouseMoveEvent, NamedKey, OffscreenRenderingContext, PermissionRequest,
+    RenderingContext, ScreenGeometry, Theme, TouchEvent, TouchEventType, TouchId,
+    WebRenderDebugOption, WebView, WebViewId, WheelDelta, WheelEvent, WheelMode,
+    WindowRenderingContext,
 };
 use url::Url;
 use winit::dpi::{LogicalPosition, LogicalSize, PhysicalPosition, PhysicalSize};
@@ -843,23 +843,6 @@ impl PlatformWindow for Window {
             })
     }
 
-    fn window_rect(&self) -> DeviceIndependentIntRect {
-        let outer_size = self.winit_window.outer_size();
-        let scale = self.hidpi_scale_factor();
-
-        let outer_size = winit_size_to_euclid_size(outer_size).to_i32();
-
-        let origin = self
-            .winit_window
-            .outer_position()
-            .map(winit_position_to_euclid_point)
-            .unwrap_or_default();
-        convert_rect_to_css_pixel(
-            DeviceIntRect::from_origin_and_size(origin, outer_size),
-            scale,
-        )
-    }
-
     fn set_position(&self, point: DeviceIntPoint) {
         self.winit_window
             .set_outer_position::<PhysicalPosition<i32>>(PhysicalPosition::new(point.x, point.y))
@@ -964,10 +947,6 @@ impl PlatformWindow for Window {
             Some(winit::window::Theme::Dark) => servo::Theme::Dark,
             Some(winit::window::Theme::Light) | None => servo::Theme::Light,
         }
-    }
-
-    fn maximize(&self, _webview: &WebView) {
-        self.winit_window.set_maximized(true);
     }
 
     /// Handle servoshell key bindings that may have been prevented by the page in the active webview.

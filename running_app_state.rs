@@ -4,28 +4,22 @@
 
 //! Shared state and methods for desktop and EGL implementations.
 
-use std::cell::{Cell, Ref, RefCell};
+use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
-use std::collections::hash_map::Entry;
 use std::rc::Rc;
 
-use crossbeam_channel::{Receiver, Sender, unbounded};
-use euclid::Rect;
-use image::{DynamicImage, ImageFormat, RgbaImage};
-use log::{error, info, warn};
+use image::{DynamicImage, ImageFormat};
+use log::{error, info};
 use servo::{
-    AllowOrDenyRequest, AuthenticationRequest, CSSPixel, DeviceIntPoint, DeviceIntSize,
-    EmbedderControl, EmbedderControlId, EventLoopWaker, GamepadHapticEffectType, GenericSender,
-    InputEvent, InputEventId, InputEventResult, IpcSender, JSValue, LoadStatus, MediaSessionEvent,
-    PermissionRequest, ScreenshotCaptureError, Servo, ServoDelegate, ServoError, TraversalId,
-    WebDriverCommandMsg, WebDriverJSResult, WebDriverLoadStatus, WebDriverScriptCommand,
-    WebDriverSenders, WebView, WebViewBuilder, WebViewDelegate, WebViewId, pref,
+    AllowOrDenyRequest, AuthenticationRequest, DeviceIntPoint, DeviceIntSize, EmbedderControl,
+    EmbedderControlId, EventLoopWaker, GamepadHapticEffectType, GenericSender, InputEventId,
+    InputEventResult, IpcSender, LoadStatus, MediaSessionEvent, PermissionRequest, Servo,
+    ServoDelegate, ServoError, WebView, WebViewDelegate, WebViewId, pref,
 };
 use url::Url;
 
 use crate::GamepadSupport;
 use crate::prefs::ServoShellPreferences;
-use crate::webdriver::WebDriverEmbedderControls;
 use crate::window::{PlatformWindow, ServoShellWindow, ServoShellWindowId};
 
 #[derive(Default)]
@@ -145,23 +139,6 @@ pub(crate) struct RunningAppState {
     /// Gamepad support, which may be `None` if it failed to initialize.
     gamepad_support: RefCell<Option<GamepadSupport>>,
 
-    /// The [`WebDriverSenders`] used to reply to pending WebDriver requests.
-    pub(crate) webdriver_senders: RefCell<WebDriverSenders>,
-
-    /// When running in WebDriver mode, [`WebDriverEmbedderControls`] is a virtual container
-    /// for all embedder controls. This overrides the normal behavior where these controls
-    /// are shown in the GUI or not processed at all in headless mode.
-    pub(crate) webdriver_embedder_controls: WebDriverEmbedderControls,
-
-    /// A [`HashMap`] of pending WebDriver events. It is the WebDriver embedder's responsibility
-    /// to inform the WebDriver server when the event has been fully handled. This map is used
-    /// to report back to WebDriver when that happens.
-    pub(crate) pending_webdriver_events: RefCell<HashMap<InputEventId, Sender<()>>>,
-
-    /// A [`Receiver`] for receiving commands from a running WebDriver server, if WebDriver
-    /// was enabled.
-    pub(crate) webdriver_receiver: Option<Receiver<WebDriverCommandMsg>>,
-
     /// servoshell specific preferences created during startup of the application.
     pub(crate) servoshell_preferences: ServoShellPreferences,
 
@@ -187,7 +164,7 @@ impl RunningAppState {
     pub(crate) fn new(
         servo: Servo,
         servoshell_preferences: ServoShellPreferences,
-        event_loop_waker: Box<dyn EventLoopWaker>,
+        _event_loop_waker: Box<dyn EventLoopWaker>,
     ) -> Self {
         servo.set_delegate(Rc::new(ServoShellServoDelegate));
 
@@ -197,19 +174,9 @@ impl RunningAppState {
             None
         };
 
-        let webdriver_receiver = servoshell_preferences.webdriver_port.get().map(|port| {
-            let (embedder_sender, embedder_receiver) = unbounded();
-            webdriver_server::start_server(port, embedder_sender, event_loop_waker);
-            embedder_receiver
-        });
-
         Self {
             windows: Default::default(),
             gamepad_support: RefCell::new(gamepad_support),
-            webdriver_senders: RefCell::default(),
-            webdriver_embedder_controls: Default::default(),
-            pending_webdriver_events: Default::default(),
-            webdriver_receiver,
             servoshell_preferences,
             servo,
             achieved_stable_image: Default::default(),
@@ -227,23 +194,6 @@ impl RunningAppState {
         self.windows.borrow_mut().insert(window.id(), window);
     }
 
-    pub(crate) fn windows<'a>(
-        &'a self,
-    ) -> Ref<'a, HashMap<ServoShellWindowId, Rc<ServoShellWindow>>> {
-        self.windows.borrow()
-    }
-
-    /// Get any [`ServoShellWindow`] from this state's collection of windows. This is used for
-    /// WebDriver, which currently doesn't have great support for per-window operation.
-    pub(crate) fn any_window(&self) -> Rc<ServoShellWindow> {
-        self.windows
-            .borrow()
-            .values()
-            .next()
-            .expect("Should always have at least one window open when running WebDriver")
-            .clone()
-    }
-
     pub(crate) fn focused_window(&self) -> Option<Rc<ServoShellWindow>> {
         self.windows
             .borrow()
@@ -257,26 +207,11 @@ impl RunningAppState {
         self.windows.borrow().get(&id).cloned()
     }
 
-    pub(crate) fn webview_by_id(&self, webview_id: WebViewId) -> Option<WebView> {
-        self.maybe_window_for_webview_id(webview_id)?
-            .webview_by_id(webview_id)
-    }
-
-    pub(crate) fn webdriver_receiver(&self) -> Option<&Receiver<WebDriverCommandMsg>> {
-        self.webdriver_receiver.as_ref()
-    }
-
     pub(crate) fn servo(&self) -> &Servo {
         &self.servo
     }
 
     pub(crate) fn schedule_exit(&self) {
-        // When explicitly required to shutdown, unset webdriver port
-        // which allows normal shutdown.
-        // Note that when not explicitly required to shutdown, we still keep Servo alive
-        // when all tabs are closed when `webdriver_port` enabled, which is necessary
-        // to run wpt test using servodriver.
-        self.servoshell_preferences.webdriver_port.set(None);
         self.exit_scheduled.set(true);
     }
 
@@ -287,8 +222,6 @@ impl RunningAppState {
     ///
     /// Returns true if the event loop should continue spinning and false if it should exit.
     pub(crate) fn spin_event_loop(self: &Rc<Self>) -> bool {
-        self.handle_webdriver_messages();
-
         if pref!(dom_gamepad_enabled) {
             self.handle_gamepad_events();
         }
@@ -304,15 +237,12 @@ impl RunningAppState {
         }
 
         // When a ServoShellWindow has no more WebViews, close it. When no more windows are open, exit
-        // the application. Do not do this when running WebDriver, which expects to keep running with
-        // no WebView open.
-        if self.servoshell_preferences.webdriver_port.get().is_none() {
-            self.windows
-                .borrow_mut()
-                .retain(|_, window| !self.exit_scheduled.get() && !window.should_close());
-            if self.windows.borrow().is_empty() {
-                self.schedule_exit()
-            }
+        // the application.
+        self.windows
+            .borrow_mut()
+            .retain(|_, window| !self.exit_scheduled.get() && !window.should_close());
+        if self.windows.borrow().is_empty() {
+            self.schedule_exit()
         }
 
         !self.exit_scheduled.get()
@@ -395,118 +325,6 @@ impl RunningAppState {
         });
     }
 
-    pub(crate) fn set_pending_traversal(
-        &self,
-        traversal_id: TraversalId,
-        sender: GenericSender<WebDriverLoadStatus>,
-    ) {
-        self.webdriver_senders
-            .borrow_mut()
-            .pending_traversals
-            .insert(traversal_id, sender);
-    }
-
-    pub(crate) fn set_load_status_sender(
-        &self,
-        webview_id: WebViewId,
-        sender: GenericSender<WebDriverLoadStatus>,
-    ) {
-        self.webdriver_senders
-            .borrow_mut()
-            .load_status_senders
-            .insert(webview_id, sender);
-    }
-
-    fn remove_load_status_sender(&self, webview_id: WebViewId) {
-        self.webdriver_senders
-            .borrow_mut()
-            .load_status_senders
-            .remove(&webview_id);
-    }
-
-    fn set_script_command_interrupt_sender(&self, sender: Option<IpcSender<WebDriverJSResult>>) {
-        self.webdriver_senders
-            .borrow_mut()
-            .script_evaluation_interrupt_sender = sender;
-    }
-
-    pub(crate) fn handle_webdriver_input_event(
-        &self,
-        webview_id: WebViewId,
-        input_event: InputEvent,
-        response_sender: Option<Sender<()>>,
-    ) {
-        if let Some(webview) = self.webview_by_id(webview_id) {
-            let event_id = webview.notify_input_event(input_event);
-            if let Some(response_sender) = response_sender {
-                self.pending_webdriver_events
-                    .borrow_mut()
-                    .insert(event_id, response_sender);
-            }
-        } else {
-            error!("Could not find WebView ({webview_id:?}) for WebDriver event: {input_event:?}");
-        };
-    }
-
-    pub(crate) fn handle_webdriver_screenshot(
-        &self,
-        webview_id: WebViewId,
-        rect: Option<Rect<f32, CSSPixel>>,
-        result_sender: Sender<Result<RgbaImage, ScreenshotCaptureError>>,
-    ) {
-        if let Some(webview) = self.webview_by_id(webview_id) {
-            let rect = rect.map(|rect| rect.to_box2d().into());
-            webview.take_screenshot(rect, move |result| {
-                if let Err(error) = result_sender.send(result) {
-                    warn!("Failed to send response to TakeScreenshot: {error}");
-                }
-            });
-        } else if let Err(error) =
-            result_sender.send(Err(ScreenshotCaptureError::WebViewDoesNotExist))
-        {
-            error!("Failed to send response to TakeScreenshot: {error}");
-        }
-    }
-
-    pub(crate) fn handle_webdriver_script_command(&self, script_command: &WebDriverScriptCommand) {
-        match script_command {
-            WebDriverScriptCommand::ExecuteScript(_webview_id, response_sender)
-            | WebDriverScriptCommand::ExecuteAsyncScript(_webview_id, response_sender) => {
-                // Give embedder a chance to interrupt the script command.
-                // Webdriver only handles 1 script command at a time, so we can
-                // safely set a new interrupt sender and remove the previous one here.
-                self.set_script_command_interrupt_sender(Some(response_sender.clone()));
-            }
-            WebDriverScriptCommand::AddLoadStatusSender(webview_id, load_status_sender) => {
-                self.set_load_status_sender(*webview_id, load_status_sender.clone());
-            }
-            WebDriverScriptCommand::RemoveLoadStatusSender(webview_id) => {
-                self.remove_load_status_sender(*webview_id);
-            }
-            _ => {
-                self.set_script_command_interrupt_sender(None);
-            }
-        }
-    }
-
-    pub(crate) fn handle_webdriver_load_url(
-        &self,
-        webview_id: WebViewId,
-        url: Url,
-        load_status_sender: GenericSender<WebDriverLoadStatus>,
-    ) {
-        let Some(webview) = self.webview_by_id(webview_id) else {
-            return;
-        };
-
-        self.platform_window_for_webview_id(webview_id)
-            .dismiss_embedder_controls_for_webview(webview_id);
-
-        info!("Loading URL in webview {webview_id}: {url}");
-        self.set_load_status_sender(webview_id, load_status_sender);
-        webview.load(url);
-    }
-
     pub(crate) fn handle_gamepad_events(&self) {
         let Some(active_webview) = self
             .focused_window()
@@ -516,29 +334,6 @@ impl RunningAppState {
         };
         if let Some(gamepad_support) = self.gamepad_support.borrow_mut().as_mut() {
             gamepad_support.handle_gamepad_events(active_webview);
-        }
-    }
-
-    /// Interrupt any ongoing WebDriver-based script evaluation.
-    ///
-    /// From <https://w3c.github.io/webdriver/#dfn-execute-a-function-body>:
-    /// > The rules to execute a function body are as follows. The algorithm returns
-    /// > an ECMAScript completion record.
-    /// >
-    /// > If at any point during the algorithm a user prompt appears, immediately return
-    /// > Completion { Type: normal, Value: null, Target: empty }, but continue to run the
-    /// >  other steps of this algorithm in parallel.
-    fn interrupt_webdriver_script_evaluation(&self) {
-        if let Some(sender) = &self
-            .webdriver_senders
-            .borrow()
-            .script_evaluation_interrupt_sender
-        {
-            sender.send(Ok(JSValue::Null)).unwrap_or_else(|err| {
-                info!(
-                    "Notify dialog appear failed. Maybe the channel to webdriver is closed: {err}"
-                );
-            });
         }
     }
 }
@@ -563,14 +358,6 @@ impl WebViewDelegate for RunningAppState {
         self.window_for_webview_id(webview.id()).set_needs_update();
     }
 
-    fn notify_traversal_complete(&self, _webview: WebView, traversal_id: TraversalId) {
-        let mut webdriver_state = self.webdriver_senders.borrow_mut();
-        if let Entry::Occupied(entry) = webdriver_state.pending_traversals.entry(traversal_id) {
-            let sender = entry.remove();
-            let _ = sender.send(WebDriverLoadStatus::Complete);
-        }
-    }
-
     fn request_move_to(&self, webview: WebView, new_position: DeviceIntPoint) {
         self.platform_window_for_webview_id(webview.id())
             .set_position(new_position);
@@ -590,32 +377,6 @@ impl WebViewDelegate for RunningAppState {
             .show_http_authentication_dialog(webview.id(), authentication_request);
     }
 
-    fn request_open_auxiliary_webview(&self, parent_webview: WebView) -> Option<WebView> {
-        let window = self.window_for_webview_id(parent_webview.id());
-        let platform_window = window.platform_window();
-
-        let webview =
-            WebViewBuilder::new_auxiliary(&self.servo, platform_window.rendering_context())
-                .hidpi_scale_factor(platform_window.hidpi_scale_factor())
-                .delegate(parent_webview.delegate())
-                .build();
-
-        webview.notify_theme_change(platform_window.theme());
-
-        window.add_webview(webview.clone());
-
-        // When WebDriver is enabled, do not focus and raise the WebView to the top,
-        // as that is what the specification expects. Otherwise, we would like `window.open()`
-        // to create a new foreground tab
-        if self.servoshell_preferences.webdriver_port.get().is_none() {
-            window.activate_webview(webview.id());
-        } else {
-            webview.hide();
-        }
-
-        Some(webview)
-    }
-
     fn notify_closed(&self, webview: WebView) {
         self.window_for_webview_id(webview.id())
             .close_webview(webview.id())
@@ -629,9 +390,6 @@ impl WebViewDelegate for RunningAppState {
     ) {
         self.platform_window_for_webview_id(webview.id())
             .notify_input_event_handled(&webview, id, result);
-        if let Some(response_sender) = self.pending_webdriver_events.borrow_mut().remove(&id) {
-            let _ = response_sender.send(());
-        }
     }
 
     fn notify_cursor_changed(&self, webview: WebView, cursor: servo::Cursor) {
@@ -643,14 +401,6 @@ impl WebViewDelegate for RunningAppState {
         self.window_for_webview_id(webview.id()).set_needs_update();
 
         if status == LoadStatus::Complete {
-            if let Some(sender) = self
-                .webdriver_senders
-                .borrow_mut()
-                .load_status_senders
-                .remove(&webview.id())
-            {
-                let _ = sender.send(WebDriverLoadStatus::Complete);
-            }
             self.maybe_request_screenshot(webview);
         }
     }
@@ -710,37 +460,11 @@ impl WebViewDelegate for RunningAppState {
     }
 
     fn show_embedder_control(&self, webview: WebView, embedder_control: EmbedderControl) {
-        if self.servoshell_preferences.webdriver_port.get().is_some() {
-            if matches!(&embedder_control, EmbedderControl::SimpleDialog(..)) {
-                self.interrupt_webdriver_script_evaluation();
-
-                // Dialogs block the page load, so need need to notify WebDriver
-                if let Some(sender) = self
-                    .webdriver_senders
-                    .borrow_mut()
-                    .load_status_senders
-                    .get(&webview.id())
-                {
-                    let _ = sender.send(WebDriverLoadStatus::Blocked);
-                };
-            }
-
-            self.webdriver_embedder_controls
-                .show_embedder_control(webview.id(), embedder_control);
-            return;
-        }
-
         self.window_for_webview_id(webview.id())
             .show_embedder_control(webview, embedder_control);
     }
 
     fn hide_embedder_control(&self, webview: WebView, embedder_control_id: EmbedderControlId) {
-        if self.servoshell_preferences.webdriver_port.get().is_some() {
-            self.webdriver_embedder_controls
-                .hide_embedder_control(webview.id(), embedder_control_id);
-            return;
-        }
-
         self.window_for_webview_id(webview.id())
             .hide_embedder_control(webview, embedder_control_id);
     }

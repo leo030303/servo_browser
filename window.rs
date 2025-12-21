@@ -7,10 +7,10 @@ use std::rc::Rc;
 
 use euclid::Scale;
 use servo::{
-    AuthenticationRequest, Cursor, DeviceIndependentIntRect, DeviceIndependentPixel,
-    DeviceIntPoint, DeviceIntSize, DevicePixel, EmbedderControl, EmbedderControlId, GenericSender,
-    InputEventId, InputEventResult, MediaSessionEvent, PermissionRequest, RenderingContext,
-    ScreenGeometry, WebView, WebViewBuilder, WebViewId,
+    AuthenticationRequest, Cursor, DeviceIndependentPixel, DeviceIntPoint, DeviceIntSize,
+    DevicePixel, EmbedderControl, EmbedderControlId, GenericSender, InputEventId, InputEventResult,
+    MediaSessionEvent, PermissionRequest, RenderingContext, ScreenGeometry, WebView,
+    WebViewBuilder, WebViewId,
 };
 use url::Url;
 
@@ -143,10 +143,6 @@ impl ServoShellWindow {
         self.webview_collection.borrow_mut().add(webview);
         self.set_needs_update();
         self.set_needs_repaint();
-    }
-
-    pub(crate) fn webview_ids(&self) -> Vec<WebViewId> {
-        self.webview_collection.borrow().creation_order.clone()
     }
 
     /// Returns all [`WebView`]s in creation order.
@@ -338,8 +334,6 @@ pub(crate) trait PlatformWindow {
     fn theme(&self) -> servo::Theme {
         servo::Theme::Light
     }
-    fn window_rect(&self) -> DeviceIndependentIntRect;
-    fn maximize(&self, _: &WebView) {}
     fn focused(&self) -> bool;
 
     fn show_embedder_control(&self, _: WebViewId, _: EmbedderControl) {}

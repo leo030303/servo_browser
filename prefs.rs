@@ -3,7 +3,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use core::panic;
-use std::cell::Cell;
 use std::collections::HashMap;
 use std::fs::{self, File, read_to_string};
 use std::io::Read;
@@ -81,9 +80,6 @@ pub(crate) struct ServoShellPreferences {
     /// Where to load userscripts from, if any.
     /// and if the option isn't passed userscripts won't be loaded.
     pub userscripts_directory: Option<PathBuf>,
-    /// `None` to disable WebDriver or `Some` with a port number to start a server to listen to
-    /// remote WebDriver commands.
-    pub webdriver_port: Cell<Option<u16>>,
     /// Log filter given in the `log_filter` spec as a String, if any.
     /// If a filter is passed, the logger should adjust accordingly.
     #[cfg(target_env = "ohos")]
@@ -110,7 +106,6 @@ impl Default for ServoShellPreferences {
             output_image_path: None,
             exit_after_stable_image: false,
             userscripts_directory: None,
-            webdriver_port: Cell::new(None),
             #[cfg(target_env = "ohos")]
             log_filter: None,
             #[cfg(target_env = "ohos")]
@@ -676,7 +671,6 @@ pub(crate) fn parse_command_line_arguments(args: Vec<String>) -> ArgumentParsing
         initial_window_size: cmd_args.window_size.unwrap_or(default_window_size),
         screen_size_override: cmd_args.screen_size_override,
         simulate_touch_events: cmd_args.simulate_touch_events,
-        webdriver_port: Cell::new(cmd_args.webdriver_port),
         output_image_path: cmd_args.output.map(|p| p.to_string_lossy().into_owned()),
         exit_after_stable_image: cmd_args.exit,
         userscripts_directory: cmd_args.userscripts,
