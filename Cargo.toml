@@ -57,6 +57,7 @@ bpaf = { version = "0.9.20", features = ["derive"] }
 cfg-if = { version = "1.0.4" }
 crossbeam-channel = { version = "0.5" }
 dpi = { version = "0.1" }
+egui_extras = {version = "0.33.3", features = ["svg"]}
 euclid = { version = "0.22" }
 hitrace = { version = "0.1.5", optional = true }
 image = { version = "0.25", default-features = false, features = ["avif", "rayon", "bmp", "gif", "ico", "jpeg", "png", "webp"] }

@@ -10,8 +10,8 @@ use dpi::PhysicalSize;
 use egui::text::{CCursor, CCursorRange};
 use egui::text_edit::TextEditState;
 use egui::{
-    Button, Key, Label, LayerId, Modifiers, PaintCallback, TopBottomPanel, Vec2, WidgetInfo,
-    WidgetType, pos2,
+    Button, Key, Label, LayerId, Layout, Modifiers, PaintCallback, SidePanel, TopBottomPanel, Vec2,
+    WidgetInfo, WidgetType, pos2,
 };
 use egui_glow::{CallbackFn, EguiGlow};
 use egui_winit::EventResponse;
@@ -32,6 +32,9 @@ use crate::desktop::headed_window;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
 use crate::window::ServoShellWindow;
 
+pub const TAB_WIDTH: f32 = 200.0;
+pub const FAVICON_SIZE: f32 = 16.0;
+
 /// The user interface of a headed servoshell. Currently this is implemented via
 /// egui.
 pub struct Gui {
@@ -39,6 +42,7 @@ pub struct Gui {
     context: EguiGlow,
     event_queue: Vec<UserInterfaceCommand>,
     toolbar_height: Length<f32, DeviceIndependentPixel>,
+    tabbar_width: Length<f32, DeviceIndependentPixel>,
 
     last_mouse_position: Option<Point2D<f32, DeviceIndependentPixel>>,
     location: String,
@@ -115,12 +119,14 @@ impl Gui {
             // since it is the more common default.
             options.fallback_theme = egui::Theme::Light;
         });
+        egui_extras::install_image_loaders(&context.egui_ctx);
 
         Self {
             rendering_context,
             context,
             event_queue: vec![],
             toolbar_height: Default::default(),
+            tabbar_width: Default::default(),
             last_mouse_position: None,
             location: initial_url.to_string(),
             location_dirty: false,
@@ -182,14 +188,20 @@ impl Gui {
         self.toolbar_height
     }
 
+    /// The width of the side tabbar of this user inteface ie the distance from the side of the
+    /// window to the position of the `WebView`.
+    pub(crate) fn tabbar_width(&self) -> Length<f32, DeviceIndependentPixel> {
+        self.tabbar_width
+    }
+
     /// Return true iff the given position is over the egui toolbar.
     fn is_in_egui_toolbar_rect(&self, position: Point2D<f32, DeviceIndependentPixel>) -> bool {
-        position.y < self.toolbar_height.get()
+        position.y < self.toolbar_height.get() || position.x < self.tabbar_width.get()
     }
 
     /// Create a frameless button with square sizing, as used in the toolbar.
-    fn toolbar_button(text: &str) -> egui::Button<'_> {
-        egui::Button::new(text)
+    fn toolbar_image_button(image_value: egui::ImageSource) -> egui::Button<'_> {
+        egui::Button::image(image_value)
             .frame(false)
             .min_size(Vec2 { x: 20.0, y: 20.0 })
     }
@@ -218,56 +230,68 @@ impl Gui {
         let mut tab_frame = egui::Frame::NONE.corner_radius(4).begin(ui);
         {
             tab_frame.content_ui.add_space(5.0);
+            tab_frame.content_ui.with_layout(
+                Layout::left_to_right(egui::Align::Center),
+                |tab_frame_ui| {
+                    let visuals = tab_frame_ui.visuals_mut();
+                    // Remove the stroke so we don't see the border between the close button and the label
+                    visuals.widgets.active.bg_stroke.width = 0.0;
+                    visuals.widgets.hovered.bg_stroke.width = 0.0;
+                    // Now we make sure the fill color is always the same, irrespective of state, that way
+                    // we can make sure that both the label and close button have the same background color
+                    visuals.widgets.noninteractive.weak_bg_fill = inactive_bg_color;
+                    visuals.widgets.inactive.weak_bg_fill = inactive_bg_color;
+                    visuals.widgets.hovered.weak_bg_fill = active_bg_color;
+                    visuals.widgets.active.weak_bg_fill = active_bg_color;
+                    visuals.selection.bg_fill = active_bg_color;
+                    visuals.selection.stroke.color = visuals.widgets.active.fg_stroke.color;
+                    visuals.widgets.hovered.fg_stroke.color =
+                        visuals.widgets.active.fg_stroke.color;
 
-            let visuals = tab_frame.content_ui.visuals_mut();
-            // Remove the stroke so we don't see the border between the close button and the label
-            visuals.widgets.active.bg_stroke.width = 0.0;
-            visuals.widgets.hovered.bg_stroke.width = 0.0;
-            // Now we make sure the fill color is always the same, irrespective of state, that way
-            // we can make sure that both the label and close button have the same background color
-            visuals.widgets.noninteractive.weak_bg_fill = inactive_bg_color;
-            visuals.widgets.inactive.weak_bg_fill = inactive_bg_color;
-            visuals.widgets.hovered.weak_bg_fill = active_bg_color;
-            visuals.widgets.active.weak_bg_fill = active_bg_color;
-            visuals.selection.bg_fill = active_bg_color;
-            visuals.selection.stroke.color = visuals.widgets.active.fg_stroke.color;
-            visuals.widgets.hovered.fg_stroke.color = visuals.widgets.active.fg_stroke.color;
+                    // Expansion would also show that they are 2 separate widgets
+                    visuals.widgets.active.expansion = 0.0;
+                    visuals.widgets.hovered.expansion = 0.0;
 
-            // Expansion would also show that they are 2 separate widgets
-            visuals.widgets.active.expansion = 0.0;
-            visuals.widgets.hovered.expansion = 0.0;
+                    if let Some(favicon) = favicon_texture {
+                        tab_frame_ui.add(
+                            egui::Image::from_texture(favicon)
+                                .fit_to_exact_size(egui::vec2(FAVICON_SIZE, FAVICON_SIZE))
+                                .bg_fill(egui::Color32::TRANSPARENT),
+                        );
+                    }
 
-            if let Some(favicon) = favicon_texture {
-                tab_frame.content_ui.add(
-                    egui::Image::from_texture(favicon)
-                        .fit_to_exact_size(egui::vec2(16.0, 16.0))
-                        .bg_fill(egui::Color32::TRANSPARENT),
-                );
-            }
+                    let tab = tab_frame_ui
+                        .add(
+                            Button::selectable(active, truncate_with_ellipsis(&label, 16))
+                                .min_size(Vec2::new(
+                                    TAB_WIDTH - FAVICON_SIZE - 40.0 - FAVICON_SIZE,
+                                    0.0,
+                                )),
+                        )
+                        .on_hover_ui(|ui| {
+                            ui.label(&label);
+                        });
 
-            let tab = tab_frame
-                .content_ui
-                .add(Button::selectable(
-                    active,
-                    truncate_with_ellipsis(&label, 20),
-                ))
-                .on_hover_ui(|ui| {
-                    ui.label(&label);
-                });
-
-            let close_button = tab_frame
-                .content_ui
-                .add(egui::Button::new("X").fill(egui::Color32::TRANSPARENT));
-            close_button.widget_info(|| {
-                let mut info = WidgetInfo::new(WidgetType::Button);
-                info.label = Some("Close".into());
-                info
-            });
-            if close_button.clicked() || close_button.middle_clicked() || tab.middle_clicked() {
-                event_queue.push(UserInterfaceCommand::CloseWebView(webview.id()))
-            } else if !active && tab.clicked() {
-                window.activate_webview(webview.id());
-            }
+                    let close_button = tab_frame_ui.add(
+                        egui::Button::image(egui::include_image!("../resources/icons/close.svg"))
+                            .fill(egui::Color32::TRANSPARENT)
+                            .min_size(Vec2::new(FAVICON_SIZE, FAVICON_SIZE)),
+                    );
+                    close_button.widget_info(|| {
+                        let mut info = WidgetInfo::new(WidgetType::Button);
+                        info.label = Some("Close".into());
+                        info
+                    });
+                    if close_button.clicked()
+                        || close_button.middle_clicked()
+                        || tab.middle_clicked()
+                    {
+                        event_queue.push(UserInterfaceCommand::CloseWebView(webview.id()))
+                    } else if !active && tab.clicked() {
+                        window.activate_webview(webview.id());
+                    }
+                },
+            );
         }
 
         let response = tab_frame.allocate_space(ui);
@@ -295,6 +319,7 @@ impl Gui {
             context,
             event_queue,
             toolbar_height,
+            tabbar_width,
             location,
             location_dirty,
             favicon_textures,
@@ -316,8 +341,12 @@ impl Gui {
                         ui.available_size(),
                         egui::Layout::left_to_right(egui::Align::Center),
                         |ui| {
-                            let back_button =
-                                ui.add_enabled(self.can_go_back, Gui::toolbar_button("⏴"));
+                            let back_button = ui.add_enabled(
+                                self.can_go_back,
+                                Gui::toolbar_image_button(egui::include_image!(
+                                    "../resources/icons/back_arrow.svg"
+                                )),
+                            );
                             back_button.widget_info(|| {
                                 let mut info = WidgetInfo::new(WidgetType::Button);
                                 info.label = Some("Back".into());
@@ -328,8 +357,12 @@ impl Gui {
                                 event_queue.push(UserInterfaceCommand::Back);
                             }
 
-                            let forward_button =
-                                ui.add_enabled(self.can_go_forward, Gui::toolbar_button("⏵"));
+                            let forward_button = ui.add_enabled(
+                                self.can_go_forward,
+                                Gui::toolbar_image_button(egui::include_image!(
+                                    "../resources/icons/forward_arrow.svg"
+                                )),
+                            );
                             forward_button.widget_info(|| {
                                 let mut info = WidgetInfo::new(WidgetType::Button);
                                 info.label = Some("Forward".into());
@@ -342,7 +375,9 @@ impl Gui {
 
                             match self.load_status {
                                 LoadStatus::Started | LoadStatus::HeadParsed => {
-                                    let stop_button = ui.add(Gui::toolbar_button("X"));
+                                    let stop_button = ui.add(Gui::toolbar_image_button(
+                                        egui::include_image!("../resources/icons/close.svg"),
+                                    ));
                                     stop_button.widget_info(|| {
                                         let mut info = WidgetInfo::new(WidgetType::Button);
                                         info.label = Some("Stop".into());
@@ -353,7 +388,9 @@ impl Gui {
                                     }
                                 }
                                 LoadStatus::Complete => {
-                                    let reload_button = ui.add(Gui::toolbar_button("↻"));
+                                    let reload_button = ui.add(Gui::toolbar_image_button(
+                                        egui::include_image!("../resources/icons/refresh.svg"),
+                                    ));
                                     reload_button.widget_info(|| {
                                         let mut info = WidgetInfo::new(WidgetType::Button);
                                         info.label = Some("Reload".into());
@@ -440,37 +477,51 @@ impl Gui {
                 });
 
                 // A simple Tab header strip
-                TopBottomPanel::top("tabs").show(ctx, |ui| {
-                    ui.allocate_ui_with_layout(
-                        ui.available_size(),
-                        egui::Layout::left_to_right(egui::Align::Center),
-                        |ui| {
-                            for (id, webview) in window.webviews().into_iter() {
-                                let favicon = favicon_textures
-                                    .get(&id)
-                                    .map(|(_, favicon)| favicon)
-                                    .copied();
-                                Self::browser_tab(ui, window, webview, event_queue, favicon);
-                            }
+                SidePanel::left("tabs")
+                    .resizable(false)
+                    .exact_width(TAB_WIDTH)
+                    .show(ctx, |ui| {
+                        ui.allocate_ui_with_layout(
+                            Vec2::new(TAB_WIDTH - 20.0, ui.available_size().y),
+                            egui::Layout::top_down(egui::Align::Center),
+                            |ui| {
+                                for (id, webview) in window.webviews().into_iter() {
+                                    let favicon = favicon_textures
+                                        .get(&id)
+                                        .map(|(_, favicon)| favicon)
+                                        .copied();
+                                    ui.allocate_ui(Vec2::new(TAB_WIDTH - 30.0, 0.0), |ui| {
+                                        Self::browser_tab(
+                                            ui,
+                                            window,
+                                            webview,
+                                            event_queue,
+                                            favicon,
+                                        );
+                                    });
+                                }
 
-                            let new_tab_button = ui.add(Gui::toolbar_button("+"));
-                            new_tab_button.widget_info(|| {
-                                let mut info = WidgetInfo::new(WidgetType::Button);
-                                info.label = Some("New tab".into());
-                                info
-                            });
-                            if new_tab_button.clicked() {
-                                event_queue.push(UserInterfaceCommand::NewWebView);
-                            }
-                        },
-                    );
-                });
+                                let new_tab_button = ui.add(Gui::toolbar_image_button(
+                                    egui::include_image!("../resources/icons/add.svg"),
+                                ));
+                                new_tab_button.widget_info(|| {
+                                    let mut info = WidgetInfo::new(WidgetType::Button);
+                                    info.label = Some("New tab".into());
+                                    info
+                                });
+                                if new_tab_button.clicked() {
+                                    event_queue.push(UserInterfaceCommand::NewWebView);
+                                }
+                            },
+                        );
+                    });
             };
 
             // The toolbar height is where the Context’s available rect starts.
             // For reasons that are unclear, the TopBottomPanel’s ui cursor exceeds this by one egui
             // point, but the Context is correct and the TopBottomPanel is wrong.
             *toolbar_height = Length::new(ctx.available_rect().min.y);
+            *tabbar_width = Length::new(ctx.available_rect().min.x);
 
             let scale =
                 Scale::<_, DeviceIndependentPixel, DevicePixel>::new(ctx.pixels_per_point());

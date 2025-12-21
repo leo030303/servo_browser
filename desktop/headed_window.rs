@@ -295,6 +295,7 @@ impl Window {
     fn handle_mouse_move_event(&self, webview: &WebView, position: PhysicalPosition<f64>) {
         let mut point = winit_position_to_euclid_point(position).to_f32();
         point.y -= (self.toolbar_height() * self.hidpi_scale_factor()).0;
+        point.x -= (self.tabbar_width() * self.hidpi_scale_factor()).0;
 
         let previous_point = self.webview_relative_mouse_point.get();
         self.webview_relative_mouse_point.set(point);
@@ -466,7 +467,7 @@ impl Window {
         self.winit_window.set_ime_allowed(true);
         self.winit_window.set_ime_cursor_area(
             LogicalPosition::new(
-                position.min.x,
+                position.min.x + (self.tabbar_width().0 as i32),
                 position.min.y + (self.toolbar_height().0 as i32),
             ),
             LogicalSize::new(
@@ -530,12 +531,18 @@ impl Window {
     fn toolbar_height(&self) -> Length<f32, DeviceIndependentPixel> {
         self.gui.borrow().toolbar_height()
     }
+    fn tabbar_width(&self) -> Length<f32, DeviceIndependentPixel> {
+        self.gui.borrow().tabbar_width()
+    }
 }
 
 impl PlatformWindow for Window {
     fn screen_geometry(&self) -> ScreenGeometry {
         let hidpi_factor = self.hidpi_scale_factor();
-        let toolbar_size = Size2D::new(0.0, (self.toolbar_height() * self.hidpi_scale_factor()).0);
+        let toolbar_size = Size2D::new(
+            (self.tabbar_width() * self.hidpi_scale_factor()).0,
+            (self.toolbar_height() * self.hidpi_scale_factor()).0,
+        );
         let screen_size = self.screen_size.to_f32() * hidpi_factor;
 
         // FIXME: In reality, this should subtract screen space used by the system interface
