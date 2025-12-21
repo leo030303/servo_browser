@@ -307,7 +307,7 @@ impl Gui {
     /// Update the user interface, but do not paint the updated state.
     pub(crate) fn update(
         &mut self,
-        state: &RunningAppState,
+        _state: &RunningAppState,
         window: &ServoShellWindow,
         headed_window: &headed_window::Window,
     ) {
@@ -408,25 +408,6 @@ impl Gui {
                                 ui.available_size(),
                                 egui::Layout::right_to_left(egui::Align::Center),
                                 |ui| {
-                                    let mut experimental_preferences_enabled =
-                                        state.experimental_preferences_enabled();
-                                    let prefs_toggle = ui
-                                        .toggle_value(&mut experimental_preferences_enabled, "☢")
-                                        .on_hover_text("Enable experimental prefs");
-                                    prefs_toggle.widget_info(|| {
-                                        let mut info = WidgetInfo::new(WidgetType::Button);
-                                        info.label = Some("Enable experimental preferences".into());
-                                        info.selected = Some(experimental_preferences_enabled);
-                                        info
-                                    });
-                                    if prefs_toggle.clicked() {
-                                        state.set_experimental_preferences_enabled(
-                                            experimental_preferences_enabled,
-                                        );
-                                        *location_dirty = false;
-                                        event_queue.push(UserInterfaceCommand::ReloadAll);
-                                    }
-
                                     let location_id = egui::Id::new("location_input");
                                     let location_field = ui.add_sized(
                                         ui.available_size(),

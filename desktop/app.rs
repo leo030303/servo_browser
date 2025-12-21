@@ -207,14 +207,6 @@ impl App {
                         active_webview.reload();
                     }
                 }
-                UserInterfaceCommand::ReloadAll => {
-                    for window in state.windows().values() {
-                        window.set_needs_update();
-                        for (_, webview) in window.webviews() {
-                            webview.reload();
-                        }
-                    }
-                }
                 UserInterfaceCommand::NewWebView => {
                     window.set_needs_update();
                     let url = Url::parse("servo:newtab").expect("Should always be able to parse");

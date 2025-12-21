@@ -84,8 +84,6 @@ pub(crate) struct ServoShellPreferences {
     /// `None` to disable WebDriver or `Some` with a port number to start a server to listen to
     /// remote WebDriver commands.
     pub webdriver_port: Cell<Option<u16>>,
-    /// Whether the CLI option to enable experimental prefs was present at startup.
-    pub experimental_preferences_enabled: bool,
     /// Log filter given in the `log_filter` spec as a String, if any.
     /// If a filter is passed, the logger should adjust accordingly.
     #[cfg(target_env = "ohos")]
@@ -117,7 +115,6 @@ impl Default for ServoShellPreferences {
             log_filter: None,
             #[cfg(target_env = "ohos")]
             log_to_file: false,
-            experimental_preferences_enabled: false,
         }
     }
 }
@@ -184,6 +181,10 @@ fn get_preferences(prefs_files: &[PathBuf], config_dir: &Option<PathBuf>) -> Pre
         };
 
     let mut preferences = Preferences::default();
+    for pref in EXPERIMENTAL_PREFS {
+        preferences.set_value(pref, PrefValue::Bool(true));
+    }
+
     apply_preferences(&mut preferences, user_prefs_hash);
     for pref_file_path in prefs_files.iter() {
         apply_preferences(&mut preferences, read_prefs_file(pref_file_path))
@@ -412,11 +413,6 @@ struct CmdArgs {
     #[bpaf(argument("0"))]
     devtools: Option<u16>,
 
-    ///
-    ///  Whether or not to enable experimental web platform features.
-    #[bpaf(long)]
-    enable_experimental_web_platform_features: bool,
-
     // Exit after Servo has loaded the page and detected a stable output image.
     #[bpaf(short('x'), long)]
     exit: bool,
@@ -575,12 +571,6 @@ fn update_preferences_from_command_line_arguemnts(
         preferences.devtools_server_port = port as i64;
     }
 
-    if cmd_args.enable_experimental_web_platform_features {
-        for pref in EXPERIMENTAL_PREFS {
-            preferences.set_value(pref, PrefValue::Bool(true));
-        }
-    }
-
     for pref in &cmd_args.pref {
         let split: Vec<&str> = pref.splitn(2, '=').collect();
         let pref_name = split[0];
@@ -690,7 +680,6 @@ pub(crate) fn parse_command_line_arguments(args: Vec<String>) -> ArgumentParsing
         output_image_path: cmd_args.output.map(|p| p.to_string_lossy().into_owned()),
         exit_after_stable_image: cmd_args.exit,
         userscripts_directory: cmd_args.userscripts,
-        experimental_preferences_enabled: cmd_args.enable_experimental_web_platform_features,
         #[cfg(target_env = "ohos")]
         log_filter: cmd_args.log_filter.or_else(|| {
             (!preferences.log_filter.is_empty()).then(|| preferences.log_filter.clone())
