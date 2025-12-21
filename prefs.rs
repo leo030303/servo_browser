@@ -8,8 +8,6 @@ use std::fs::{self, File, read_to_string};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
-#[cfg(any(target_os = "android", target_env = "ohos"))]
-use std::sync::OnceLock;
 use std::{env, fmt};
 
 use bpaf::*;
@@ -41,7 +39,6 @@ pub(crate) static EXPERIMENTAL_PREFS: &[&str] = &[
     "layout_variable_fonts_enabled",
 ];
 
-#[cfg_attr(any(target_os = "android", target_env = "ohos"), allow(dead_code))]
 #[derive(Clone)]
 pub(crate) struct ServoShellPreferences {
     /// A URL to load when starting servoshell.
@@ -80,13 +77,6 @@ pub(crate) struct ServoShellPreferences {
     /// Where to load userscripts from, if any.
     /// and if the option isn't passed userscripts won't be loaded.
     pub userscripts_directory: Option<PathBuf>,
-    /// Log filter given in the `log_filter` spec as a String, if any.
-    /// If a filter is passed, the logger should adjust accordingly.
-    #[cfg(target_env = "ohos")]
-    pub log_filter: Option<String>,
-    /// Log also to a file
-    #[cfg(target_env = "ohos")]
-    pub log_to_file: bool,
 }
 
 impl Default for ServoShellPreferences {
@@ -106,34 +96,16 @@ impl Default for ServoShellPreferences {
             output_image_path: None,
             exit_after_stable_image: false,
             userscripts_directory: None,
-            #[cfg(target_env = "ohos")]
-            log_filter: None,
-            #[cfg(target_env = "ohos")]
-            log_to_file: false,
         }
     }
 }
 
-#[cfg(all(
-    unix,
-    not(target_os = "macos"),
-    not(target_os = "ios"),
-    not(target_os = "android"),
-    not(target_env = "ohos")
-))]
+#[cfg(all(unix, not(target_os = "macos"), not(target_os = "ios"),))]
 pub fn default_config_dir() -> Option<PathBuf> {
     let mut config_dir = ::dirs::config_dir().unwrap();
     config_dir.push("servo");
     config_dir.push("default");
     Some(config_dir)
-}
-
-/// Overrides the default preference dir
-#[cfg(any(target_os = "android", target_env = "ohos"))]
-pub(crate) static DEFAULT_CONFIG_DIR: OnceLock<PathBuf> = OnceLock::new();
-#[cfg(any(target_os = "android", target_env = "ohos"))]
-pub fn default_config_dir() -> Option<PathBuf> {
-    DEFAULT_CONFIG_DIR.get().cloned()
 }
 
 #[cfg(target_os = "macos")]
@@ -209,7 +181,6 @@ pub fn read_prefs_map(txt: &str) -> HashMap<String, PrefValue> {
 }
 
 #[expect(clippy::large_enum_variant)]
-#[cfg_attr(any(target_os = "android", target_env = "ohos"), allow(dead_code))]
 pub(crate) enum ArgumentParsingResult {
     ChromeProcess(Opts, Preferences, ServoShellPreferences),
     ContentProcess(String),
@@ -346,17 +317,6 @@ fn userscripts() -> impl Parser<Option<PathBuf>> {
     )
 }
 
-fn webdriver_port() -> impl Parser<Option<u16>> {
-    flag_with_default_parser(
-        None,
-        "webdriver",
-        "7000",
-        "Start remote WebDriver server on port",
-        7000,
-        |val| val,
-    )
-}
-
 fn map_debug_options(arg: String) -> Vec<String> {
     arg.split(',').map(|s| s.to_owned()).collect()
 }
@@ -437,16 +397,6 @@ struct CmdArgs {
     ///  Directory root with unminified scripts.
     #[bpaf(argument("~/.local/share/servo"))]
     local_script_source: Option<PathBuf>,
-
-    #[cfg(target_env = "ohos")]
-    /// Define a custom filter for logging.
-    #[bpaf(argument("FILTER"))]
-    log_filter: Option<String>,
-
-    #[cfg(target_env = "ohos")]
-    /// Also log to a file (/data/app/el2/100/base/org.servo.servo/cache/servo.log).
-    #[bpaf(long)]
-    log_to_file: bool,
 
     /// Run in multiprocess mode.
     #[bpaf(short('M'), long)]
@@ -529,7 +479,7 @@ struct CmdArgs {
     unminify_css: bool,
 
     ///
-    ///  Set custom user agent string (or ios / android / desktop for platform default).
+    ///  Set custom user agent string (or ios / desktop for platform default).
     #[bpaf(short('u'),long,argument::<String>("NCSA mosaic/1.0 (X11;SunOS 4.1.4 sun4m"))]
     user_agent: Option<String>,
 
@@ -542,10 +492,6 @@ struct CmdArgs {
     ///  A user stylesheet to be added to every document.
     #[bpaf(argument::<String>("file.css"), parse(parse_user_stylesheets), fallback(vec![]))]
     user_stylesheet: Vec<(Vec<u8>, ServoUrl)>,
-
-    /// Start remote WebDriver server on port.
-    #[bpaf(external)]
-    webdriver_port: Option<u16>,
 
     ///
     ///  Set the initial window size in logical (device independent) pixels.
@@ -585,10 +531,6 @@ fn update_preferences_from_command_line_arguemnts(
     if let Some(user_agent) = cmd_args.user_agent.clone() {
         preferences.user_agent = user_agent;
     }
-
-    if cmd_args.webdriver_port.is_some() {
-        preferences.dom_testing_html_input_element_select_files_enabled = true;
-    }
 }
 
 pub(crate) fn parse_command_line_arguments(args: Vec<String>) -> ArgumentParsingResult {
@@ -603,16 +545,7 @@ pub(crate) fn parse_command_line_arguments(args: Vec<String>) -> ArgumentParsing
         Err(error) => {
             // Servo will exit after printing the parsing error, which makes the stdout / stderr
             // redirection via a seperate thread racy, so we log directly to the system logger.
-            if cfg!(target_os = "android") || cfg!(target_env = "ohos") {
-                match &error {
-                    ParseFailure::Stderr(doc) => log::error!("{doc}"),
-                    // '--help' will be parsed by the next one.
-                    ParseFailure::Stdout(doc, _) => log::error!("{doc}"),
-                    ParseFailure::Completion(_) => log::error!("Not supported on these platforms"),
-                }
-            } else {
-                error.print_message(80);
-            }
+            error.print_message(80);
 
             return if error.exit_code() == 0 {
                 ArgumentParsingResult::Exit
@@ -646,13 +579,6 @@ pub(crate) fn parse_command_line_arguments(args: Vec<String>) -> ArgumentParsing
 
     update_preferences_from_command_line_arguemnts(&mut preferences, &cmd_args);
 
-    // FIXME: enable JIT compilation on 32-bit Android after the startup crash issue (#31134) is fixed.
-    if cfg!(target_os = "android") && cfg!(target_pointer_width = "32") {
-        preferences.js_baseline_interpreter_enabled = false;
-        preferences.js_baseline_jit_enabled = false;
-        preferences.js_ion_enabled = false;
-    }
-
     // Make sure the default window size is not larger than any provided screen size.
     let default_window_size = Size2D::new(1024, 740);
     let default_window_size = cmd_args
@@ -674,12 +600,6 @@ pub(crate) fn parse_command_line_arguments(args: Vec<String>) -> ArgumentParsing
         output_image_path: cmd_args.output.map(|p| p.to_string_lossy().into_owned()),
         exit_after_stable_image: cmd_args.exit,
         userscripts_directory: cmd_args.userscripts,
-        #[cfg(target_env = "ohos")]
-        log_filter: cmd_args.log_filter.or_else(|| {
-            (!preferences.log_filter.is_empty()).then(|| preferences.log_filter.clone())
-        }),
-        #[cfg(target_env = "ohos")]
-        log_to_file: cmd_args.log_to_file,
         ..Default::default()
     };
 

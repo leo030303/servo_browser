@@ -3,8 +3,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 use std::error::Error;
-use std::fs::File;
-use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
@@ -62,16 +60,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         cc::Build::new()
             .file("platform/macos/count_threads.c")
             .compile("count_threads");
-    } else if target_os == "android" {
-        // FIXME: We need this workaround since jemalloc-sys still links
-        // to libgcc instead of libunwind, but Android NDK 23c and above
-        // don't have libgcc. We can't disable jemalloc for Android as
-        // in 64-bit aarch builds, the system allocator uses tagged
-        // pointers by default which causes the assertions in SM & mozjs
-        // to fail. See https://github.com/servo/servo/issues/32175.
-        let mut libgcc = File::create(out.join("libgcc.a")).unwrap();
-        libgcc.write_all(b"INPUT(-lunwind)").unwrap();
-        println!("cargo:rustc-link-search=native={}", out.display());
     }
 
     match git_sha() {

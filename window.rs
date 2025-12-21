@@ -17,14 +17,11 @@ use url::Url;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand, WebViewCollection};
 
 // This should vary by zoom level and maybe actual text size (focused or under cursor)
-#[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
 pub(crate) const LINE_HEIGHT: f32 = 76.0;
-#[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
 pub(crate) const LINE_WIDTH: f32 = 76.0;
 
 /// <https://github.com/web-platform-tests/wpt/blob/9320b1f724632c52929a3fdb11bdaf65eafc7611/webdriver/tests/classic/set_window_rect/set.py#L287-L290>
 /// "A window size of 10x10px shouldn't be supported by any browser."
-#[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
 pub(crate) const MIN_WINDOW_INNER_SIZE: DeviceIntSize = DeviceIntSize::new(100, 100);
 
 #[derive(Copy, Clone, Eq, Hash, PartialEq)]
@@ -126,7 +123,6 @@ impl ServoShellWindow {
         self.needs_repaint.set(true)
     }
 
-    #[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
     pub(crate) fn schedule_close(&self) {
         self.close_scheduled.set(true)
     }
@@ -161,7 +157,6 @@ impl ServoShellWindow {
         self.set_needs_update();
     }
 
-    #[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
     pub(crate) fn activate_webview_by_index(&self, index_to_activate: usize) {
         self.webview_collection
             .borrow_mut()
@@ -169,7 +164,6 @@ impl ServoShellWindow {
         self.set_needs_update();
     }
 
-    #[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
     pub(crate) fn get_active_webview_index(&self) -> Option<usize> {
         let active_id = self.webview_collection.borrow().active_id()?;
         self.webviews()
@@ -212,7 +206,6 @@ impl ServoShellWindow {
         self.set_needs_repaint();
     }
 
-    #[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
     pub(crate) fn hidpi_scale_factor_changed(&self) {
         let new_scale_factor = self.platform_window.hidpi_scale_factor();
         for webview in self.webview_collection.borrow().values() {
@@ -224,20 +217,7 @@ impl ServoShellWindow {
         self.webview_collection.borrow().active().cloned()
     }
 
-    #[cfg_attr(
-        not(any(target_os = "android", target_env = "ohos")),
-        expect(dead_code)
-    )]
-    pub(crate) fn active_or_newest_webview(&self) -> Option<WebView> {
-        let webview_collection = self.webview_collection.borrow();
-        webview_collection
-            .active()
-            .or(webview_collection.newest())
-            .cloned()
-    }
-
     /// Return a list of all webviews that have favicons that have not yet been loaded by egui.
-    #[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
     pub(crate) fn take_pending_favicon_loads(&self) -> Vec<WebViewId> {
         std::mem::take(&mut *self.pending_favicon_loads.borrow_mut())
     }
@@ -271,15 +251,12 @@ impl ServoShellWindow {
 pub(crate) trait PlatformWindow {
     fn id(&self) -> ServoShellWindowId;
     fn screen_geometry(&self) -> ScreenGeometry;
-    #[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
     fn device_hidpi_scale_factor(&self) -> Scale<f32, DeviceIndependentPixel, DevicePixel>;
     fn hidpi_scale_factor(&self) -> Scale<f32, DeviceIndependentPixel, DevicePixel>;
-    #[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
     fn get_fullscreen(&self) -> bool;
     /// Request that the `Window` rebuild its user interface, if it has one. This should
     /// not repaint, but should prepare the user interface for painting when it is
     /// actually requested.
-    #[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
     fn rebuild_user_interface(&self, _: &RunningAppState, _: &ServoShellWindow) {}
     /// Inform the `Window` that the state of a `WebView` has changed and that it should
     /// do an incremental update of user interface state. Returns `true` if the user
@@ -292,7 +269,6 @@ pub(crate) trait PlatformWindow {
     ///
     /// TODO: This should be handled internally in the winit window if possible so that it
     /// makes more sense when we are mixing headed and headless windows.
-    #[cfg(not(any(target_os = "android", target_env = "ohos")))]
     fn handle_winit_window_event(
         &self,
         _: Rc<RunningAppState>,
@@ -305,7 +281,6 @@ pub(crate) trait PlatformWindow {
     ///
     /// TODO: This should be handled internally in the winit window if possible so that it
     /// makes more sense when we are mixing headed and headless windows.
-    #[cfg(not(any(target_os = "android", target_env = "ohos")))]
     fn handle_winit_app_event(&self, _: crate::desktop::event_loop::AppEvent) {}
     fn take_user_interface_commands(&self) -> Vec<UserInterfaceCommand> {
         Default::default()
@@ -321,10 +296,7 @@ pub(crate) trait PlatformWindow {
     fn set_position(&self, _point: DeviceIntPoint) {}
     fn set_fullscreen(&self, _state: bool) {}
     fn set_cursor(&self, _cursor: Cursor) {}
-    #[cfg(all(
-        feature = "webxr",
-        not(any(target_os = "android", target_env = "ohos"))
-    ))]
+    #[cfg(feature = "webxr")]
     fn new_glwindow(
         &self,
         event_loop: &winit::event_loop::ActiveEventLoop,

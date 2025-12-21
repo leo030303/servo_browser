@@ -7,27 +7,17 @@ use cfg_if::cfg_if;
 #[cfg(test)]
 mod test;
 
-#[cfg(not(target_os = "android"))]
 mod backtrace;
-#[cfg(not(target_env = "ohos"))]
 mod crash_handler;
-#[cfg(not(any(target_os = "android", target_env = "ohos")))]
 pub(crate) mod desktop;
-#[cfg(any(target_os = "android", target_env = "ohos"))]
-mod egl;
-#[cfg(not(any(target_os = "android", target_env = "ohos")))]
 mod panic_hook;
 mod parser;
 mod prefs;
-#[cfg(not(target_os = "android"))]
 mod resources;
 mod running_app_state;
 mod window;
 
-#[cfg(not(any(target_os = "android", target_env = "ohos")))]
 pub(crate) use crate::desktop::gamepad::GamepadSupport;
-#[cfg(any(target_os = "android", target_env = "ohos"))]
-pub(crate) use crate::egl::gamepad::GamepadSupport;
 
 pub mod platform {
     #[cfg(target_os = "macos")]
@@ -40,7 +30,6 @@ pub mod platform {
     pub fn deinit(_clean_shutdown: bool) {}
 }
 
-#[cfg(not(any(target_os = "android", target_env = "ohos")))]
 pub fn main() {
     desktop::cli::main()
 }

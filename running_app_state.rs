@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-//! Shared state and methods for desktop and EGL implementations.
+//! State and methods for desktop implementations.
 
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
@@ -76,13 +76,6 @@ impl WebViewCollection {
         self.active_webview_id
     }
 
-    /// Gets a reference to the most recently created webview, if any.
-    pub fn newest(&self) -> Option<&WebView> {
-        self.creation_order
-            .last()
-            .and_then(|id| self.webviews.get(id))
-    }
-
     pub fn all_in_creation_order(&self) -> impl Iterator<Item = (WebViewId, &WebView)> {
         self.creation_order
             .iter()
@@ -125,7 +118,6 @@ impl WebViewCollection {
 }
 
 /// A command received via the user interacting with the user interface.
-#[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
 pub(crate) enum UserInterfaceCommand {
     Go(String),
     Back,
@@ -202,7 +194,6 @@ impl RunningAppState {
             .cloned()
     }
 
-    #[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
     pub(crate) fn window(&self, id: ServoShellWindowId) -> Option<Rc<ServoShellWindow>> {
         self.windows.borrow().get(&id).cloned()
     }
@@ -248,7 +239,6 @@ impl RunningAppState {
         !self.exit_scheduled.get()
     }
 
-    #[cfg_attr(any(target_os = "android", target_env = "ohos"), expect(dead_code))]
     pub(crate) fn foreach_window_and_interface_commands(
         self: &Rc<Self>,
         callback: impl Fn(&ServoShellWindow, Vec<UserInterfaceCommand>),
