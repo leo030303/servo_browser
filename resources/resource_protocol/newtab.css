@@ -1,125 +1,231 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+    :root {
+      --theme-color-primary: #1191e8;
+      --theme-color-secondary: #42bf64;
+      --border-radius: 10px;
+      --box-shadow: 0 8px 24px rgba(0, 0, 0, .15);
+    }
 
-html,
-body {
-  height: 100%;
-  padding: 0;
-  margin: 0;
-}
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: system-ui, sans-serif;
+      background: #121619;
+      color: #fff;
+    }
 
-body {
-  font-family: sans-serif;
-  font-weight: 400;
-  line-height: 1.5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+    .container {
+      width: 800px;
+      max-width: 90%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-img {
-  margin-bottom: 1em;
-  width: 25vw;
-}
+    img {
+      width: 120px;
+      margin-bottom: 1.5rem;
+    }
 
-form {
-  margin: 1em;
-  display: flex;
-  justify-items: center;
-  gap: 1.0em;
-}
+    .search-container {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+    }
 
-input {
-  border-width: 0;
-  border-radius: 5px;
-  height: 2.5em;
-  width: 50vw;
-  text-indent: 3px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
+    input {
+      flex: 1;
+      height: 3rem;
+      border-radius: var(--border-radius);
+      border: none;
+      padding: 0 1rem;
+      font-size: 1rem;
+    }
 
-/* This should not be needed but paper over missing default styles */
-button {
-  padding-inline: 8px;
-  border-radius: 5px;
-  border: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  /* Servo has trouble with button styling */
-  display: flex;
-  justify-items: center;
-  align-items: center;
-  line-height: 1;
-}
+    button {
+      padding: 0 1.5rem;
+      border-radius: var(--border-radius);
+      border: none;
+      background: var(--theme-color-primary);
+      color: #fff;
+      cursor: pointer;
+    }
 
-button:hover {
-  cursor: pointer;
-}
+    .pinned-grid {
+      margin-top: 2rem;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 1rem;
+      width: 100%;
+    }
 
-a {
-  cursor: pointer;
-  text-decoration: none;
-}
+    .pin {
+      aspect-ratio: 1 / 1;
+      background: rgba(255, 255, 255, .1);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: transform .15s ease, opacity .15s ease;
+    }
 
-:root {
-  --theme-color-primary: #1191e8;
-  --theme-color-secondary: #42bf64;
-}
+    .pin.dragging {
+      opacity: .5;
+    }
 
-/* These link colors work well for both light and dark mode */
-a {
-  color: var(--theme-color-primary);
-}
+    .pin-handle,
+    .pin-edit {
+      position: absolute;
+      top: .4rem;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, .6);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-a:hover {
-  color: var(--theme-color-secondary);
-}
+    .pin-handle {
+      left: .4rem;
+      cursor: grab;
+      font-size: .9rem;
+    }
 
-@media (prefers-color-scheme: light) {
-  .dark {
-    display: none;
-  }
+    .pin-handle:active {
+      cursor: grabbing;
+    }
 
-  body {
-    background: #f9f9f9;
-  }
+    .pin-edit {
+      right: .4rem;
+      cursor: pointer;
+      font-size: .75rem;
+    }
 
-  input {
-    background-color: white;
-  }
+    .pin:hover {
+      transform: translateY(-4px);
+    }
 
-  button {
-    background-color: var(--theme-color-secondary);
-    color: white;
-  }
+    .pin-icon {
+      width: 40px;
+      height: 40px;
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+    }
 
-  button:hover {
-    background-color: #3baa59;
-  }
-}
+    .pin-icon img {
+      width: 100%;
+      height: 100%;
+    }
 
-@media (prefers-color-scheme: dark) {
-  .light {
-    display: none;
-  }
+    .pin-name {
+      font-size: .85rem;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 90%;
+    }
 
-  body {
-    background-color: #121619;
-    color: hsl(0, 0%, 96%);
-  }
+    dialog {
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      width: 320px;
+      background: #1c2227;
+      color: #fff;
+      box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
 
-  input {
-    background-color: #333;
-    color: white;
-  }
+    dialog input {
+      box-sizing: border-box;
+      width: 100%;
+      height: 2.5rem;
+    }
 
-  button {
-    background-color: #333;
-    color: var(--theme-color-secondary);
-  }
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: .5rem;
+    }
 
-  button:hover {
-    background-color: #292929;
-  }
-}
+    .dialog-actions button {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+    }
+
+    .dialog-actions button#cancel {
+      background: transparent;
+      color: #bbb;
+    }
+
+    .dialog-actions button#cancel:hover {
+      color: #fff;
+    }
+
+    dialog::backdrop {
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(2px);
+    }
+
+    dialog {
+      opacity: 0;
+      transform: scale(0.96);
+      transition:
+        opacity 0.15s ease,
+        transform 0.15s ease;
+    }
+
+    dialog[open] {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+
+    @media (max-width: 700px) {
+      .pinned-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .search-button {
+      width: 3rem;
+      height: 3rem;
+      border-radius: var(--border-radius);
+      border: none;
+      background: var(--theme-color-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--box-shadow);
+      transition: background-color .15s ease, transform .1s ease;
+    }
+
+    .search-button img {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      filter: brightness(0) invert(1);
+      /* makes SVG white */
+      pointer-events: none;
+    }
+
+    .search-button:hover {
+      background-color: #0d7bc5;
+    }
+
+    .search-button:active {
+      transform: scale(0.95);
+    }

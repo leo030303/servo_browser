@@ -85,7 +85,7 @@ impl Default for ServoShellPreferences {
             clean_shutdown: false,
             device_pixel_ratio_override: None,
             headless: false,
-            homepage: "https://servo.org".into(),
+            homepage: "resource:///newtab.html".into(),
             initial_window_size: Size2D::new(1024, 740),
             no_native_titlebar: true,
             screen_size_override: None,
@@ -499,7 +499,7 @@ struct CmdArgs {
     window_size: Option<Size2D<u32, DeviceIndependentPixel>>,
 
     /// The url we should load.
-    #[bpaf(positional("URL"), fallback(String::from("https://www.servo.org")))]
+    #[bpaf(positional("URL"), fallback(String::from("resource:///newtab.html")))]
     url: String,
 }
 

@@ -1,20 +1,164 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servo - New Tab</title>
-    <link rel="stylesheet" href="resource:///newtab.css" />
-  </head>
-  <body>
-    <a href="https://servo.org">
-      <img class="light" src="resource:///servo-color-positive-no-container.svg" draggable="false"/>
-      <img class="dark" src="resource:///servo-color-negative-no-container.svg" draggable="false"/>
-    </a>
-    <form action="https://duckduckgo.com/html/">
-      <input name="q" placeholder="Search the web…" autofocus />
-      <button type="submit">Go!</button>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Tab</title>
+  <link rel="stylesheet" href="resource:///newtab.css">
+</head>
+
+<body>
+  <div class="container">
+    <img src="resource:///servo-color-negative-no-container.svg" draggable="false">
+
+    <form class="search-container" action="https://www.ecosia.org/search">
+      <input name="q" placeholder="Search the web…" autofocus>
+      <button type="submit" class="search-button" aria-label="Search">
+        <img src="resource:///search.svg" alt="">
+      </button>
     </form>
-    <a href="https://servo.org">Home</a>
-  </body>
+
+    <div class="pinned-grid" id="grid"></div>
+  </div>
+
+  <dialog id="dialog">
+    <h3>Edit Pinned Site</h3>
+    <input id="name" placeholder="Name">
+    <input id="url" placeholder="https://example.com">
+    <div class="dialog-actions">
+      <button id="save">Save</button>
+      <button id="cancel" type="button">Cancel</button>
+    </div>
+  </dialog>
+
+  <script>
+    const COUNT = 6;
+    const KEY = 'pinnedSites';
+
+    const grid = document.getElementById('grid');
+    const dialog = document.getElementById('dialog');
+    const nameInput = document.getElementById('name');
+    const urlInput = document.getElementById('url');
+
+    let editIndex = null;
+    let dragFromIndex = null;
+
+    function loadPins() {
+      try {
+        const data = JSON.parse(localStorage.getItem(KEY));
+        if (Array.isArray(data) && data.length === COUNT) return data;
+      } catch (e) { }
+      return Array.from({length: COUNT}, () => ({name: 'Add site', url: ''}));
+    }
+
+    const pins = loadPins();
+
+    function save() {
+      localStorage.setItem(KEY, JSON.stringify(pins));
+    }
+
+    function favicon(url) {
+      try {
+        return new URL(url).origin + '/favicon.ico';
+      } catch {
+        return '';
+      }
+    }
+
+    function render() {
+      grid.innerHTML = '';
+
+      pins.forEach((pin, i) => {
+        const el = document.createElement('div');
+        el.className = 'pin';
+        el.dataset.index = i;
+
+        el.innerHTML = `
+          <div class="pin-handle" draggable="true">≡</div>
+          <div class="pin-edit">✎</div>
+          <div class="pin-icon">${pin.url ? `<img src="${favicon(pin.url)}">` : '+'}</div>
+          <div class="pin-name">${pin.name}</div>
+        `;
+
+        const handle = el.querySelector('.pin-handle');
+        const editBtn = el.querySelector('.pin-edit');
+
+        handle.addEventListener('dragstart', () => {
+          dragFromIndex = i;
+          el.classList.add('dragging');
+        });
+
+        handle.addEventListener('dragend', () => {
+          el.classList.remove('dragging');
+          dragFromIndex = null;
+          save();
+        });
+
+        editBtn.onclick = (e) => {
+          e.stopPropagation();
+          editIndex = i;
+          nameInput.value = pin.name === 'Add site' ? '' : pin.name;
+          urlInput.value = pin.url;
+          dialog.showModal();
+        };
+
+        el.onclick = () => {
+          if (pin.url) window.location.href = pin.url;
+        };
+
+        grid.appendChild(el);
+      });
+    }
+
+    grid.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (dragFromIndex === null) return;
+
+      const children = [...grid.children];
+      const overEl = children.find(child => {
+        const rect = child.getBoundingClientRect();
+        return e.clientX < rect.left + rect.width / 2;
+      });
+
+      const overIndex = overEl ? Number(overEl.dataset.index) : children.length - 1;
+      if (overIndex === dragFromIndex) return;
+
+      const [moved] = pins.splice(dragFromIndex, 1);
+      pins.splice(overIndex, 0, moved);
+      dragFromIndex = overIndex;
+
+      render();
+    });
+
+    document.getElementById('save').onclick = () => {
+      if (editIndex === null) return;
+      pins[editIndex] = {
+        name: nameInput.value || 'Unnamed',
+        url: urlInput.value.trim()
+      };
+      save();
+      render();
+      dialog.close();
+    };
+
+    document.getElementById('cancel').onclick = () => dialog.close();
+
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('save').click();
+      }
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        dialog.close();
+      }
+    });
+
+
+    render();
+  </script>
+</body>
+
 </html>
