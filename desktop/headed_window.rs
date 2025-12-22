@@ -437,8 +437,9 @@ impl Window {
             .shortcut(CMD_OR_CONTROL, 'T', || {
                 window.create_and_activate_toplevel_webview(
                     state.clone(),
-                    Url::parse("servo:newtab")
-                        .expect("Should be able to unconditionally parse 'servo:newtab' as URL"),
+                    Url::parse("resource:///newtab.html").expect(
+                        "Should be able to unconditionally parse 'resource:///newtab.html' as URL",
+                    ),
                 );
             })
             .shortcut(CMD_OR_CONTROL, 'Q', || state.schedule_exit())

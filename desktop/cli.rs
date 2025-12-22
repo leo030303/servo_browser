@@ -4,8 +4,9 @@
 
 use std::{env, panic};
 
+use winit::event_loop::EventLoop;
+
 use crate::desktop::app::App;
-use crate::desktop::event_loop::ServoShellEventLoop;
 use crate::panic_hook;
 use crate::prefs::{ArgumentParsingResult, parse_command_line_arguments};
 
@@ -35,14 +36,15 @@ pub fn main() {
     crate::init_tracing(servoshell_preferences.tracing_filter.as_deref());
 
     let clean_shutdown = servoshell_preferences.clean_shutdown;
-    let event_loop = match servoshell_preferences.headless {
-        true => ServoShellEventLoop::headless(),
-        false => ServoShellEventLoop::headed(),
-    };
+    let event_loop = EventLoop::with_user_event()
+        .build()
+        .expect("Could not start winit event loop");
 
     {
         let mut app = App::new(opts, preferences, servoshell_preferences, &event_loop);
-        event_loop.run_app(&mut app);
+        event_loop
+            .run_app(&mut app)
+            .expect("Failed while running events loop");
     }
 
     crate::platform::deinit(clean_shutdown)

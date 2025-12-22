@@ -17,13 +17,12 @@ use servo::{
 use url::Url;
 use winit::application::ApplicationHandler;
 use winit::event::WindowEvent;
-use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoopProxy};
+use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop, EventLoopProxy};
 use winit::window::WindowId;
 
-use super::event_loop::AppEvent;
-use super::{headed_window, headless_window};
-use crate::desktop::event_loop::ServoShellEventLoop;
-use crate::desktop::protocols;
+use super::event_loop::{AppEvent, HeadedEventLoopWaker};
+use super::headed_window;
+use super::resource_protocol::ResourceProtocolHandler;
 use crate::desktop::tracing::trace_winit_event;
 use crate::parser::{get_default_url, location_bar_input_to_url};
 use crate::prefs::ServoShellPreferences;
@@ -41,7 +40,7 @@ pub struct App {
     preferences: Preferences,
     servoshell_preferences: ServoShellPreferences,
     waker: Box<dyn EventLoopWaker>,
-    event_loop_proxy: Option<EventLoopProxy<AppEvent>>,
+    event_loop_proxy: EventLoopProxy<AppEvent>,
     initial_url: ServoUrl,
     t_start: Instant,
     t: Instant,
@@ -53,7 +52,7 @@ impl App {
         opts: Opts,
         preferences: Preferences,
         servo_shell_preferences: ServoShellPreferences,
-        event_loop: &ServoShellEventLoop,
+        event_loop: &EventLoop<AppEvent>,
     ) -> Self {
         let initial_url = get_default_url(
             servo_shell_preferences.url.as_deref(),
@@ -67,8 +66,8 @@ impl App {
             opts,
             preferences,
             servoshell_preferences: servo_shell_preferences,
-            waker: event_loop.create_event_loop_waker(),
-            event_loop_proxy: event_loop.event_loop_proxy(),
+            waker: Box::new(HeadedEventLoopWaker::new(event_loop)),
+            event_loop_proxy: event_loop.create_proxy(),
             initial_url: initial_url.clone(),
             t_start: t,
             t,
@@ -77,7 +76,7 @@ impl App {
     }
 
     /// Initialize Application once event loop start running.
-    pub fn init(&mut self, active_event_loop: Option<&ActiveEventLoop>) {
+    pub fn init(&mut self, active_event_loop: &ActiveEventLoop) {
         let mut user_content_manager = UserContentManager::new();
         for script in load_userscripts(self.servoshell_preferences.userscripts_directory.as_deref())
             .expect("Loading userscripts failed")
@@ -86,16 +85,7 @@ impl App {
         }
 
         let mut protocol_registry = ProtocolRegistry::default();
-        let _ = protocol_registry.register(
-            "urlinfo",
-            protocols::urlinfo::UrlInfoProtocolHander::default(),
-        );
-        let _ =
-            protocol_registry.register("servo", protocols::servo::ServoProtocolHandler::default());
-        let _ = protocol_registry.register(
-            "resource",
-            protocols::resource::ResourceProtocolHandler::default(),
-        );
+        let _ = protocol_registry.register("resource", ResourceProtocolHandler::default());
 
         let servo_builder = ServoBuilder::default()
             .opts(self.opts.clone())
@@ -131,23 +121,12 @@ impl App {
     fn create_platform_window(
         &self,
         url: Url,
-        active_event_loop: Option<&ActiveEventLoop>,
+        active_event_loop: &ActiveEventLoop,
     ) -> Rc<dyn PlatformWindow> {
-        assert_eq!(
-            self.servoshell_preferences.headless,
-            active_event_loop.is_none()
-        );
-
-        let Some(active_event_loop) = active_event_loop else {
-            return headless_window::Window::new(&self.servoshell_preferences);
-        };
-
         headed_window::Window::new(
             &self.servoshell_preferences,
             active_event_loop,
-            self.event_loop_proxy
-                .clone()
-                .expect("Should always have event loop proxy in headed mode."),
+            self.event_loop_proxy.clone(),
             url,
         )
     }
@@ -209,7 +188,8 @@ impl App {
                 }
                 UserInterfaceCommand::NewWebView => {
                     window.set_needs_update();
-                    let url = Url::parse("servo:newtab").expect("Should always be able to parse");
+                    let url = Url::parse("resource:///newtab.html")
+                        .expect("Should always be able to parse");
                     window.create_and_activate_toplevel_webview(state.clone(), url);
                 }
                 UserInterfaceCommand::CloseWebView(id) => {
@@ -223,7 +203,7 @@ impl App {
 
 impl ApplicationHandler<AppEvent> for App {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
-        self.init(Some(event_loop));
+        self.init(event_loop);
     }
 
     fn window_event(

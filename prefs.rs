@@ -54,9 +54,6 @@ pub(crate) struct ServoShellPreferences {
     /// URL string of the search engine page with '%s' standing in for the search term.
     /// For example <https://duckduckgo.com/html/?q=%s>.
     pub searchpage: String,
-    /// Whether or not to run servoshell in headless mode. While running in headless
-    /// mode, image output is supported.
-    pub headless: bool,
     /// Filter directives for our tracing implementation.
     ///
     /// Overrides directives specified via `SERVO_TRACING` if set.
@@ -84,7 +81,6 @@ impl Default for ServoShellPreferences {
         Self {
             clean_shutdown: false,
             device_pixel_ratio_override: None,
-            headless: false,
             homepage: "resource:///newtab.html".into(),
             initial_window_size: Size2D::new(1024, 740),
             no_native_titlebar: true,
@@ -592,7 +588,6 @@ pub(crate) fn parse_command_line_arguments(args: Vec<String>) -> ArgumentParsing
         no_native_titlebar: cmd_args.no_native_titlebar,
         device_pixel_ratio_override: cmd_args.device_pixel_ratio,
         clean_shutdown: cmd_args.clean_shutdown,
-        headless: cmd_args.headless,
         tracing_filter: cmd_args.tracing_filter,
         initial_window_size: cmd_args.window_size.unwrap_or(default_window_size),
         screen_size_override: cmd_args.screen_size_override,

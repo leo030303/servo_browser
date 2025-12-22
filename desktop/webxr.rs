@@ -28,15 +28,9 @@ pub(crate) struct XrDiscoveryWebXrRegistry {
 impl XrDiscoveryWebXrRegistry {
     pub(crate) fn new_boxed(
         window: Rc<dyn PlatformWindow>,
-        event_loop: Option<&ActiveEventLoop>,
+        event_loop: &ActiveEventLoop,
         preferences: &Preferences,
     ) -> Box<Self> {
-        let Some(event_loop) = event_loop else {
-            return Box::new(Self {
-                xr_discovery: RefCell::new(None),
-            });
-        };
-
         let xr_discovery = if preferences.dom_webxr_openxr_enabled {
             #[cfg(target_os = "windows")]
             {
