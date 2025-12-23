@@ -51,7 +51,6 @@ use crate::desktop::dialog::Dialog;
 use crate::desktop::event_loop::AppEvent;
 use crate::desktop::gui::Gui;
 use crate::desktop::keyutils::CMD_OR_CONTROL;
-use crate::prefs::ServoShellPreferences;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
 use crate::window::{
     LINE_HEIGHT, LINE_WIDTH, MIN_WINDOW_INNER_SIZE, PlatformWindow, ServoShellWindow,
@@ -71,7 +70,6 @@ pub struct Window {
     /// It equals viewport size + (0, toolbar height).
     inner_size: Cell<PhysicalSize<u32>>,
     fullscreen: Cell<bool>,
-    device_pixel_ratio_override: Option<f32>,
     xr_window_poses: RefCell<Vec<Rc<XRWindowPose>>>,
     modifiers_state: Cell<ModifiersState>,
     /// The `RenderingContext` of Servo itself. This is used to render Servo results
@@ -81,9 +79,8 @@ pub struct Window {
     /// the target of egui rendering and also where Servo rendering results are finally
     /// blitted.
     window_rendering_context: Rc<WindowRenderingContext>,
-    /// A helper that simulates touch events when the `--simulate-touch-events` flag
-    /// is enabled.
-    touch_event_simulator: Option<TouchEventSimulator>,
+    /// A helper that simulates touch events
+    touch_event_simulator: TouchEventSimulator,
     /// Keyboard events that have been sent to Servo that have still not been handled yet.
     /// When these are handled, they will optionally be used to trigger keybindings that
     /// are overridable by web content.
@@ -103,18 +100,12 @@ pub struct Window {
 
 impl Window {
     pub(crate) fn new(
-        servoshell_preferences: &ServoShellPreferences,
         event_loop: &ActiveEventLoop,
         event_loop_proxy: EventLoopProxy<AppEvent>,
         initial_url: Url,
     ) -> Rc<Self> {
-        let no_native_titlebar = servoshell_preferences.no_native_titlebar;
-        let inner_size = servoshell_preferences.initial_window_size;
         let window_attr = winit::window::Window::default_attributes()
             .with_title(INITIAL_WINDOW_TITLE.to_string())
-            .with_decorations(!no_native_titlebar)
-            .with_transparent(no_native_titlebar)
-            .with_inner_size(LogicalSize::new(inner_size.width, inner_size.height))
             .with_min_inner_size(LogicalSize::new(
                 MIN_WINDOW_INNER_SIZE.width,
                 MIN_WINDOW_INNER_SIZE.height,
@@ -148,13 +139,10 @@ impl Window {
             .or_else(|| winit_window.available_monitors().nth(0))
             .expect("No monitor detected");
 
-        let (screen_size, screen_scale) = servoshell_preferences.screen_size_override.map_or_else(
-            || (monitor.size(), winit_window.scale_factor()),
-            |size| (PhysicalSize::new(size.width, size.height), 1.0),
-        );
-        let screen_scale: Scale<f64, DeviceIndependentPixel, DevicePixel> =
-            Scale::new(screen_scale);
-        let screen_size = (winit_size_to_euclid_size(screen_size).to_f64() / screen_scale).to_u32();
+        let screen_size: Size2D<u32, DeviceIndependentPixel> =
+            (Size2D::new(monitor.size().width, monitor.size().height).to_f64()
+                / winit_window.scale_factor())
+            .to_u32();
         let inner_size = winit_window.inner_size();
 
         let display_handle = event_loop
@@ -198,13 +186,10 @@ impl Window {
             inner_size: Cell::new(inner_size),
             monitor,
             screen_size,
-            device_pixel_ratio_override: servoshell_preferences.device_pixel_ratio_override,
             xr_window_poses: RefCell::new(vec![]),
             modifiers_state: Cell::new(ModifiersState::empty()),
             window_rendering_context,
-            touch_event_simulator: servoshell_preferences
-                .simulate_touch_events
-                .then(Default::default),
+            touch_event_simulator: Default::default(),
             pending_keyboard_events: Default::default(),
             rendering_context,
             last_title: RefCell::new(String::from(INITIAL_WINDOW_TITLE)),
@@ -261,11 +246,7 @@ impl Window {
 
         if self
             .touch_event_simulator
-            .as_ref()
-            .is_some_and(|touch_event_simulator| {
-                touch_event_simulator
-                    .maybe_consume_move_button_event(webview, button, action, point)
-            })
+            .maybe_consume_move_button_event(webview, button, action, point)
         {
             return;
         }
@@ -312,10 +293,7 @@ impl Window {
 
         if self
             .touch_event_simulator
-            .as_ref()
-            .is_some_and(|touch_event_simulator| {
-                touch_event_simulator.maybe_consume_mouse_move_event(webview, point)
-            })
+            .maybe_consume_mouse_move_event(webview, point)
         {
             return;
         }
@@ -568,9 +546,7 @@ impl PlatformWindow for Window {
     }
 
     fn hidpi_scale_factor(&self) -> Scale<f32, DeviceIndependentPixel, DevicePixel> {
-        self.device_pixel_ratio_override
-            .map(Scale::new)
-            .unwrap_or_else(|| self.device_hidpi_scale_factor())
+        self.device_hidpi_scale_factor()
     }
 
     fn rebuild_user_interface(&self, state: &RunningAppState, window: &ServoShellWindow) {

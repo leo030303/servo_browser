@@ -8,7 +8,6 @@ use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use image::{DynamicImage, ImageFormat};
 use log::{error, info};
 use servo::{
     AllowOrDenyRequest, AuthenticationRequest, DeviceIntPoint, DeviceIntSize, EmbedderControl,
@@ -137,10 +136,6 @@ pub(crate) struct RunningAppState {
     /// A handle to the Servo instance.
     pub(crate) servo: Servo,
 
-    /// Whether or not the application has achieved stable image output. This is used
-    /// for the `exit_after_stable_image` option.
-    pub(crate) achieved_stable_image: Rc<Cell<bool>>,
-
     /// Whether or not program exit has been triggered. This means that all windows
     /// will be destroyed and shutdown will start at the end of the current event loop.
     exit_scheduled: Cell<bool>,
@@ -171,7 +166,6 @@ impl RunningAppState {
             gamepad_support: RefCell::new(gamepad_support),
             servoshell_preferences,
             servo,
-            achieved_stable_image: Default::default(),
             exit_scheduled: Default::default(),
         }
     }
@@ -223,10 +217,6 @@ impl RunningAppState {
             window.update_and_request_repaint_if_necessary(self);
         }
 
-        if self.servoshell_preferences.exit_after_stable_image && self.achieved_stable_image.get() {
-            self.schedule_exit();
-        }
-
         // When a ServoShellWindow has no more WebViews, close it. When no more windows are open, exit
         // the application.
         self.windows
@@ -275,44 +265,6 @@ impl RunningAppState {
         webview_id: WebViewId,
     ) -> Rc<dyn PlatformWindow> {
         self.window_for_webview_id(webview_id).platform_window()
-    }
-
-    /// If we are exiting after achieving a stable image or we want to save the display of the
-    /// [`WebView`] to an image file, request a screenshot of the [`WebView`].
-    fn maybe_request_screenshot(&self, webview: WebView) {
-        let output_path = self.servoshell_preferences.output_image_path.clone();
-        if !self.servoshell_preferences.exit_after_stable_image && output_path.is_none() {
-            return;
-        }
-
-        // Never request more than a single screenshot for now.
-        let achieved_stable_image = self.achieved_stable_image.clone();
-        if achieved_stable_image.get() {
-            return;
-        }
-
-        webview.take_screenshot(None, move |image| {
-            achieved_stable_image.set(true);
-
-            let Some(output_path) = output_path else {
-                return;
-            };
-
-            let image = match image {
-                Ok(image) => image,
-                Err(error) => {
-                    error!("Could not take screenshot: {error:?}");
-                    return;
-                }
-            };
-
-            let image_format = ImageFormat::from_path(&output_path).unwrap_or(ImageFormat::Png);
-            if let Err(error) =
-                DynamicImage::ImageRgba8(image).save_with_format(output_path, image_format)
-            {
-                error!("Failed to save screenshot: {error}.");
-            }
-        });
     }
 
     pub(crate) fn handle_gamepad_events(&self) {
@@ -387,12 +339,8 @@ impl WebViewDelegate for RunningAppState {
             .set_cursor(cursor);
     }
 
-    fn notify_load_status_changed(&self, webview: WebView, status: LoadStatus) {
+    fn notify_load_status_changed(&self, webview: WebView, _status: LoadStatus) {
         self.window_for_webview_id(webview.id()).set_needs_update();
-
-        if status == LoadStatus::Complete {
-            self.maybe_request_screenshot(webview);
-        }
     }
 
     fn notify_fullscreen_state_changed(&self, webview: WebView, fullscreen_state: bool) {

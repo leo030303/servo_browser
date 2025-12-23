@@ -4,16 +4,11 @@
 
 //! Application entry point, runs the event loop.
 
-use std::path::Path;
-use std::rc::Rc;
-use std::time::Instant;
-use std::{env, fs};
-
 use log::warn;
 use servo::protocol_handler::ProtocolRegistry;
-use servo::{
-    EventLoopWaker, Opts, Preferences, ServoBuilder, ServoUrl, UserContentManager, UserScript,
-};
+use servo::{EventLoopWaker, Preferences, ServoBuilder, ServoUrl};
+use std::rc::Rc;
+use std::time::Instant;
 use url::Url;
 use winit::application::ApplicationHandler;
 use winit::event::WindowEvent;
@@ -24,10 +19,11 @@ use super::event_loop::{AppEvent, HeadedEventLoopWaker};
 use super::headed_window;
 use super::resource_protocol::ResourceProtocolHandler;
 use crate::desktop::tracing::trace_winit_event;
-use crate::parser::{get_default_url, location_bar_input_to_url};
+use crate::parser::location_bar_input_to_url;
 use crate::prefs::ServoShellPreferences;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
 use crate::window::{PlatformWindow, ServoShellWindow};
+use crate::{NEW_TAB_PAGE_URL, prefs};
 
 pub(crate) enum AppState {
     Initializing,
@@ -36,7 +32,6 @@ pub(crate) enum AppState {
 }
 
 pub struct App {
-    opts: Opts,
     preferences: Preferences,
     servoshell_preferences: ServoShellPreferences,
     waker: Box<dyn EventLoopWaker>,
@@ -49,26 +44,17 @@ pub struct App {
 
 impl App {
     pub fn new(
-        opts: Opts,
         preferences: Preferences,
         servo_shell_preferences: ServoShellPreferences,
         event_loop: &EventLoop<AppEvent>,
     ) -> Self {
-        let initial_url = get_default_url(
-            servo_shell_preferences.url.as_deref(),
-            env::current_dir().unwrap(),
-            |path| fs::metadata(path).is_ok(),
-            &servo_shell_preferences,
-        );
-
         let t = Instant::now();
         App {
-            opts,
             preferences,
             servoshell_preferences: servo_shell_preferences,
             waker: Box::new(HeadedEventLoopWaker::new(event_loop)),
             event_loop_proxy: event_loop.create_proxy(),
-            initial_url: initial_url.clone(),
+            initial_url: ServoUrl::parse(NEW_TAB_PAGE_URL).expect("Coming from const"),
             t_start: t,
             t,
             state: AppState::Initializing,
@@ -77,20 +63,12 @@ impl App {
 
     /// Initialize Application once event loop start running.
     pub fn init(&mut self, active_event_loop: &ActiveEventLoop) {
-        let mut user_content_manager = UserContentManager::new();
-        for script in load_userscripts(self.servoshell_preferences.userscripts_directory.as_deref())
-            .expect("Loading userscripts failed")
-        {
-            user_content_manager.add_script(script);
-        }
-
         let mut protocol_registry = ProtocolRegistry::default();
         let _ = protocol_registry.register("resource", ResourceProtocolHandler::default());
 
         let servo_builder = ServoBuilder::default()
-            .opts(self.opts.clone())
+            .opts(prefs::get_opts())
             .preferences(self.preferences.clone())
-            .user_content_manager(user_content_manager)
             .protocol_registry(protocol_registry)
             .event_loop_waker(self.waker.clone());
 
@@ -123,12 +101,7 @@ impl App {
         url: Url,
         active_event_loop: &ActiveEventLoop,
     ) -> Rc<dyn PlatformWindow> {
-        headed_window::Window::new(
-            &self.servoshell_preferences,
-            active_event_loop,
-            self.event_loop_proxy.clone(),
-            url,
-        )
+        headed_window::Window::new(active_event_loop, self.event_loop_proxy.clone(), url)
     }
 
     pub fn pump_servo_event_loop(&mut self, active_event_loop: Option<&ActiveEventLoop>) -> bool {
@@ -262,21 +235,4 @@ impl ApplicationHandler<AppEvent> for App {
         // Block until the window gets an event
         event_loop.set_control_flow(ControlFlow::Wait);
     }
-}
-
-fn load_userscripts(userscripts_directory: Option<&Path>) -> std::io::Result<Vec<UserScript>> {
-    let mut userscripts = Vec::new();
-    if let Some(userscripts_directory) = &userscripts_directory {
-        let mut files = std::fs::read_dir(userscripts_directory)?
-            .map(|e| e.map(|entry| entry.path()))
-            .collect::<Result<Vec<_>, _>>()?;
-        files.sort_unstable();
-        for file in files {
-            userscripts.push(UserScript {
-                script: std::fs::read_to_string(&file)?,
-                source_file: Some(file),
-            });
-        }
-    }
-    Ok(userscripts)
 }

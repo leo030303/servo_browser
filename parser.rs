@@ -2,62 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-use std::path::{Path, PathBuf};
-
 use servo::{ServoUrl, is_reg_domain};
-
-pub fn parse_url_or_filename(cwd: &Path, input: &str) -> Result<ServoUrl, ()> {
-    match ServoUrl::parse(input) {
-        Ok(url) => Ok(url),
-        Err(url::ParseError::RelativeUrlWithoutBase) => {
-            url::Url::from_file_path(&*cwd.join(input)).map(ServoUrl::from_url)
-        }
-        Err(_) => Err(()),
-    }
-}
-
-pub fn get_default_url(
-    url_opt: Option<&str>,
-    cwd: impl AsRef<Path>,
-    exists: impl FnOnce(&PathBuf) -> bool,
-    preferences: &crate::prefs::ServoShellPreferences,
-) -> ServoUrl {
-    // If the url is not provided, we fallback to the homepage in prefs,
-    // or a blank page in case the homepage is not set either.
-    let mut new_url = None;
-    let cmdline_url = url_opt.map(|s| s.to_string()).and_then(|url_string| {
-        parse_url_or_filename(cwd.as_ref(), &url_string)
-            .inspect_err(|&error| {
-                log::warn!("URL parsing failed ({error:?}).");
-            })
-            .ok()
-    });
-
-    if let Some(url) = cmdline_url.clone() {
-        // Check if the URL path corresponds to a file
-        match (url.scheme(), url.host(), url.to_file_path()) {
-            ("file", None, Ok(ref path)) if exists(path) => {
-                new_url = cmdline_url;
-            }
-            _ => {}
-        }
-    }
-
-    #[allow(
-        clippy::collapsible_if,
-        reason = "let chains are not available in 1.85"
-    )]
-    if new_url.is_none() {
-        if let Some(url_opt) = url_opt {
-            new_url = location_bar_input_to_url(url_opt, &preferences.searchpage);
-        }
-    }
-
-    let pref_url = parse_url_or_filename(cwd.as_ref(), &preferences.homepage).ok();
-    let blank_url = ServoUrl::parse("about:blank").ok();
-
-    new_url.or(pref_url).or(blank_url).unwrap()
-}
 
 /// Interpret an input URL.
 ///
