@@ -18,8 +18,9 @@ use servo::{
 use url::Url;
 
 use crate::GamepadSupport;
+use crate::desktop::headed_window::BrowserWindow;
 use crate::prefs::ServoShellPreferences;
-use crate::window::{PlatformWindow, ServoShellWindow, ServoShellWindowId};
+use crate::window::{ServoShellWindow, ServoShellWindowId};
 
 #[derive(Default)]
 pub struct WebViewCollection {
@@ -172,7 +173,7 @@ impl RunningAppState {
 
     pub(crate) fn open_window(
         self: &Rc<Self>,
-        platform_window: Rc<dyn PlatformWindow>,
+        platform_window: Rc<BrowserWindow>,
         initial_url: Url,
     ) {
         let window = Rc::new(ServoShellWindow::new(platform_window));
@@ -263,7 +264,7 @@ impl RunningAppState {
     pub(crate) fn platform_window_for_webview_id(
         &self,
         webview_id: WebViewId,
-    ) -> Rc<dyn PlatformWindow> {
+    ) -> Rc<BrowserWindow> {
         self.window_for_webview_id(webview_id).platform_window()
     }
 

@@ -13,7 +13,7 @@ use servo::webxr::{OpenXrAppInfo, OpenXrDiscovery};
 use servo::{Preferences, pref, prefs};
 use winit::event_loop::ActiveEventLoop;
 
-use crate::window::PlatformWindow;
+use super::headed_window::BrowserWindow;
 
 enum XrDiscovery {
     GlWindow(GlWindowDiscovery),
@@ -27,7 +27,7 @@ pub(crate) struct XrDiscoveryWebXrRegistry {
 
 impl XrDiscoveryWebXrRegistry {
     pub(crate) fn new_boxed(
-        window: Rc<dyn PlatformWindow>,
+        window: Rc<BrowserWindow>,
         event_loop: &ActiveEventLoop,
         preferences: &Preferences,
     ) -> Box<Self> {

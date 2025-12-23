@@ -21,11 +21,11 @@ use servo::{
     AuthenticationRequest, Cursor, DeviceIndependentPixel, DeviceIntPoint, DeviceIntRect,
     DeviceIntSize, DevicePixel, DevicePoint, EmbedderControl, EmbedderControlId, GenericSender,
     ImeEvent, InputEvent, InputEventId, InputEventResult, InputMethodControl, Key, KeyState,
-    KeyboardEvent, Modifiers, MouseButton as ServoMouseButton, MouseButtonAction, MouseButtonEvent,
-    MouseLeftViewportEvent, MouseMoveEvent, NamedKey, OffscreenRenderingContext, PermissionRequest,
-    RenderingContext, ScreenGeometry, Theme, TouchEvent, TouchEventType, TouchId,
-    WebRenderDebugOption, WebView, WebViewId, WheelDelta, WheelEvent, WheelMode,
-    WindowRenderingContext,
+    KeyboardEvent, MediaSessionEvent, Modifiers, MouseButton as ServoMouseButton,
+    MouseButtonAction, MouseButtonEvent, MouseLeftViewportEvent, MouseMoveEvent, NamedKey,
+    OffscreenRenderingContext, PermissionRequest, RenderingContext, ScreenGeometry, Theme,
+    TouchEvent, TouchEventType, TouchId, WebRenderDebugOption, WebView, WebViewId, WheelDelta,
+    WheelEvent, WheelMode, WindowRenderingContext,
 };
 use url::Url;
 use winit::dpi::{LogicalPosition, LogicalSize, PhysicalPosition, PhysicalSize};
@@ -53,13 +53,12 @@ use crate::desktop::gui::Gui;
 use crate::desktop::keyutils::CMD_OR_CONTROL;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
 use crate::window::{
-    LINE_HEIGHT, LINE_WIDTH, MIN_WINDOW_INNER_SIZE, PlatformWindow, ServoShellWindow,
-    ServoShellWindowId,
+    LINE_HEIGHT, LINE_WIDTH, MIN_WINDOW_INNER_SIZE, ServoShellWindow, ServoShellWindowId,
 };
 
 pub(crate) const INITIAL_WINDOW_TITLE: &str = "Servo";
 
-pub struct Window {
+pub struct BrowserWindow {
     /// The egui interface that is responsible for showing the user interface elements of
     /// this headed `Window`.
     gui: RefCell<Gui>,
@@ -98,7 +97,7 @@ pub struct Window {
     visible_input_methods: RefCell<Vec<EmbedderControlId>>,
 }
 
-impl Window {
+impl BrowserWindow {
     pub(crate) fn new(
         event_loop: &ActiveEventLoop,
         event_loop_proxy: EventLoopProxy<AppEvent>,
@@ -132,7 +131,7 @@ impl Window {
         let window_handle = winit_window
             .window_handle()
             .expect("winit window did not have a window handle");
-        Window::force_srgb_color_space(window_handle.as_raw());
+        BrowserWindow::force_srgb_color_space(window_handle.as_raw());
 
         let monitor = winit_window
             .current_monitor()
@@ -178,7 +177,7 @@ impl Window {
         ));
 
         debug!("Created window {:?}", winit_window.id());
-        Rc::new(Window {
+        Rc::new(BrowserWindow {
             gui,
             winit_window,
             webview_relative_mouse_point: Cell::new(Point2D::zero()),
@@ -515,8 +514,8 @@ impl Window {
     }
 }
 
-impl PlatformWindow for Window {
-    fn screen_geometry(&self) -> ScreenGeometry {
+impl BrowserWindow {
+    pub(crate) fn screen_geometry(&self) -> ScreenGeometry {
         let hidpi_factor = self.hidpi_scale_factor();
         let toolbar_size = Size2D::new(
             (self.tabbar_width() * self.hidpi_scale_factor()).0,
@@ -541,19 +540,29 @@ impl PlatformWindow for Window {
         }
     }
 
-    fn device_hidpi_scale_factor(&self) -> Scale<f32, DeviceIndependentPixel, DevicePixel> {
+    pub(crate) fn device_hidpi_scale_factor(
+        &self,
+    ) -> Scale<f32, DeviceIndependentPixel, DevicePixel> {
         Scale::new(self.winit_window.scale_factor() as f32)
     }
 
-    fn hidpi_scale_factor(&self) -> Scale<f32, DeviceIndependentPixel, DevicePixel> {
+    pub(crate) fn hidpi_scale_factor(&self) -> Scale<f32, DeviceIndependentPixel, DevicePixel> {
         self.device_hidpi_scale_factor()
     }
 
-    fn rebuild_user_interface(&self, state: &RunningAppState, window: &ServoShellWindow) {
+    pub(crate) fn rebuild_user_interface(
+        &self,
+        state: &RunningAppState,
+        window: &ServoShellWindow,
+    ) {
         self.gui.borrow_mut().update(state, window, self);
     }
 
-    fn update_user_interface_state(&self, _: &RunningAppState, window: &ServoShellWindow) -> bool {
+    pub(crate) fn update_user_interface_state(
+        &self,
+        _: &RunningAppState,
+        window: &ServoShellWindow,
+    ) -> bool {
         let title = window
             .active_webview()
             .and_then(|webview| {
@@ -572,7 +581,7 @@ impl PlatformWindow for Window {
         self.gui.borrow_mut().update_webview_data(window)
     }
 
-    fn handle_winit_window_event(
+    pub(crate) fn handle_winit_window_event(
         &self,
         state: Rc<RunningAppState>,
         window: &ServoShellWindow,
@@ -760,7 +769,7 @@ impl PlatformWindow for Window {
         }
     }
 
-    fn handle_winit_app_event(&self, app_event: AppEvent) {
+    pub(crate) fn handle_winit_app_event(&self, app_event: AppEvent) {
         if let AppEvent::Accessibility(ref event) = app_event {
             if self
                 .gui
@@ -769,10 +778,13 @@ impl PlatformWindow for Window {
             {
                 self.winit_window.request_redraw();
             }
+        } else if let AppEvent::UpdateTheme { theme, .. } = app_event {
+            self.winit_window.set_theme(Some(theme));
+            self.gui.borrow_mut().notify_new_theme(theme);
         }
     }
 
-    fn request_repaint(&self, window: &ServoShellWindow) {
+    pub(crate) fn request_repaint(&self, window: &ServoShellWindow) {
         self.winit_window.request_redraw();
 
         // FIXME: This is a workaround for dialogs, which do not seem to animate, unless we
@@ -785,7 +797,15 @@ impl PlatformWindow for Window {
         }
     }
 
-    fn request_resize(&self, _: &WebView, new_outer_size: DeviceIntSize) -> Option<DeviceIntSize> {
+    pub(crate) fn update_theme(&self, window: &ServoShellWindow) {
+        self.gui.borrow_mut().update_webviews_theme(window);
+    }
+
+    pub(crate) fn request_resize(
+        &self,
+        _: &WebView,
+        new_outer_size: DeviceIntSize,
+    ) -> Option<DeviceIntSize> {
         // Allocate space for the window deocrations, but do not let the inner size get
         // smaller than `MIN_WINDOW_INNER_SIZE` or larger than twice the screen size.
         let inner_size = self.winit_window.inner_size();
@@ -820,12 +840,12 @@ impl PlatformWindow for Window {
             })
     }
 
-    fn set_position(&self, point: DeviceIntPoint) {
+    pub(crate) fn set_position(&self, point: DeviceIntPoint) {
         self.winit_window
             .set_outer_position::<PhysicalPosition<i32>>(PhysicalPosition::new(point.x, point.y))
     }
 
-    fn set_fullscreen(&self, state: bool) {
+    pub(crate) fn set_fullscreen(&self, state: bool) {
         if self.fullscreen.get() != state {
             self.winit_window.set_fullscreen(if state {
                 Some(winit::window::Fullscreen::Borderless(Some(
@@ -842,7 +862,7 @@ impl PlatformWindow for Window {
         self.fullscreen.get()
     }
 
-    fn set_cursor(&self, cursor: Cursor) {
+    pub(crate) fn set_cursor(&self, cursor: Cursor) {
         use winit::window::CursorIcon;
 
         let winit_cursor = match cursor {
@@ -889,13 +909,16 @@ impl PlatformWindow for Window {
         self.winit_window.set_cursor_visible(true);
     }
 
-    fn id(&self) -> ServoShellWindowId {
+    pub(crate) fn id(&self) -> ServoShellWindowId {
         let id: u64 = self.winit_window.id().into();
         id.into()
     }
 
     #[cfg(feature = "webxr")]
-    fn new_glwindow(&self, event_loop: &ActiveEventLoop) -> Rc<dyn servo::webxr::GlWindow> {
+    pub(crate) fn new_glwindow(
+        &self,
+        event_loop: &ActiveEventLoop,
+    ) -> Rc<dyn servo::webxr::GlWindow> {
         let size = self.winit_window.outer_size();
 
         let window_attr = winit::window::Window::default_attributes()
@@ -915,11 +938,11 @@ impl PlatformWindow for Window {
         Rc::new(XRWindow { winit_window, pose })
     }
 
-    fn rendering_context(&self) -> Rc<dyn RenderingContext> {
+    pub(crate) fn rendering_context(&self) -> Rc<dyn RenderingContext> {
         self.rendering_context.clone()
     }
 
-    fn theme(&self) -> servo::Theme {
+    pub(crate) fn theme(&self) -> servo::Theme {
         match self.winit_window.theme() {
             Some(winit::window::Theme::Dark) => servo::Theme::Dark,
             Some(winit::window::Theme::Light) | None => servo::Theme::Light,
@@ -927,7 +950,7 @@ impl PlatformWindow for Window {
     }
 
     /// Handle servoshell key bindings that may have been prevented by the page in the active webview.
-    fn notify_input_event_handled(
+    pub(crate) fn notify_input_event_handled(
         &self,
         webview: &WebView,
         id: InputEventId,
@@ -955,11 +978,15 @@ impl PlatformWindow for Window {
             });
     }
 
-    fn focused(&self) -> bool {
+    pub(crate) fn focused(&self) -> bool {
         self.winit_window.has_focus()
     }
 
-    fn show_embedder_control(&self, webview_id: WebViewId, embedder_control: EmbedderControl) {
+    pub(crate) fn show_embedder_control(
+        &self,
+        webview_id: WebViewId,
+        embedder_control: EmbedderControl,
+    ) {
         let control_id = embedder_control.id();
         match embedder_control {
             EmbedderControl::SelectElement(prompt) => {
@@ -997,7 +1024,11 @@ impl PlatformWindow for Window {
         }
     }
 
-    fn hide_embedder_control(&self, webview_id: WebViewId, embedder_control_id: EmbedderControlId) {
+    pub(crate) fn hide_embedder_control(
+        &self,
+        webview_id: WebViewId,
+        embedder_control_id: EmbedderControlId,
+    ) {
         {
             let mut visible_input_methods = self.visible_input_methods.borrow_mut();
             if let Some(index) = visible_input_methods
@@ -1011,7 +1042,7 @@ impl PlatformWindow for Window {
         self.remove_dialog(webview_id, embedder_control_id);
     }
 
-    fn show_bluetooth_device_dialog(
+    pub(crate) fn show_bluetooth_device_dialog(
         &self,
         webview_id: WebViewId,
         devices: Vec<String>,
@@ -1023,14 +1054,18 @@ impl PlatformWindow for Window {
         );
     }
 
-    fn show_permission_dialog(&self, webview_id: WebViewId, permission_request: PermissionRequest) {
+    pub(crate) fn show_permission_dialog(
+        &self,
+        webview_id: WebViewId,
+        permission_request: PermissionRequest,
+    ) {
         self.add_dialog(
             webview_id,
             Dialog::new_permission_request_dialog(permission_request),
         );
     }
 
-    fn show_http_authentication_dialog(
+    pub(crate) fn show_http_authentication_dialog(
         &self,
         webview_id: WebViewId,
         authentication_request: AuthenticationRequest,
@@ -1041,13 +1076,15 @@ impl PlatformWindow for Window {
         );
     }
 
-    fn dismiss_embedder_controls_for_webview(&self, webview_id: WebViewId) {
+    pub(crate) fn dismiss_embedder_controls_for_webview(&self, webview_id: WebViewId) {
         self.dialogs.borrow_mut().remove(&webview_id);
     }
 
-    fn take_user_interface_commands(&self) -> Vec<UserInterfaceCommand> {
+    pub(crate) fn take_user_interface_commands(&self) -> Vec<UserInterfaceCommand> {
         self.gui.borrow_mut().take_user_interface_commands()
     }
+    pub(crate) fn notify_media_session_event(&self, _: MediaSessionEvent) {}
+    pub(crate) fn notify_crashed(&self, _: WebView, _reason: String, _backtrace: Option<String>) {}
 }
 
 fn winit_phase_to_touch_event_type(phase: TouchPhase) -> TouchEventType {

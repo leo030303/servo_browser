@@ -11,7 +11,7 @@ pub(crate) mod event_loop;
 pub(crate) mod gamepad;
 pub mod geometry;
 mod gui;
-mod headed_window;
+pub mod headed_window;
 mod keyutils;
 mod resource_protocol;
 mod tracing;

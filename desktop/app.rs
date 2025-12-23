@@ -16,13 +16,13 @@ use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop, EventLoopProxy}
 use winit::window::WindowId;
 
 use super::event_loop::{AppEvent, HeadedEventLoopWaker};
-use super::headed_window;
+use super::headed_window::{self, BrowserWindow};
 use super::resource_protocol::ResourceProtocolHandler;
 use crate::desktop::tracing::trace_winit_event;
 use crate::parser::location_bar_input_to_url;
 use crate::prefs::ServoShellPreferences;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
-use crate::window::{PlatformWindow, ServoShellWindow};
+use crate::window::ServoShellWindow;
 use crate::{NEW_TAB_PAGE_URL, prefs};
 
 pub(crate) enum AppState {
@@ -100,8 +100,8 @@ impl App {
         &self,
         url: Url,
         active_event_loop: &ActiveEventLoop,
-    ) -> Rc<dyn PlatformWindow> {
-        headed_window::Window::new(active_event_loop, self.event_loop_proxy.clone(), url)
+    ) -> Rc<BrowserWindow> {
+        headed_window::BrowserWindow::new(active_event_loop, self.event_loop_proxy.clone(), url)
     }
 
     pub fn pump_servo_event_loop(&mut self, active_event_loop: Option<&ActiveEventLoop>) -> bool {

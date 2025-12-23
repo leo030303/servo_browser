@@ -16,6 +16,10 @@ pub enum AppEvent {
     /// Another process or thread has kicked the OS event loop with EventLoopWaker.
     Waker,
     Accessibility(egui_winit::accesskit_winit::Event),
+    UpdateTheme {
+        theme: winit::window::Theme,
+        window_id: winit::window::WindowId,
+    },
 }
 
 impl From<egui_winit::accesskit_winit::Event> for AppEvent {
@@ -29,6 +33,7 @@ impl AppEvent {
         match self {
             AppEvent::Waker => None,
             AppEvent::Accessibility(event) => Some(event.window_id),
+            AppEvent::UpdateTheme { window_id, .. } => Some(*window_id),
         }
     }
 }

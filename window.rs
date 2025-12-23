@@ -5,16 +5,13 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use euclid::Scale;
 use servo::{
-    AuthenticationRequest, Cursor, DeviceIndependentPixel, DeviceIntPoint, DeviceIntSize,
-    DevicePixel, EmbedderControl, EmbedderControlId, GenericSender, InputEventId, InputEventResult,
-    MediaSessionEvent, PermissionRequest, RenderingContext, ScreenGeometry, WebView,
-    WebViewBuilder, WebViewId,
+    DeviceIntSize, EmbedderControl, EmbedderControlId, WebView, WebViewBuilder, WebViewId,
 };
 use url::Url;
 
-use crate::running_app_state::{RunningAppState, UserInterfaceCommand, WebViewCollection};
+use crate::desktop::headed_window::BrowserWindow;
+use crate::running_app_state::{RunningAppState, WebViewCollection};
 
 // This should vary by zoom level and maybe actual text size (focused or under cursor)
 pub(crate) const LINE_HEIGHT: f32 = 76.0;
@@ -37,7 +34,7 @@ pub(crate) struct ServoShellWindow {
     /// The [`WebView`]s that have been added to this window.
     pub(crate) webview_collection: RefCell<WebViewCollection>,
     /// A handle to the [`PlatformWindow`] that servoshell is rendering in.
-    platform_window: Rc<dyn PlatformWindow>,
+    platform_window: Rc<BrowserWindow>,
     /// Whether or not this window should be closed at the end of the spin of the next event loop.
     close_scheduled: Cell<bool>,
     /// Whether or not the application interface needs to be updated.
@@ -51,7 +48,7 @@ pub(crate) struct ServoShellWindow {
 }
 
 impl ServoShellWindow {
-    pub(crate) fn new(platform_window: Rc<dyn PlatformWindow>) -> Self {
+    pub(crate) fn new(platform_window: Rc<BrowserWindow>) -> Self {
         Self {
             webview_collection: Default::default(),
             platform_window,
@@ -127,7 +124,7 @@ impl ServoShellWindow {
         self.close_scheduled.set(true)
     }
 
-    pub(crate) fn platform_window(&self) -> Rc<dyn PlatformWindow> {
+    pub(crate) fn platform_window(&self) -> Rc<BrowserWindow> {
         self.platform_window.clone()
     }
 
@@ -172,6 +169,7 @@ impl ServoShellWindow {
     }
 
     pub(crate) fn update_and_request_repaint_if_necessary(&self, state: &RunningAppState) {
+        self.platform_window.update_theme(self);
         let updated_user_interface = self.needs_update.take()
             && self
                 .platform_window
@@ -243,92 +241,4 @@ impl ServoShellWindow {
         self.set_needs_update();
         self.set_needs_repaint();
     }
-}
-
-/// A `PlatformWindow` abstracts away the differents kinds of platform windows that might
-/// be used in a servoshell execution. This currently includes headed (winit) and headless
-/// windows.
-pub(crate) trait PlatformWindow {
-    fn id(&self) -> ServoShellWindowId;
-    fn screen_geometry(&self) -> ScreenGeometry;
-    fn device_hidpi_scale_factor(&self) -> Scale<f32, DeviceIndependentPixel, DevicePixel>;
-    fn hidpi_scale_factor(&self) -> Scale<f32, DeviceIndependentPixel, DevicePixel>;
-    fn get_fullscreen(&self) -> bool;
-    /// Request that the `Window` rebuild its user interface, if it has one. This should
-    /// not repaint, but should prepare the user interface for painting when it is
-    /// actually requested.
-    fn rebuild_user_interface(&self, _: &RunningAppState, _: &ServoShellWindow) {}
-    /// Inform the `Window` that the state of a `WebView` has changed and that it should
-    /// do an incremental update of user interface state. Returns `true` if the user
-    /// interface actually changed and a rebuild  and repaint is needed, `false` otherwise.
-    fn update_user_interface_state(&self, _: &RunningAppState, _: &ServoShellWindow) -> bool {
-        false
-    }
-    /// Handle a winit [`WindowEvent`]. Returns `true` if the event loop should continue
-    /// and `false` otherwise.
-    ///
-    /// TODO: This should be handled internally in the winit window if possible so that it
-    /// makes more sense when we are mixing headed and headless windows.
-    fn handle_winit_window_event(
-        &self,
-        _: Rc<RunningAppState>,
-        _: &ServoShellWindow,
-        _: winit::event::WindowEvent,
-    ) {
-    }
-    /// Handle a winit [`AppEvent`]. Returns `true` if the event loop should continue and
-    /// `false` otherwise.
-    ///
-    /// TODO: This should be handled internally in the winit window if possible so that it
-    /// makes more sense when we are mixing headed and headless windows.
-    fn handle_winit_app_event(&self, _: crate::desktop::event_loop::AppEvent) {}
-    fn take_user_interface_commands(&self) -> Vec<UserInterfaceCommand> {
-        Default::default()
-    }
-    /// Request that the window redraw itself. It is up to the window to do this
-    /// once the windowing system is ready. If this is a headless window, the redraw
-    /// will happen immediately.
-    fn request_repaint(&self, _: &ServoShellWindow);
-    /// Request a new outer size for the window, including external decorations.
-    /// This should be the same as `window.outerWidth` and `window.outerHeight``
-    fn request_resize(&self, webview: &WebView, outer_size: DeviceIntSize)
-    -> Option<DeviceIntSize>;
-    fn set_position(&self, _point: DeviceIntPoint) {}
-    fn set_fullscreen(&self, _state: bool) {}
-    fn set_cursor(&self, _cursor: Cursor) {}
-    #[cfg(feature = "webxr")]
-    fn new_glwindow(
-        &self,
-        event_loop: &winit::event_loop::ActiveEventLoop,
-    ) -> Rc<dyn servo::webxr::GlWindow>;
-    /// This returns [`RenderingContext`] matching the viewport.
-    fn rendering_context(&self) -> Rc<dyn RenderingContext>;
-    fn theme(&self) -> servo::Theme {
-        servo::Theme::Light
-    }
-    fn focused(&self) -> bool;
-
-    fn show_embedder_control(&self, _: WebViewId, _: EmbedderControl) {}
-    fn hide_embedder_control(&self, _: WebViewId, _: EmbedderControlId) {}
-    fn dismiss_embedder_controls_for_webview(&self, _: WebViewId) {}
-    fn show_bluetooth_device_dialog(
-        &self,
-        _: WebViewId,
-        _devices: Vec<String>,
-        _: GenericSender<Option<String>>,
-    ) {
-    }
-    fn show_permission_dialog(&self, _: WebViewId, _: PermissionRequest) {}
-    fn show_http_authentication_dialog(&self, _: WebViewId, _: AuthenticationRequest) {}
-
-    fn notify_input_event_handled(
-        &self,
-        _webview: &WebView,
-        _id: InputEventId,
-        _result: InputEventResult,
-    ) {
-    }
-
-    fn notify_media_session_event(&self, _: MediaSessionEvent) {}
-    fn notify_crashed(&self, _: WebView, _reason: String, _backtrace: Option<String>) {}
 }

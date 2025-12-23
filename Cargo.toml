@@ -43,9 +43,6 @@ media-gstreamer = ["libservo/media-gstreamer"]
 native-bluetooth = ["libservo/native-bluetooth"]
 profilemozjs = ["libservo/profilemozjs"]
 refcell_backtrace = ["libservo/refcell_backtrace"]
-tracing = ["dep:tracing", "dep:tracing-subscriber", "libservo/tracing"]
-tracing-hitrace = ["tracing", "dep:hitrace"]
-tracing-perfetto = ["tracing", "dep:tracing-perfetto"]
 vello = ["libservo/vello"]
 vello_cpu = ["libservo/vello_cpu"]
 webgl_backtrace = ["libservo/webgl_backtrace"]
@@ -70,9 +67,6 @@ mime_guess = { version = "2.0.5" }
 raw-window-handle = { version = "0.6" }
 rustls = { version = "0.23", features = ["aws-lc-rs"] }
 tokio = { version = "1" }
-tracing = { version = "0.1.43", optional = true }
-tracing-perfetto = { version = "0.1.5", optional = true }
-tracing-subscriber = { version = "0.3.22", optional = true, features = ["env-filter"] }
 url = { version = "2.5" }
 backtrace = { version = "0.3" }
 dirs = "6.0"
@@ -88,6 +82,7 @@ serde_json = { version = "1.0" }
 servo_allocator = { git = "https://github.com/servo/servo.git", rev = "6623cc1" }
 surfman = { version = "0.11.0", features = ["sm-raw-window-handle-06", "sm-x11"] }
 winit = { version = "0.30.12" }
+mundy = "0.2.2"
 
 [target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
 sig = "1.0"

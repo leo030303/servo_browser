@@ -66,6 +66,12 @@ pub struct Gui {
     ///
     /// These need to be cached across egui draw calls.
     favicon_textures: HashMap<WebViewId, (egui::TextureHandle, egui::load::SizedTexture)>,
+
+    /// Subscription for automatically changing the colour scheme
+    _colour_scheme_subscription: mundy::Subscription,
+
+    /// If the webviews need their theme updated to match winit then this contains the new theme, otherwise its None
+    updated_theme: Option<servo::Theme>,
 }
 
 fn truncate_with_ellipsis(input: &str, max_length: usize) -> String {
@@ -107,7 +113,7 @@ impl Gui {
 
         context
             .egui_winit
-            .init_accesskit(event_loop, winit_window, event_loop_proxy);
+            .init_accesskit(event_loop, winit_window, event_loop_proxy.clone());
         winit_window.set_visible(true);
 
         context.egui_ctx.options_mut(|options| {
@@ -120,6 +126,15 @@ impl Gui {
             options.fallback_theme = egui::Theme::Light;
         });
         egui_extras::install_image_loaders(&context.egui_ctx);
+
+        let colour_scheme_subscription = mundy::Preferences::subscribe(
+            mundy::Interest::ColorScheme,
+            Self::update_style(
+                context.egui_ctx.clone(),
+                event_loop_proxy,
+                winit_window.id(),
+            ),
+        );
 
         Self {
             rendering_context,
@@ -135,7 +150,56 @@ impl Gui {
             can_go_back: false,
             can_go_forward: false,
             favicon_textures: Default::default(),
+            _colour_scheme_subscription: colour_scheme_subscription,
+            updated_theme: None,
         }
+    }
+
+    fn update_style(
+        ctx: egui::Context,
+        event_loop_proxy: EventLoopProxy<AppEvent>,
+        window_id: winit::window::WindowId,
+    ) -> impl Fn(mundy::Preferences) {
+        move |preferences| {
+            match preferences.color_scheme {
+                mundy::ColorScheme::NoPreference => {
+                    ctx.set_visuals(egui::Visuals::light());
+                    event_loop_proxy
+                        .send_event(AppEvent::UpdateTheme {
+                            theme: winit::window::Theme::Light,
+                            window_id,
+                        })
+                        .unwrap();
+                }
+                mundy::ColorScheme::Light => {
+                    ctx.set_visuals(egui::Visuals::light());
+                    event_loop_proxy
+                        .send_event(AppEvent::UpdateTheme {
+                            theme: winit::window::Theme::Light,
+                            window_id,
+                        })
+                        .unwrap();
+                }
+                mundy::ColorScheme::Dark => {
+                    ctx.set_visuals(egui::Visuals::dark());
+                    event_loop_proxy
+                        .send_event(AppEvent::UpdateTheme {
+                            theme: winit::window::Theme::Dark,
+                            window_id,
+                        })
+                        .unwrap();
+                }
+            }
+            ctx.request_repaint();
+        }
+    }
+
+    pub(crate) fn notify_new_theme(&mut self, new_theme: winit::window::Theme) {
+        let servo_theme = match new_theme {
+            winit::window::Theme::Light => servo::Theme::Light,
+            winit::window::Theme::Dark => servo::Theme::Dark,
+        };
+        self.updated_theme = Some(servo_theme);
     }
 
     pub(crate) fn take_user_interface_commands(&mut self) -> Vec<UserInterfaceCommand> {
@@ -309,7 +373,7 @@ impl Gui {
         &mut self,
         _state: &RunningAppState,
         window: &ServoShellWindow,
-        headed_window: &headed_window::Window,
+        headed_window: &headed_window::BrowserWindow,
     ) {
         self.rendering_context
             .make_current()
@@ -605,6 +669,15 @@ impl Gui {
             .and_then(|webview| webview.status_text());
         let old_status = std::mem::replace(&mut self.status_text, state_status);
         old_status != self.status_text
+    }
+
+    pub(crate) fn update_webviews_theme(&mut self, window: &ServoShellWindow) {
+        if let Some(new_theme) = self.updated_theme {
+            window.webviews().iter().for_each(|(_, webview)| {
+                webview.notify_theme_change(new_theme);
+            });
+            self.updated_theme = None;
+        }
     }
 
     fn update_can_go_back_and_forward(&mut self, window: &ServoShellWindow) -> bool {
