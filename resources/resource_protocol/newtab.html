@@ -11,7 +11,6 @@
 <body>
   <div class="container">
     <img src="resource:///servo-color-negative-no-container.svg" draggable="false">
-
     <form class="search-container" action="https://www.ecosia.org/search">
       <input name="q" placeholder="Search the web…" autofocus>
       <button type="submit" class="search-button" aria-label="Search">
@@ -75,8 +74,14 @@
         el.dataset.index = i;
 
         el.innerHTML = `
-          <div class="pin-handle" draggable="true">≡</div>
-          <div class="pin-edit">✎</div>
+          <div class="pin-handle" draggable="true">
+            <svg height="16px" viewBox="0 0 16 16" width="16px" xmlns="http://www.w3.org/2000/svg">
+                <path d="m 4.496094 0 c -0.832032 0 -1.5 0.671875 -1.5 1.5 s 0.667968 1.5 1.5 1.5 c 0.828125 0 1.5 -0.671875 1.5 -1.5 s -0.671875 -1.5 -1.5 -1.5 z m 6 0 c -0.832032 0 -1.5 0.671875 -1.5 1.5 s 0.667968 1.5 1.5 1.5 c 0.828125 0 1.5 -0.671875 1.5 -1.5 s -0.671875 -1.5 -1.5 -1.5 z m -6 6 c -0.832032 0 -1.5 0.671875 -1.5 1.5 s 0.667968 1.5 1.5 1.5 c 0.828125 0 1.5 -0.671875 1.5 -1.5 s -0.671875 -1.5 -1.5 -1.5 z m 6 0 c -0.832032 0 -1.5 0.671875 -1.5 1.5 s 0.667968 1.5 1.5 1.5 c 0.828125 0 1.5 -0.671875 1.5 -1.5 s -0.671875 -1.5 -1.5 -1.5 z m -6 6 c -0.832032 0 -1.5 0.671875 -1.5 1.5 s 0.667968 1.5 1.5 1.5 c 0.828125 0 1.5 -0.671875 1.5 -1.5 s -0.671875 -1.5 -1.5 -1.5 z m 6 0 c -0.832032 0 -1.5 0.671875 -1.5 1.5 s 0.667968 1.5 1.5 1.5 c 0.828125 0 1.5 -0.671875 1.5 -1.5 s -0.671875 -1.5 -1.5 -1.5 z m 0 0" fill="#888888"/>
+            </svg>
+          </div>
+          <div class="pin-edit">
+            <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 0 16 16" width="16px"><path d="m 12.277344 0.832031 c -0.578125 0.007813 -1.167969 0.230469 -1.691406 0.753907 l -9 9 c -0.375 0.375 -0.585938 0.882812 -0.585938 1.414062 v 3 h 3 c 0.53125 0 1.039062 -0.210938 1.414062 -0.585938 l 9 -9 c 1.789063 -1.789062 0.082032 -4.390624 -1.890624 -4.570312 c -0.082032 -0.011719 -0.164063 -0.011719 -0.246094 -0.011719 z m -1.777344 3.605469 l 1.058594 1.0625 l -0.527344 0.53125 l -6.53125 6.53125 l -1.0625 -1.0625 z m 0 0" fill="#888888"/></svg>
+          </div>
           <div class="pin-icon">${pin.url ? `<img src="${favicon(pin.url)}">` : '+'}</div>
           <div class="pin-name">${pin.name}</div>
         `;

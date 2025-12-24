@@ -279,6 +279,7 @@ impl Gui {
         webview: WebView,
         event_queue: &mut Vec<UserInterfaceCommand>,
         favicon_texture: Option<egui::load::SizedTexture>,
+        theme: winit::window::Theme,
     ) {
         let label = match (webview.page_title(), webview.url()) {
             (Some(title), _) if !title.is_empty() => title,
@@ -337,9 +338,16 @@ impl Gui {
                         });
 
                     let close_button = tab_frame_ui.add(
-                        egui::Button::image(egui::include_image!("../resources/icons/close.svg"))
-                            .fill(egui::Color32::TRANSPARENT)
-                            .min_size(Vec2::new(FAVICON_SIZE, FAVICON_SIZE)),
+                        egui::Button::image(match theme {
+                            winit::window::Theme::Dark => {
+                                egui::include_image!("../resources/icons/close_dark.svg")
+                            }
+                            winit::window::Theme::Light => {
+                                egui::include_image!("../resources/icons/close_light.svg")
+                            }
+                        })
+                        .fill(egui::Color32::TRANSPARENT)
+                        .min_size(Vec2::new(FAVICON_SIZE, FAVICON_SIZE)),
                     );
                     close_button.widget_info(|| {
                         let mut info = WidgetInfo::new(WidgetType::Button);
@@ -407,9 +415,16 @@ impl Gui {
                         |ui| {
                             let back_button = ui.add_enabled(
                                 self.can_go_back,
-                                Gui::toolbar_image_button(egui::include_image!(
-                                    "../resources/icons/back_arrow.svg"
-                                )),
+                                Gui::toolbar_image_button(match winit_window.theme() {
+                                    Some(winit::window::Theme::Dark) => egui::include_image!(
+                                        "../resources/icons/back_arrow_dark.svg"
+                                    ),
+                                    Some(winit::window::Theme::Light) | None => {
+                                        egui::include_image!(
+                                            "../resources/icons/back_arrow_light.svg"
+                                        )
+                                    }
+                                }),
                             );
                             back_button.widget_info(|| {
                                 let mut info = WidgetInfo::new(WidgetType::Button);
@@ -423,9 +438,16 @@ impl Gui {
 
                             let forward_button = ui.add_enabled(
                                 self.can_go_forward,
-                                Gui::toolbar_image_button(egui::include_image!(
-                                    "../resources/icons/forward_arrow.svg"
-                                )),
+                                Gui::toolbar_image_button(match winit_window.theme() {
+                                    Some(winit::window::Theme::Dark) => egui::include_image!(
+                                        "../resources/icons/forward_arrow_dark.svg"
+                                    ),
+                                    Some(winit::window::Theme::Light) | None => {
+                                        egui::include_image!(
+                                            "../resources/icons/forward_arrow_light.svg"
+                                        )
+                                    }
+                                }),
                             );
                             forward_button.widget_info(|| {
                                 let mut info = WidgetInfo::new(WidgetType::Button);
@@ -440,7 +462,18 @@ impl Gui {
                             match self.load_status {
                                 LoadStatus::Started | LoadStatus::HeadParsed => {
                                     let stop_button = ui.add(Gui::toolbar_image_button(
-                                        egui::include_image!("../resources/icons/close.svg"),
+                                        match winit_window.theme() {
+                                            Some(winit::window::Theme::Dark) => {
+                                                egui::include_image!(
+                                                    "../resources/icons/close_dark.svg"
+                                                )
+                                            }
+                                            Some(winit::window::Theme::Light) | None => {
+                                                egui::include_image!(
+                                                    "../resources/icons/close_light.svg"
+                                                )
+                                            }
+                                        },
                                     ));
                                     stop_button.widget_info(|| {
                                         let mut info = WidgetInfo::new(WidgetType::Button);
@@ -453,7 +486,18 @@ impl Gui {
                                 }
                                 LoadStatus::Complete => {
                                     let reload_button = ui.add(Gui::toolbar_image_button(
-                                        egui::include_image!("../resources/icons/refresh.svg"),
+                                        match winit_window.theme() {
+                                            Some(winit::window::Theme::Dark) => {
+                                                egui::include_image!(
+                                                    "../resources/icons/refresh_dark.svg"
+                                                )
+                                            }
+                                            Some(winit::window::Theme::Light) | None => {
+                                                egui::include_image!(
+                                                    "../resources/icons/refresh_light.svg"
+                                                )
+                                            }
+                                        },
                                     ));
                                     reload_button.widget_info(|| {
                                         let mut info = WidgetInfo::new(WidgetType::Button);
@@ -542,13 +586,22 @@ impl Gui {
                                             webview,
                                             event_queue,
                                             favicon,
+                                            winit_window
+                                                .theme()
+                                                .unwrap_or(winit::window::Theme::Light),
                                         );
                                     });
                                 }
 
-                                let new_tab_button = ui.add(Gui::toolbar_image_button(
-                                    egui::include_image!("../resources/icons/add.svg"),
-                                ));
+                                let new_tab_button =
+                                    ui.add(Gui::toolbar_image_button(match winit_window.theme() {
+                                        Some(winit::window::Theme::Dark) => {
+                                            egui::include_image!("../resources/icons/add_dark.svg")
+                                        }
+                                        Some(winit::window::Theme::Light) | None => {
+                                            egui::include_image!("../resources/icons/add_light.svg")
+                                        }
+                                    }));
                                 new_tab_button.widget_info(|| {
                                     let mut info = WidgetInfo::new(WidgetType::Button);
                                     info.label = Some("New tab".into());
