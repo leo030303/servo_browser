@@ -22,7 +22,6 @@ use crate::panic_utils::tracing::trace_winit_event;
 use crate::parser::location_bar_input_to_url;
 use crate::prefs::ServoShellPreferences;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
-use crate::window::ServoShellWindow;
 use crate::{NEW_TAB_PAGE_URL, prefs};
 
 pub(crate) enum AppState {
@@ -126,7 +125,7 @@ impl App {
         &self,
         _active_event_loop: Option<&ActiveEventLoop>,
         state: &Rc<RunningAppState>,
-        window: &ServoShellWindow,
+        window: &BrowserWindow,
         commands: Vec<UserInterfaceCommand>,
     ) {
         for event in commands {
@@ -201,11 +200,7 @@ impl ApplicationHandler<AppEvent> for App {
             };
             let window_id: u64 = window_id.into();
             if let Some(window) = state.window(window_id.into()) {
-                window.platform_window().handle_winit_window_event(
-                    state.clone(),
-                    &window,
-                    window_event,
-                );
+                window.handle_winit_window_event(state.clone(), window_event);
             }
         }
 
@@ -224,7 +219,7 @@ impl ApplicationHandler<AppEvent> for App {
             if let Some(window_id) = app_event.window_id() {
                 let window_id: u64 = window_id.into();
                 if let Some(window) = state.window(window_id.into()) {
-                    window.platform_window().handle_winit_app_event(app_event);
+                    window.handle_winit_app_event(app_event);
                 }
             }
         }

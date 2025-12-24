@@ -1,7 +1,7 @@
 use egui::{Button, Layout, Vec2, WidgetInfo, WidgetType};
 use servo::WebView;
 
-use crate::{running_app_state::UserInterfaceCommand, window::ServoShellWindow};
+use crate::{headed_window::BrowserWindow, running_app_state::UserInterfaceCommand};
 
 use super::gui::{FAVICON_SIZE, TAB_WIDTH};
 
@@ -10,7 +10,7 @@ use super::gui::{FAVICON_SIZE, TAB_WIDTH};
 /// supports that, so we arrange multiple Widgets in a way that they look connected.
 pub fn create_browser_tab(
     ui: &mut egui::Ui,
-    window: &ServoShellWindow,
+    window: &BrowserWindow,
     webview: WebView,
     event_queue: &mut Vec<UserInterfaceCommand>,
     favicon_texture: Option<egui::load::SizedTexture>,

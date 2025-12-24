@@ -24,8 +24,8 @@ use servo::{
     KeyboardEvent, MediaSessionEvent, Modifiers, MouseButton as ServoMouseButton,
     MouseButtonAction, MouseButtonEvent, MouseLeftViewportEvent, MouseMoveEvent, NamedKey,
     OffscreenRenderingContext, PermissionRequest, RenderingContext, ScreenGeometry, Theme,
-    TouchEvent, TouchEventType, TouchId, WebRenderDebugOption, WebView, WebViewId, WheelDelta,
-    WheelEvent, WheelMode, WindowRenderingContext,
+    TouchEvent, TouchEventType, TouchId, WebRenderDebugOption, WebView, WebViewBuilder, WebViewId,
+    WheelDelta, WheelEvent, WheelMode, WindowRenderingContext,
 };
 use url::Url;
 use winit::dpi::{LogicalPosition, LogicalSize, PhysicalPosition, PhysicalSize};
@@ -50,13 +50,27 @@ use crate::dialog::Dialog;
 use crate::event_loop::AppEvent;
 use crate::keyutils::CMD_OR_CONTROL;
 use crate::misc_utils::accelerated_gl_media::setup_gl_accelerated_media;
-use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
+use crate::running_app_state::{RunningAppState, UserInterfaceCommand, WebViewCollection};
 use crate::user_interface::gui::Gui;
-use crate::window::{
-    LINE_HEIGHT, LINE_WIDTH, MIN_WINDOW_INNER_SIZE, ServoShellWindow, ServoShellWindowId,
-};
+
+// This should vary by zoom level and maybe actual text size (focused or under cursor)
+pub(crate) const LINE_HEIGHT: f32 = 76.0;
+pub(crate) const LINE_WIDTH: f32 = 76.0;
+
+/// <https://github.com/web-platform-tests/wpt/blob/9320b1f724632c52929a3fdb11bdaf65eafc7611/webdriver/tests/classic/set_window_rect/set.py#L287-L290>
+/// "A window size of 10x10px shouldn't be supported by any browser."
+pub(crate) const MIN_WINDOW_INNER_SIZE: DeviceIntSize = DeviceIntSize::new(100, 100);
 
 pub(crate) const INITIAL_WINDOW_TITLE: &str = "Servo";
+
+#[derive(Copy, Clone, Eq, Hash, PartialEq)]
+pub(crate) struct BrowserWindowId(u64);
+
+impl From<u64> for BrowserWindowId {
+    fn from(value: u64) -> Self {
+        Self(value)
+    }
+}
 
 pub struct BrowserWindow {
     /// The egui interface that is responsible for showing the user interface elements of
@@ -93,6 +107,18 @@ pub struct BrowserWindow {
     dialogs: RefCell<HashMap<WebViewId, Vec<Dialog>>>,
     /// A list of showing [`InputMethod`] interfaces.
     visible_input_methods: RefCell<Vec<EmbedderControlId>>,
+    /// The [`WebView`]s that have been added to this window.
+    pub(crate) webview_collection: RefCell<WebViewCollection>,
+    /// Whether or not this window should be closed at the end of the spin of the next event loop.
+    close_scheduled: Cell<bool>,
+    /// Whether or not the application interface needs to be updated.
+    needs_update: Cell<bool>,
+    /// Whether or not Servo needs to repaint its display. Currently this is global
+    /// because every `WebView` shares a `RenderingContext`.
+    needs_repaint: Cell<bool>,
+    /// List of webviews that have favicon textures which are not yet uploaded
+    /// to the GPU by egui.
+    pending_favicon_loads: RefCell<Vec<WebViewId>>,
 }
 
 impl BrowserWindow {
@@ -191,6 +217,11 @@ impl BrowserWindow {
             last_title: RefCell::new(String::from(INITIAL_WINDOW_TITLE)),
             dialogs: Default::default(),
             visible_input_methods: Default::default(),
+            webview_collection: Default::default(),
+            close_scheduled: Default::default(),
+            needs_update: Default::default(),
+            needs_repaint: Default::default(),
+            pending_favicon_loads: Default::default(),
         })
     }
 
@@ -198,20 +229,15 @@ impl BrowserWindow {
         &self.winit_window
     }
 
-    fn handle_keyboard_input(
-        &self,
-        state: Rc<RunningAppState>,
-        window: &ServoShellWindow,
-        winit_event: KeyEvent,
-    ) {
+    fn handle_keyboard_input(&self, state: Rc<RunningAppState>, winit_event: KeyEvent) {
         // First, handle servoshell key bindings that are not overridable by, or visible to, the page.
         let keyboard_event = keyboard_event_from_winit(&winit_event, self.modifiers_state.get());
-        if self.handle_intercepted_key_bindings(state.clone(), window, &keyboard_event) {
+        if self.handle_intercepted_key_bindings(state.clone(), &keyboard_event) {
             return;
         }
 
         // Then we deliver character and keyboard events to the page in the active webview.
-        let Some(webview) = window.active_webview() else {
+        let Some(webview) = self.active_webview() else {
             return;
         };
 
@@ -287,10 +313,9 @@ impl BrowserWindow {
     fn handle_intercepted_key_bindings(
         &self,
         state: Rc<RunningAppState>,
-        window: &ServoShellWindow,
         key_event: &KeyboardEvent,
     ) -> bool {
-        let Some(active_webview) = window.active_webview() else {
+        let Some(active_webview) = self.active_webview() else {
             return false;
         };
 
@@ -298,7 +323,7 @@ impl BrowserWindow {
         ShortcutMatcher::from_event(key_event.event.clone())
             .shortcut(CMD_OR_CONTROL, 'R', || active_webview.reload())
             .shortcut(CMD_OR_CONTROL, 'W', || {
-                window.close_webview(active_webview.id());
+                self.close_webview(active_webview.id());
             })
             .shortcut(CMD_OR_CONTROL, 'P', || {
                 let rate = env::var("SAMPLING_RATE")
@@ -368,34 +393,34 @@ impl BrowserWindow {
                 || active_webview.exit_fullscreen(),
             )
             // Select the first 8 tabs via shortcuts
-            .shortcut(CMD_OR_CONTROL, '1', || window.activate_webview_by_index(0))
-            .shortcut(CMD_OR_CONTROL, '2', || window.activate_webview_by_index(1))
-            .shortcut(CMD_OR_CONTROL, '3', || window.activate_webview_by_index(2))
-            .shortcut(CMD_OR_CONTROL, '4', || window.activate_webview_by_index(3))
-            .shortcut(CMD_OR_CONTROL, '5', || window.activate_webview_by_index(4))
-            .shortcut(CMD_OR_CONTROL, '6', || window.activate_webview_by_index(5))
-            .shortcut(CMD_OR_CONTROL, '7', || window.activate_webview_by_index(6))
-            .shortcut(CMD_OR_CONTROL, '8', || window.activate_webview_by_index(7))
+            .shortcut(CMD_OR_CONTROL, '1', || self.activate_webview_by_index(0))
+            .shortcut(CMD_OR_CONTROL, '2', || self.activate_webview_by_index(1))
+            .shortcut(CMD_OR_CONTROL, '3', || self.activate_webview_by_index(2))
+            .shortcut(CMD_OR_CONTROL, '4', || self.activate_webview_by_index(3))
+            .shortcut(CMD_OR_CONTROL, '5', || self.activate_webview_by_index(4))
+            .shortcut(CMD_OR_CONTROL, '6', || self.activate_webview_by_index(5))
+            .shortcut(CMD_OR_CONTROL, '7', || self.activate_webview_by_index(6))
+            .shortcut(CMD_OR_CONTROL, '8', || self.activate_webview_by_index(7))
             // Cmd/Ctrl 9 is a bit different in that it focuses the last tab instead of the 9th
             .shortcut(CMD_OR_CONTROL, '9', || {
-                let len = window.webviews().len();
+                let len = self.webviews().len();
                 if len > 0 {
-                    window.activate_webview_by_index(len - 1)
+                    self.activate_webview_by_index(len - 1)
                 }
             })
             .shortcut(Modifiers::CONTROL, Key::Named(NamedKey::PageDown), || {
-                if let Some(index) = window.get_active_webview_index() {
-                    window.activate_webview_by_index((index + 1) % window.webviews().len())
+                if let Some(index) = self.get_active_webview_index() {
+                    self.activate_webview_by_index((index + 1) % self.webviews().len())
                 }
             })
             .shortcut(Modifiers::CONTROL, Key::Named(NamedKey::PageUp), || {
-                if let Some(index) = window.get_active_webview_index() {
-                    let len = window.webviews().len();
-                    window.activate_webview_by_index((index + len - 1) % len);
+                if let Some(index) = self.get_active_webview_index() {
+                    let len = self.webviews().len();
+                    self.activate_webview_by_index((index + len - 1) % len);
                 }
             })
             .shortcut(CMD_OR_CONTROL, 'T', || {
-                window.create_and_activate_toplevel_webview(
+                self.create_and_activate_toplevel_webview(
                     state.clone(),
                     Url::parse("resource:///newtab.html").expect(
                         "Should be able to unconditionally parse 'resource:///newtab.html' as URL",
@@ -438,12 +463,8 @@ impl BrowserWindow {
         );
     }
 
-    pub(crate) fn for_each_active_dialog(
-        &self,
-        window: &ServoShellWindow,
-        callback: impl Fn(&mut Dialog) -> bool,
-    ) {
-        let Some(active_webview) = window.active_webview() else {
+    pub(crate) fn for_each_active_dialog(&self, callback: impl Fn(&mut Dialog) -> bool) {
+        let Some(active_webview) = self.active_webview() else {
             return;
         };
         let mut dialogs = self.dialogs.borrow_mut();
@@ -462,7 +483,7 @@ impl BrowserWindow {
         let length = dialogs.len();
         dialogs.retain_mut(callback);
         if length != dialogs.len() {
-            window.set_needs_repaint();
+            self.set_needs_repaint();
         }
     }
 
@@ -494,6 +515,151 @@ impl BrowserWindow {
     }
     fn tabbar_width(&self) -> Length<f32, DeviceIndependentPixel> {
         self.gui.borrow().tabbar_width()
+    }
+
+    pub(crate) fn create_and_activate_toplevel_webview(
+        &self,
+        state: Rc<RunningAppState>,
+        url: Url,
+    ) -> WebView {
+        let webview = self.create_toplevel_webview(state, url);
+        self.activate_webview(webview.id());
+        webview
+    }
+
+    pub(crate) fn create_toplevel_webview(&self, state: Rc<RunningAppState>, url: Url) -> WebView {
+        let webview = WebViewBuilder::new(state.servo(), self.rendering_context())
+            .url(url)
+            .hidpi_scale_factor(self.hidpi_scale_factor())
+            .delegate(state.clone())
+            .build();
+
+        webview.notify_theme_change(self.theme());
+        self.add_webview(webview.clone());
+        webview
+    }
+
+    /// Repaint the focused [`WebView`].
+    pub(crate) fn repaint_webviews(&self) {
+        let Some(webview) = self.active_webview() else {
+            return;
+        };
+
+        self.rendering_context()
+            .make_current()
+            .expect("Could not make PlatformWindow RenderingContext current");
+        webview.paint();
+        self.rendering_context().present();
+    }
+
+    /// Whether or not this [`BrowserWindow`] has any [`WebView`]s.
+    pub(crate) fn should_close(&self) -> bool {
+        self.webview_collection.borrow().is_empty() || self.close_scheduled.get()
+    }
+
+    pub(crate) fn contains_webview(&self, id: WebViewId) -> bool {
+        self.webview_collection.borrow().contains(id)
+    }
+
+    pub(crate) fn webview_by_id(&self, id: WebViewId) -> Option<WebView> {
+        self.webview_collection.borrow().get(id).cloned()
+    }
+
+    pub(crate) fn set_needs_update(&self) {
+        self.needs_update.set(true);
+    }
+
+    pub(crate) fn set_needs_repaint(&self) {
+        self.needs_repaint.set(true)
+    }
+
+    pub(crate) fn schedule_close(&self) {
+        self.close_scheduled.set(true)
+    }
+
+    pub(crate) fn add_webview(&self, webview: WebView) {
+        self.webview_collection.borrow_mut().add(webview);
+        self.set_needs_update();
+        self.set_needs_repaint();
+    }
+
+    /// Returns all [`WebView`]s in creation order.
+    pub(crate) fn webviews(&self) -> Vec<(WebViewId, WebView)> {
+        self.webview_collection
+            .borrow()
+            .all_in_creation_order()
+            .map(|(id, webview)| (id, webview.clone()))
+            .collect()
+    }
+
+    pub(crate) fn activate_webview(&self, webview_id: WebViewId) {
+        self.webview_collection
+            .borrow_mut()
+            .activate_webview(webview_id);
+        self.set_needs_update();
+    }
+
+    pub(crate) fn activate_webview_by_index(&self, index_to_activate: usize) {
+        self.webview_collection
+            .borrow_mut()
+            .activate_webview_by_index(index_to_activate);
+        self.set_needs_update();
+    }
+
+    pub(crate) fn get_active_webview_index(&self) -> Option<usize> {
+        let active_id = self.webview_collection.borrow().active_id()?;
+        self.webviews()
+            .iter()
+            .position(|webview| webview.0 == active_id)
+    }
+
+    pub(crate) fn update_and_request_repaint_if_necessary(&self, state: &RunningAppState) {
+        self.update_theme();
+        let updated_user_interface =
+            self.needs_update.take() && self.update_user_interface_state(state);
+
+        // Delegate handlers may have asked us to present or update compositor contents.
+        // Currently, egui-file-dialog dialogs need to be constantly redrawn or animations aren't fluid.
+        let needs_repaint = self.needs_repaint.take();
+        if updated_user_interface || needs_repaint {
+            self.request_repaint();
+        }
+    }
+
+    /// Close the given [`WebView`] via its [`WebViewId`].
+    ///
+    /// Note: This can happen because we can trigger a close with a UI action and then get
+    /// the close notification via the [`WebViewDelegate`] later.
+    pub(crate) fn close_webview(&self, webview_id: WebViewId) {
+        let mut webview_collection = self.webview_collection.borrow_mut();
+        if webview_collection.remove(webview_id).is_none() {
+            return;
+        }
+        self.dismiss_embedder_controls_for_webview(webview_id);
+
+        self.set_needs_update();
+        self.set_needs_repaint();
+    }
+
+    pub(crate) fn notify_favicon_changed(&self, webview: WebView) {
+        self.pending_favicon_loads.borrow_mut().push(webview.id());
+        self.set_needs_repaint();
+    }
+
+    pub(crate) fn hidpi_scale_factor_changed(&self) {
+        let new_scale_factor = self.hidpi_scale_factor();
+        for webview in self.webview_collection.borrow().values() {
+            webview.set_hidpi_scale_factor(new_scale_factor);
+        }
+    }
+
+    pub(crate) fn active_webview(&self) -> Option<WebView> {
+        self.webview_collection.borrow().active().cloned()
+    }
+
+    /// Return a list of all webviews that have favicons that have not yet been loaded by egui.
+    pub(crate) fn take_pending_favicon_loads(&self) -> Vec<WebViewId> {
+        std::mem::take(&mut *self.pending_favicon_loads.borrow_mut())
     }
 }
 
@@ -533,20 +699,12 @@ impl BrowserWindow {
         self.device_hidpi_scale_factor()
     }
 
-    pub(crate) fn rebuild_user_interface(
-        &self,
-        state: &RunningAppState,
-        window: &ServoShellWindow,
-    ) {
-        self.gui.borrow_mut().update(state, window, self);
+    pub(crate) fn rebuild_user_interface(&self, state: &RunningAppState) {
+        self.gui.borrow_mut().update(state, self);
     }
 
-    pub(crate) fn update_user_interface_state(
-        &self,
-        _: &RunningAppState,
-        window: &ServoShellWindow,
-    ) -> bool {
-        let title = window
+    pub(crate) fn update_user_interface_state(&self, _: &RunningAppState) -> bool {
+        let title = self
             .active_webview()
             .and_then(|webview| {
                 webview
@@ -561,20 +719,15 @@ impl BrowserWindow {
             *self.last_title.borrow_mut() = title;
         }
 
-        self.gui.borrow_mut().update_webview_data(window)
+        self.gui.borrow_mut().update_webview_data(self)
     }
 
-    pub(crate) fn handle_winit_window_event(
-        &self,
-        state: Rc<RunningAppState>,
-        window: &ServoShellWindow,
-        event: WindowEvent,
-    ) {
+    pub(crate) fn handle_winit_window_event(&self, state: Rc<RunningAppState>, event: WindowEvent) {
         if event == WindowEvent::RedrawRequested {
             // WARNING: do not defer painting or presenting to some later tick of the event
             // loop or servoshell may become unresponsive! (servo#30312)
             let mut gui = self.gui.borrow_mut();
-            gui.update(&state, window, self);
+            gui.update(&state, self);
             gui.paint(&self.winit_window);
         }
 
@@ -596,7 +749,7 @@ impl BrowserWindow {
                     .borrow()
                     .set_zoom_factor(effective_egui_zoom_factor);
 
-                window.hidpi_scale_factor_changed();
+                self.hidpi_scale_factor_changed();
 
                 // Request a winit redraw event, so we can recomposite, update and paint
                 // the GUI, and present the new frame.
@@ -609,7 +762,7 @@ impl BrowserWindow {
                     .on_window_event(&self.winit_window, event);
 
                 if let WindowEvent::Resized(_) = event {
-                    self.rebuild_user_interface(&state, window);
+                    self.rebuild_user_interface(&state);
                 }
 
                 if response.repaint && *event != WindowEvent::RedrawRequested {
@@ -628,7 +781,7 @@ impl BrowserWindow {
                 | WindowEvent::MouseInput { .. }
                 | WindowEvent::MouseWheel { .. }
                 | WindowEvent::KeyboardInput { .. }
-        ) && window
+        ) && self
             .active_webview()
             .is_some_and(|webview| self.has_active_dialog_for_webview(webview.id()))
         {
@@ -647,10 +800,10 @@ impl BrowserWindow {
                 }
             }
 
-            if let Some(webview) = window.active_webview() {
+            if let Some(webview) = self.active_webview() {
                 match event {
                     WindowEvent::KeyboardInput { event, .. } => {
-                        self.handle_keyboard_input(state.clone(), window, event)
+                        self.handle_keyboard_input(state.clone(), event)
                     }
                     WindowEvent::ModifiersChanged(modifiers) => {
                         self.modifiers_state.set(modifiers.state())
@@ -709,7 +862,7 @@ impl BrowserWindow {
                         );
                     }
                     WindowEvent::CloseRequested => {
-                        window.schedule_close();
+                        self.schedule_close();
                     }
                     WindowEvent::ThemeChanged(theme) => {
                         webview.notify_theme_change(match theme {
@@ -767,21 +920,21 @@ impl BrowserWindow {
         }
     }
 
-    pub(crate) fn request_repaint(&self, window: &ServoShellWindow) {
+    pub(crate) fn request_repaint(&self) {
         self.winit_window.request_redraw();
 
         // FIXME: This is a workaround for dialogs, which do not seem to animate, unless we
         // constantly repaint the egui scene.
-        if window
+        if self
             .active_webview()
             .is_some_and(|webview| self.has_active_dialog_for_webview(webview.id()))
         {
-            window.set_needs_repaint();
+            self.set_needs_repaint();
         }
     }
 
-    pub(crate) fn update_theme(&self, window: &ServoShellWindow) {
-        self.gui.borrow_mut().update_webviews_theme(window);
+    pub(crate) fn update_theme(&self) {
+        self.gui.borrow_mut().update_webviews_theme(self);
     }
 
     pub(crate) fn request_resize(
@@ -892,7 +1045,7 @@ impl BrowserWindow {
         self.winit_window.set_cursor_visible(true);
     }
 
-    pub(crate) fn id(&self) -> ServoShellWindowId {
+    pub(crate) fn id(&self) -> BrowserWindowId {
         let id: u64 = self.winit_window.id().into();
         id.into()
     }
@@ -1005,6 +1158,8 @@ impl BrowserWindow {
                 self.add_dialog(webview_id, Dialog::new_context_menu(prompt, offset));
             }
         }
+        self.set_needs_update();
+        self.set_needs_repaint();
     }
 
     pub(crate) fn hide_embedder_control(
@@ -1023,6 +1178,8 @@ impl BrowserWindow {
             }
         }
         self.remove_dialog(webview_id, embedder_control_id);
+        self.set_needs_update();
+        self.set_needs_repaint();
     }
 
     pub(crate) fn show_bluetooth_device_dialog(

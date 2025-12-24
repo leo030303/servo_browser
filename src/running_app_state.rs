@@ -18,9 +18,8 @@ use servo::{
 use url::Url;
 
 use crate::GamepadSupport;
-use crate::headed_window::BrowserWindow;
+use crate::headed_window::{BrowserWindow, BrowserWindowId};
 use crate::prefs::ServoShellPreferences;
-use crate::window::{ServoShellWindow, ServoShellWindowId};
 
 #[derive(Default)]
 pub struct WebViewCollection {
@@ -141,11 +140,11 @@ pub(crate) struct RunningAppState {
     /// will be destroyed and shutdown will start at the end of the current event loop.
     exit_scheduled: Cell<bool>,
 
-    /// The set of [`ServoShellWindow`]s that currently exist for this instance of servoshell.
+    /// The set of [`BrowserWindow`]s that currently exist for this instance of servoshell.
     // This is the last field of the struct to ensure that windows are dropped *after* all
     // other references to the relevant rendering contexts have been destroyed.
     // See https://github.com/servo/servo/issues/36711.
-    windows: RefCell<HashMap<ServoShellWindowId, Rc<ServoShellWindow>>>,
+    windows: RefCell<HashMap<BrowserWindowId, Rc<BrowserWindow>>>,
 }
 
 impl RunningAppState {
@@ -171,17 +170,12 @@ impl RunningAppState {
         }
     }
 
-    pub(crate) fn open_window(
-        self: &Rc<Self>,
-        platform_window: Rc<BrowserWindow>,
-        initial_url: Url,
-    ) {
-        let window = Rc::new(ServoShellWindow::new(platform_window));
+    pub(crate) fn open_window(self: &Rc<Self>, window: Rc<BrowserWindow>, initial_url: Url) {
         window.create_and_activate_toplevel_webview(self.clone(), initial_url);
         self.windows.borrow_mut().insert(window.id(), window);
     }
 
-    pub(crate) fn focused_window(&self) -> Option<Rc<ServoShellWindow>> {
+    pub(crate) fn focused_window(&self) -> Option<Rc<BrowserWindow>> {
         self.windows
             .borrow()
             .values()
@@ -189,7 +183,7 @@ impl RunningAppState {
             .cloned()
     }
 
-    pub(crate) fn window(&self, id: ServoShellWindowId) -> Option<Rc<ServoShellWindow>> {
+    pub(crate) fn window(&self, id: BrowserWindowId) -> Option<Rc<BrowserWindow>> {
         self.windows.borrow().get(&id).cloned()
     }
 
@@ -218,7 +212,7 @@ impl RunningAppState {
             window.update_and_request_repaint_if_necessary(self);
         }
 
-        // When a ServoShellWindow has no more WebViews, close it. When no more windows are open, exit
+        // When a BrowserWindow has no more WebViews, close it. When no more windows are open, exit
         // the application.
         self.windows
             .borrow_mut()
@@ -232,22 +226,19 @@ impl RunningAppState {
 
     pub(crate) fn foreach_window_and_interface_commands(
         self: &Rc<Self>,
-        callback: impl Fn(&ServoShellWindow, Vec<UserInterfaceCommand>),
+        callback: impl Fn(&BrowserWindow, Vec<UserInterfaceCommand>),
     ) {
         // We clone here to avoid a double borrow. User interface commands can update the list of windows.
         let windows: Vec<_> = self.windows.borrow().values().cloned().collect();
         for window in windows {
-            callback(
-                &window,
-                window.platform_window().take_user_interface_commands(),
-            )
+            callback(&window, window.take_user_interface_commands())
         }
     }
 
     pub(crate) fn maybe_window_for_webview_id(
         &self,
         webview_id: WebViewId,
-    ) -> Option<Rc<ServoShellWindow>> {
+    ) -> Option<Rc<BrowserWindow>> {
         for window in self.windows.borrow().values() {
             if window.contains_webview(webview_id) {
                 return Some(window.clone());
@@ -256,7 +247,7 @@ impl RunningAppState {
         None
     }
 
-    pub(crate) fn window_for_webview_id(&self, webview_id: WebViewId) -> Rc<ServoShellWindow> {
+    pub(crate) fn window_for_webview_id(&self, webview_id: WebViewId) -> Rc<BrowserWindow> {
         self.maybe_window_for_webview_id(webview_id)
             .expect("Looking for unexpected WebView: {webview_id:?}")
     }
@@ -265,7 +256,7 @@ impl RunningAppState {
         &self,
         webview_id: WebViewId,
     ) -> Rc<BrowserWindow> {
-        self.window_for_webview_id(webview_id).platform_window()
+        self.window_for_webview_id(webview_id)
     }
 
     pub(crate) fn handle_gamepad_events(&self) {
@@ -400,12 +391,12 @@ impl WebViewDelegate for RunningAppState {
 
     fn show_embedder_control(&self, webview: WebView, embedder_control: EmbedderControl) {
         self.window_for_webview_id(webview.id())
-            .show_embedder_control(webview, embedder_control);
+            .show_embedder_control(webview.id(), embedder_control);
     }
 
     fn hide_embedder_control(&self, webview: WebView, embedder_control_id: EmbedderControlId) {
         self.window_for_webview_id(webview.id())
-            .hide_embedder_control(webview, embedder_control_id);
+            .hide_embedder_control(webview.id(), embedder_control_id);
     }
 
     fn notify_favicon_changed(&self, webview: WebView) {

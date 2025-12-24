@@ -25,7 +25,6 @@ mod resource_protocol;
 mod resources;
 mod running_app_state;
 pub mod user_interface;
-mod window;
 
 const NEW_TAB_PAGE_URL: &str = "resource:///newtab.html";
 

@@ -28,9 +28,8 @@ use winit::window::Window;
 
 use crate::event_loop::AppEvent;
 use crate::geometry::winit_position_to_euclid_point;
-use crate::headed_window;
+use crate::headed_window::{self, BrowserWindow};
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
-use crate::window::ServoShellWindow;
 
 use super::browser_tab::create_browser_tab;
 
@@ -267,7 +266,6 @@ impl Gui {
     pub(crate) fn update(
         &mut self,
         _state: &RunningAppState,
-        window: &ServoShellWindow,
         headed_window: &headed_window::BrowserWindow,
     ) {
         self.rendering_context
@@ -287,7 +285,7 @@ impl Gui {
 
         let winit_window = headed_window.winit_window();
         context.run(winit_window, |ctx| {
-            load_pending_favicons(ctx, window, favicon_textures);
+            load_pending_favicons(ctx, headed_window, favicon_textures);
 
             // TODO: While in fullscreen add some way to mitigate the increased phishing risk
             // when not displaying the URL bar: https://github.com/servo/servo/issues/32443
@@ -461,7 +459,7 @@ impl Gui {
                             Vec2::new(TAB_WIDTH - 20.0, ui.available_size().y),
                             egui::Layout::top_down(egui::Align::Center),
                             |ui| {
-                                for (id, webview) in window.webviews().into_iter() {
+                                for (id, webview) in headed_window.webviews().into_iter() {
                                     let favicon = favicon_textures
                                         .get(&id)
                                         .map(|(_, favicon)| favicon)
@@ -469,7 +467,7 @@ impl Gui {
                                     ui.allocate_ui(Vec2::new(TAB_WIDTH - 30.0, 0.0), |ui| {
                                         create_browser_tab(
                                             ui,
-                                            window,
+                                            headed_window,
                                             webview,
                                             event_queue,
                                             favicon,
@@ -515,13 +513,13 @@ impl Gui {
             let scale =
                 Scale::<_, DeviceIndependentPixel, DevicePixel>::new(ctx.pixels_per_point());
 
-            headed_window.for_each_active_dialog(window, |dialog| dialog.update(ctx));
+            headed_window.for_each_active_dialog(|dialog| dialog.update(ctx));
 
             // If the top parts of the GUI changed size, then update the size of the WebView and also
             // the size of its RenderingContext.
             let rect = ctx.available_rect();
             let size = Size2D::new(rect.width(), rect.height()) * scale;
-            if let Some(webview) = window.active_webview()
+            if let Some(webview) = headed_window.active_webview()
                 && size != webview.size()
             {
                 // `rect` is sized to just the WebView viewport, which is required by
@@ -540,7 +538,7 @@ impl Gui {
                 .show(|ui| ui.add(Label::new(status_text.clone()).extend()));
             }
 
-            window.repaint_webviews();
+            headed_window.repaint_webviews();
 
             if let Some(render_to_parent) = rendering_context.render_to_parent_callback() {
                 ctx.layer_painter(LayerId::background()).add(PaintCallback {
@@ -572,7 +570,7 @@ impl Gui {
 
     /// Updates the location field from the given [`RunningAppState`], unless the user has started
     /// editing it without clicking Go, returning true iff it has changed (needing an egui update).
-    fn update_location_in_toolbar(&mut self, window: &ServoShellWindow) -> bool {
+    fn update_location_in_toolbar(&mut self, window: &BrowserWindow) -> bool {
         // User edited without clicking Go?
         if self.location_dirty {
             return false;
@@ -590,7 +588,7 @@ impl Gui {
         }
     }
 
-    fn update_load_status(&mut self, window: &ServoShellWindow) -> bool {
+    fn update_load_status(&mut self, window: &BrowserWindow) -> bool {
         let state_status = window
             .active_webview()
             .map(|webview| webview.load_status())
@@ -607,7 +605,7 @@ impl Gui {
         status_changed
     }
 
-    fn update_status_text(&mut self, window: &ServoShellWindow) -> bool {
+    fn update_status_text(&mut self, window: &BrowserWindow) -> bool {
         let state_status = window
             .active_webview()
             .and_then(|webview| webview.status_text());
@@ -615,7 +613,7 @@ impl Gui {
         old_status != self.status_text
     }
 
-    pub(crate) fn update_webviews_theme(&mut self, window: &ServoShellWindow) {
+    pub(crate) fn update_webviews_theme(&mut self, window: &BrowserWindow) {
         if let Some(new_theme) = self.updated_theme {
             window.webviews().iter().for_each(|(_, webview)| {
                 webview.notify_theme_change(new_theme);
@@ -624,7 +622,7 @@ impl Gui {
         }
     }
 
-    fn update_can_go_back_and_forward(&mut self, window: &ServoShellWindow) -> bool {
+    fn update_can_go_back_and_forward(&mut self, window: &BrowserWindow) -> bool {
         let (can_go_back, can_go_forward) = window
             .active_webview()
             .map(|webview| (webview.can_go_back(), webview.can_go_forward()))
@@ -634,9 +632,9 @@ impl Gui {
         old_can_go_back != self.can_go_back || old_can_go_forward != self.can_go_forward
     }
 
-    /// Updates all fields taken from the given [`ServoShellWindow`], such as the location field.
+    /// Updates all fields taken from the given [`BrowserWindow`], such as the location field.
     /// Returns true iff the egui needs an update.
-    pub(crate) fn update_webview_data(&mut self, window: &ServoShellWindow) -> bool {
+    pub(crate) fn update_webview_data(&mut self, window: &BrowserWindow) -> bool {
         // Note: We must use the "bitwise OR" (|) operator here instead of "logical OR" (||)
         //       because logical OR would short-circuit if any of the functions return true.
         //       We want to ensure that all functions are called. The "bitwise OR" operator
@@ -709,7 +707,7 @@ fn embedder_image_to_egui_image(image: &Image) -> egui::ColorImage {
 /// Uploads all favicons that have not yet been processed to the GPU.
 fn load_pending_favicons(
     ctx: &egui::Context,
-    window: &ServoShellWindow,
+    window: &BrowserWindow,
     texture_cache: &mut HashMap<WebViewId, (egui::TextureHandle, egui::load::SizedTexture)>,
 ) {
     for id in window.take_pending_favicon_loads() {
