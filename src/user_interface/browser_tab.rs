@@ -1,7 +1,7 @@
 use egui::{Button, Layout, Vec2, WidgetInfo, WidgetType};
 use servo::WebView;
 
-use crate::{headed_window::BrowserWindow, running_app_state::UserInterfaceCommand};
+use crate::{browser_window::BrowserWindow, running_app_state::UserInterfaceCommand};
 
 use super::gui::{FAVICON_SIZE, TAB_WIDTH};
 

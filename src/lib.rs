@@ -12,10 +12,10 @@ use winit::event_loop::EventLoop;
 mod test;
 
 pub(crate) mod app;
+pub mod browser_window;
 pub(crate) mod dialog;
 pub(crate) mod event_loop;
 pub mod geometry;
-pub mod headed_window;
 mod keyutils;
 pub mod misc_utils;
 pub mod panic_utils;

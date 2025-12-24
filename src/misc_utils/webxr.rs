@@ -16,7 +16,7 @@ use servo::{Key, KeyState, KeyboardEvent, Preferences, pref, prefs};
 use winit::event::{ElementState, KeyEvent};
 use winit::event_loop::ActiveEventLoop;
 
-use crate::headed_window::BrowserWindow;
+use crate::browser_window::BrowserWindow;
 use winit::keyboard::{Key as LogicalKey, ModifiersState, NamedKey as WinitNamedKey};
 
 enum XrDiscovery {

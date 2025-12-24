@@ -15,8 +15,8 @@ use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop, EventLoopProxy};
 use winit::window::WindowId;
 
+use super::browser_window::{self, BrowserWindow};
 use super::event_loop::{AppEvent, HeadedEventLoopWaker};
-use super::headed_window::{self, BrowserWindow};
 use super::resource_protocol::ResourceProtocolHandler;
 use crate::panic_utils::tracing::trace_winit_event;
 use crate::parser::location_bar_input_to_url;
@@ -101,7 +101,7 @@ impl App {
         url: Url,
         active_event_loop: &ActiveEventLoop,
     ) -> Rc<BrowserWindow> {
-        headed_window::BrowserWindow::new(active_event_loop, self.event_loop_proxy.clone(), url)
+        browser_window::BrowserWindow::new(active_event_loop, self.event_loop_proxy.clone(), url)
     }
 
     pub fn pump_servo_event_loop(&mut self, active_event_loop: Option<&ActiveEventLoop>) -> bool {

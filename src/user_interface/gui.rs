@@ -26,9 +26,9 @@ use winit::event::{ElementState, MouseButton, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, EventLoopProxy};
 use winit::window::Window;
 
+use crate::browser_window::{self, BrowserWindow};
 use crate::event_loop::AppEvent;
 use crate::geometry::winit_position_to_euclid_point;
-use crate::headed_window::{self, BrowserWindow};
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
 
 use super::browser_tab::create_browser_tab;
@@ -263,11 +263,7 @@ impl Gui {
     }
 
     /// Update the user interface, but do not paint the updated state.
-    pub(crate) fn update(
-        &mut self,
-        _state: &RunningAppState,
-        headed_window: &headed_window::BrowserWindow,
-    ) {
+    pub(crate) fn update(&mut self, _state: &RunningAppState, browser_window: &BrowserWindow) {
         self.rendering_context
             .make_current()
             .expect("Could not make RenderingContext current");
@@ -283,9 +279,9 @@ impl Gui {
             ..
         } = self;
 
-        let winit_window = headed_window.winit_window();
+        let winit_window = browser_window.winit_window();
         context.run(winit_window, |ctx| {
-            load_pending_favicons(ctx, headed_window, favicon_textures);
+            load_pending_favicons(ctx, browser_window, favicon_textures);
 
             // TODO: While in fullscreen add some way to mitigate the increased phishing risk
             // when not displaying the URL bar: https://github.com/servo/servo/issues/32443
@@ -459,7 +455,7 @@ impl Gui {
                             Vec2::new(TAB_WIDTH - 20.0, ui.available_size().y),
                             egui::Layout::top_down(egui::Align::Center),
                             |ui| {
-                                for (id, webview) in headed_window.webviews().into_iter() {
+                                for (id, webview) in browser_window.webviews().into_iter() {
                                     let favicon = favicon_textures
                                         .get(&id)
                                         .map(|(_, favicon)| favicon)
@@ -467,7 +463,7 @@ impl Gui {
                                     ui.allocate_ui(Vec2::new(TAB_WIDTH - 30.0, 0.0), |ui| {
                                         create_browser_tab(
                                             ui,
-                                            headed_window,
+                                            browser_window,
                                             webview,
                                             event_queue,
                                             favicon,
@@ -513,13 +509,13 @@ impl Gui {
             let scale =
                 Scale::<_, DeviceIndependentPixel, DevicePixel>::new(ctx.pixels_per_point());
 
-            headed_window.for_each_active_dialog(|dialog| dialog.update(ctx));
+            browser_window.for_each_active_dialog(|dialog| dialog.update(ctx));
 
             // If the top parts of the GUI changed size, then update the size of the WebView and also
             // the size of its RenderingContext.
             let rect = ctx.available_rect();
             let size = Size2D::new(rect.width(), rect.height()) * scale;
-            if let Some(webview) = headed_window.active_webview()
+            if let Some(webview) = browser_window.active_webview()
                 && size != webview.size()
             {
                 // `rect` is sized to just the WebView viewport, which is required by
@@ -538,7 +534,7 @@ impl Gui {
                 .show(|ui| ui.add(Label::new(status_text.clone()).extend()));
             }
 
-            headed_window.repaint_webviews();
+            browser_window.repaint_webviews();
 
             if let Some(render_to_parent) = rendering_context.render_to_parent_callback() {
                 ctx.layer_painter(LayerId::background()).add(PaintCallback {
