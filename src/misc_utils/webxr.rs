@@ -13,7 +13,7 @@ use servo::webxr::{OpenXrAppInfo, OpenXrDiscovery};
 use servo::{Preferences, pref, prefs};
 use winit::event_loop::ActiveEventLoop;
 
-use super::headed_window::BrowserWindow;
+use crate::headed_window::BrowserWindow;
 
 enum XrDiscovery {
     GlWindow(GlWindowDiscovery),

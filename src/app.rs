@@ -18,10 +18,10 @@ use winit::window::WindowId;
 use super::event_loop::{AppEvent, HeadedEventLoopWaker};
 use super::headed_window::{self, BrowserWindow};
 use super::resource_protocol::ResourceProtocolHandler;
+use crate::panic_utils::tracing::trace_winit_event;
 use crate::parser::location_bar_input_to_url;
 use crate::prefs::ServoShellPreferences;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
-use crate::tracing::trace_winit_event;
 use crate::window::ServoShellWindow;
 use crate::{NEW_TAB_PAGE_URL, prefs};
 
@@ -76,12 +76,13 @@ impl App {
         let platform_window = self.create_platform_window(url, active_event_loop);
 
         #[cfg(feature = "webxr")]
-        let servo_builder =
-            servo_builder.webxr_registry(super::webxr::XrDiscoveryWebXrRegistry::new_boxed(
+        let servo_builder = servo_builder.webxr_registry(
+            super::misc_utils::webxr::XrDiscoveryWebXrRegistry::new_boxed(
                 platform_window.clone(),
                 active_event_loop,
                 &self.preferences,
-            ));
+            ),
+        );
 
         let servo = servo_builder.build();
         servo.setup_logging();

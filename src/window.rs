@@ -30,7 +30,7 @@ impl From<u64> for ServoShellWindowId {
     }
 }
 
-pub(crate) struct ServoShellWindow {
+pub struct ServoShellWindow {
     /// The [`WebView`]s that have been added to this window.
     pub(crate) webview_collection: RefCell<WebViewCollection>,
     /// A handle to the [`PlatformWindow`] that servoshell is rendering in.

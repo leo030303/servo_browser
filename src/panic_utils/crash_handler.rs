@@ -13,7 +13,7 @@ pub fn install() {
 
     use sig::signal;
 
-    use crate::backtrace;
+    use crate::panic_utils::backtrace;
 
     extern "C" fn handler(sig: i32) {
         // Only print crash message and backtrace the first time, to avoid

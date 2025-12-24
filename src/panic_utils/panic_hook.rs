@@ -9,7 +9,7 @@ use std::{env, thread};
 use log::{error, warn};
 use servo::opts;
 
-use crate::crash_handler::raise_signal_or_exit_with_error;
+use crate::panic_utils::crash_handler::raise_signal_or_exit_with_error;
 
 pub(crate) fn panic_hook(info: &PanicHookInfo) {
     warn!("Panic hook called.");
@@ -37,7 +37,7 @@ pub(crate) fn panic_hook(info: &PanicHookInfo) {
         let _ = writeln!(&mut stderr, "{msg} (thread {name})");
     }
     if env::var("RUST_BACKTRACE").is_ok() {
-        let _ = crate::backtrace::print(&mut stderr);
+        let _ = crate::panic_utils::backtrace::print(&mut stderr);
     }
     drop(stderr);
 

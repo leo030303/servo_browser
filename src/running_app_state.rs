@@ -118,7 +118,7 @@ impl WebViewCollection {
 }
 
 /// A command received via the user interacting with the user interface.
-pub(crate) enum UserInterfaceCommand {
+pub enum UserInterfaceCommand {
     Go(String),
     Back,
     Forward,

@@ -46,12 +46,12 @@ use {
 
 use super::geometry::{winit_position_to_euclid_point, winit_size_to_euclid_size};
 use super::keyutils::{CMD_OR_ALT, keyboard_event_from_winit};
-use crate::accelerated_gl_media::setup_gl_accelerated_media;
 use crate::dialog::Dialog;
 use crate::event_loop::AppEvent;
-use crate::gui::Gui;
 use crate::keyutils::CMD_OR_CONTROL;
+use crate::misc_utils::accelerated_gl_media::setup_gl_accelerated_media;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
+use crate::user_interface::gui::Gui;
 use crate::window::{
     LINE_HEIGHT, LINE_WIDTH, MIN_WINDOW_INNER_SIZE, ServoShellWindow, ServoShellWindowId,
 };
@@ -78,8 +78,6 @@ pub struct BrowserWindow {
     /// the target of egui rendering and also where Servo rendering results are finally
     /// blitted.
     window_rendering_context: Rc<WindowRenderingContext>,
-    /// A helper that simulates touch events
-    touch_event_simulator: TouchEventSimulator,
     /// Keyboard events that have been sent to Servo that have still not been handled yet.
     /// When these are handled, they will optionally be used to trigger keybindings that
     /// are overridable by web content.
@@ -188,7 +186,6 @@ impl BrowserWindow {
             xr_window_poses: RefCell::new(vec![]),
             modifiers_state: Cell::new(ModifiersState::empty()),
             window_rendering_context,
-            touch_event_simulator: Default::default(),
             pending_keyboard_events: Default::default(),
             rendering_context,
             last_title: RefCell::new(String::from(INITIAL_WINDOW_TITLE)),
@@ -243,13 +240,6 @@ impl BrowserWindow {
             return;
         }
 
-        if self
-            .touch_event_simulator
-            .maybe_consume_move_button_event(webview, button, action, point)
-        {
-            return;
-        }
-
         let mouse_button = match &button {
             MouseButton::Left => ServoMouseButton::Left,
             MouseButton::Right => ServoMouseButton::Right,
@@ -287,13 +277,6 @@ impl BrowserWindow {
                     MouseLeftViewportEvent::default(),
                 ));
             }
-            return;
-        }
-
-        if self
-            .touch_event_simulator
-            .maybe_consume_mouse_move_event(webview, point)
-        {
             return;
         }
 
@@ -1222,59 +1205,5 @@ impl XRWindowPose {
         let y: Rotation3D<_, UnknownUnit, UnknownUnit> = Rotation3D::around_y(Angle::degrees(y));
         let rotation = self.xr_rotation.get().then(&x).then(&y);
         self.xr_rotation.set(rotation);
-    }
-}
-
-#[derive(Default)]
-pub struct TouchEventSimulator {
-    pub left_mouse_button_down: Cell<bool>,
-}
-
-impl TouchEventSimulator {
-    fn maybe_consume_move_button_event(
-        &self,
-        webview: &WebView,
-        button: MouseButton,
-        action: ElementState,
-        point: DevicePoint,
-    ) -> bool {
-        if button != MouseButton::Left {
-            return false;
-        }
-
-        if action == ElementState::Pressed && !self.left_mouse_button_down.get() {
-            webview.notify_input_event(InputEvent::Touch(TouchEvent::new(
-                TouchEventType::Down,
-                TouchId(0),
-                point.into(),
-            )));
-            self.left_mouse_button_down.set(true);
-        } else if action == ElementState::Released {
-            webview.notify_input_event(InputEvent::Touch(TouchEvent::new(
-                TouchEventType::Up,
-                TouchId(0),
-                point.into(),
-            )));
-            self.left_mouse_button_down.set(false);
-        }
-
-        true
-    }
-
-    fn maybe_consume_mouse_move_event(
-        &self,
-        webview: &WebView,
-        point: Point2D<f32, DevicePixel>,
-    ) -> bool {
-        if !self.left_mouse_button_down.get() {
-            return false;
-        }
-
-        webview.notify_input_event(InputEvent::Touch(TouchEvent::new(
-            TouchEventType::Move,
-            TouchId(0),
-            point.into(),
-        )));
-        true
     }
 }

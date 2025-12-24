@@ -18,7 +18,7 @@ macro_rules! trace_winit_event {
     // This macro only exists to put the docs in the same file as the target prefix,
     // so the macro definition is always the same.
     ($event:expr, $($rest:tt)+) => {
-        ::log::trace!(target: $crate::tracing::LogTarget::log_target(&$event), $($rest)+)
+        ::log::trace!(target: $crate::panic_utils::tracing::LogTarget::log_target(&$event), $($rest)+)
     };
 }
 
