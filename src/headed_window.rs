@@ -46,11 +46,11 @@ use {
 
 use super::geometry::{winit_position_to_euclid_point, winit_size_to_euclid_size};
 use super::keyutils::{CMD_OR_ALT, keyboard_event_from_winit};
-use crate::desktop::accelerated_gl_media::setup_gl_accelerated_media;
-use crate::desktop::dialog::Dialog;
-use crate::desktop::event_loop::AppEvent;
-use crate::desktop::gui::Gui;
-use crate::desktop::keyutils::CMD_OR_CONTROL;
+use crate::accelerated_gl_media::setup_gl_accelerated_media;
+use crate::dialog::Dialog;
+use crate::event_loop::AppEvent;
+use crate::gui::Gui;
+use crate::keyutils::CMD_OR_CONTROL;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
 use crate::window::{
     LINE_HEIGHT, LINE_WIDTH, MIN_WINDOW_INNER_SIZE, ServoShellWindow, ServoShellWindowId,

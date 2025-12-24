@@ -18,7 +18,7 @@ macro_rules! trace_winit_event {
     // This macro only exists to put the docs in the same file as the target prefix,
     // so the macro definition is always the same.
     ($event:expr, $($rest:tt)+) => {
-        ::log::trace!(target: $crate::desktop::tracing::LogTarget::log_target(&$event), $($rest)+)
+        ::log::trace!(target: $crate::tracing::LogTarget::log_target(&$event), $($rest)+)
     };
 }
 
@@ -31,7 +31,7 @@ pub(crate) trait LogTarget {
 
 mod from_winit {
     use super::LogTarget;
-    use crate::desktop::event_loop::AppEvent;
+    use crate::event_loop::AppEvent;
 
     macro_rules! target {
         ($($name:literal)+) => {

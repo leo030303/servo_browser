@@ -4,26 +4,38 @@
 
 use std::panic;
 
-use desktop::app::App;
+use app::App;
 use prefs::{ServoShellPreferences, get_preferences};
 use winit::event_loop::EventLoop;
 
 #[cfg(test)]
 mod test;
 
+mod accelerated_gl_media;
+pub(crate) mod app;
 mod backtrace;
 mod crash_handler;
-pub(crate) mod desktop;
+pub(crate) mod dialog;
+pub(crate) mod event_loop;
+pub(crate) mod gamepad;
+pub mod geometry;
+mod gui;
+pub mod headed_window;
+mod keyutils;
 mod panic_hook;
 mod parser;
 mod prefs;
+mod resource_protocol;
 mod resources;
 mod running_app_state;
+mod tracing;
+#[cfg(feature = "webxr")]
+mod webxr;
 mod window;
 
 const NEW_TAB_PAGE_URL: &str = "resource:///newtab.html";
 
-pub(crate) use crate::desktop::gamepad::GamepadSupport;
+pub(crate) use crate::gamepad::GamepadSupport;
 
 pub mod platform {
     #[cfg(target_os = "macos")]

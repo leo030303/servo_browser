@@ -27,8 +27,8 @@ use winit::event_loop::{ActiveEventLoop, EventLoopProxy};
 use winit::window::Window;
 
 use super::geometry::winit_position_to_euclid_point;
-use crate::desktop::event_loop::AppEvent;
-use crate::desktop::headed_window;
+use crate::event_loop::AppEvent;
+use crate::headed_window;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
 use crate::window::ServoShellWindow;
 

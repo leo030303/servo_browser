@@ -18,10 +18,10 @@ use winit::window::WindowId;
 use super::event_loop::{AppEvent, HeadedEventLoopWaker};
 use super::headed_window::{self, BrowserWindow};
 use super::resource_protocol::ResourceProtocolHandler;
-use crate::desktop::tracing::trace_winit_event;
 use crate::parser::location_bar_input_to_url;
 use crate::prefs::ServoShellPreferences;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
+use crate::tracing::trace_winit_event;
 use crate::window::ServoShellWindow;
 use crate::{NEW_TAB_PAGE_URL, prefs};
 

@@ -62,8 +62,8 @@ pub(crate) fn get_preferences() -> Preferences {
 }
 
 pub(crate) fn get_opts() -> Opts {
-    let mut opts = Opts::default();
-    opts.config_dir = Some(default_config_dir());
-
-    opts
+    Opts {
+        config_dir: Some(default_config_dir()),
+        ..Default::default()
+    }
 }

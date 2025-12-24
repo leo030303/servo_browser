@@ -10,7 +10,7 @@ use servo::{
 };
 use url::Url;
 
-use crate::desktop::headed_window::BrowserWindow;
+use crate::headed_window::BrowserWindow;
 use crate::running_app_state::{RunningAppState, WebViewCollection};
 
 // This should vary by zoom level and maybe actual text size (focused or under cursor)

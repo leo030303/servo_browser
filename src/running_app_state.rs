@@ -18,7 +18,7 @@ use servo::{
 use url::Url;
 
 use crate::GamepadSupport;
-use crate::desktop::headed_window::BrowserWindow;
+use crate::headed_window::BrowserWindow;
 use crate::prefs::ServoShellPreferences;
 use crate::window::{ServoShellWindow, ServoShellWindowId};
 
