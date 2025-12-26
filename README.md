@@ -20,6 +20,7 @@ The planned features, in no particular order:
 * [ ] Download manager
 * [ ] Side by side tabs
 * [ ] More/Customizable keyboard shortcuts
+* [ ] Working clipboard
 
 ## Disclaimer
 This project isn't affiliated with Servo at all, and its as beta as can be, the main goal is to popularise the Servo engine and find some of the smaller paper cuts that are blocking daily use. Any usage of the Servo name or logo is a placeholder right now and will be removed.
