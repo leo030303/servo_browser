@@ -150,7 +150,7 @@ impl BrowserWindow {
 
         #[cfg(any(target_os = "linux", target_os = "windows"))]
         {
-            let icon_bytes = include_bytes!("../resources/servo_64.png");
+            let icon_bytes = include_bytes!("../resources/prism_64.png");
             winit_window.set_window_icon(Some(load_icon(icon_bytes)));
         }
 

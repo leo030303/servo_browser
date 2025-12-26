@@ -39,7 +39,7 @@ modules:
       # Desktop file
       - install -d /app/share/applications
       - install -Dm755 platform/linux/com.github.leo030303.servo_browser.desktop /app/share/applications/${FLATPAK_ID}.desktop
-      - install -Dm644 resources/servo_256.png /app/share/icons/hicolor/256x256/apps/${FLATPAK_ID}.png
+      - install -Dm644 resources/prism_256.png /app/share/icons/hicolor/256x256/apps/${FLATPAK_ID}.png
       # Install resources folder
       - cp -r resources /app/
       - cargo build --release
