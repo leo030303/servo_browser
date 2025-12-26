@@ -21,24 +21,6 @@ LegalCopyright = "© The Servo Project Developers"
 OriginalFilename = "servo.exe"
 ProductName = "Servo"
 
-[features]
-default = ["libservo/clipboard", "js_jit", "max_log_level", "webgpu", "webxr"]
-crown = ["libservo/crown"]
-debugmozjs = ["libservo/debugmozjs"]
-jitspew = ["libservo/jitspew"]
-js_backtrace = ["libservo/js_backtrace"]
-js_jit = ["libservo/js_jit"]
-max_log_level = ["log/release_max_level_info"]
-media-gstreamer = ["libservo/media-gstreamer"]
-native-bluetooth = ["libservo/native-bluetooth"]
-profilemozjs = ["libservo/profilemozjs"]
-refcell_backtrace = ["libservo/refcell_backtrace"]
-vello = ["libservo/vello"]
-vello_cpu = ["libservo/vello_cpu"]
-webgl_backtrace = ["libservo/webgl_backtrace"]
-webgpu = ["libservo/webgpu"]
-webxr = ["libservo/webxr"]
-
 [dependencies]
 bpaf = { version = "0.9.20", features = ["derive"] }
 cfg-if = { version = "1.0.4" }
@@ -51,7 +33,7 @@ image = { version = "0.25", default-features = false, features = ["avif", "rayon
 ipc-channel = { version = "0.20.2" }
 keyboard-types = { version = "0.8.3", features = ["serde"] }
 libc = { version = "0.2" }
-libservo = { git = "https://github.com/servo/servo.git", rev = "6623cc1", features = ["gamepad", "background_hang_monitor", "bluetooth", "testbinding", "vello_cpu"], default-features = false }
+libservo = { git = "https://github.com/servo/servo.git", rev = "6623cc1", features = ["gamepad", "background_hang_monitor", "bluetooth", "testbinding", "vello_cpu", "clipboard"], default-features = false }
 log = { version = "0.4.29" }
 mime_guess = { version = "2.0.5" }
 raw-window-handle = { version = "0.6" }
