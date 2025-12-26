@@ -17,9 +17,11 @@ use servo::{
 };
 use url::Url;
 
-use crate::GamepadSupport;
 use crate::browser_window::{BrowserWindow, BrowserWindowId};
+use crate::data_storage::BrowserDataConnection;
+use crate::data_storage::history::HistoryEntry;
 use crate::prefs::ServoShellPreferences;
+use crate::{GamepadSupport, NEW_TAB_PAGE_URL, data_storage};
 
 #[derive(Default)]
 pub struct WebViewCollection {
@@ -145,6 +147,7 @@ pub(crate) struct RunningAppState {
     // other references to the relevant rendering contexts have been destroyed.
     // See https://github.com/servo/servo/issues/36711.
     windows: RefCell<HashMap<BrowserWindowId, Rc<BrowserWindow>>>,
+    browser_data_connection: BrowserDataConnection,
 }
 
 impl RunningAppState {
@@ -167,6 +170,7 @@ impl RunningAppState {
             servoshell_preferences,
             servo,
             exit_scheduled: Default::default(),
+            browser_data_connection: data_storage::BrowserDataConnection::new(),
         }
     }
 
@@ -270,6 +274,10 @@ impl RunningAppState {
             gamepad_support.handle_gamepad_events(active_webview);
         }
     }
+
+    pub fn get_browser_history(&self) -> Vec<HistoryEntry> {
+        self.browser_data_connection.get_browser_history()
+    }
 }
 
 impl WebViewDelegate for RunningAppState {
@@ -288,7 +296,17 @@ impl WebViewDelegate for RunningAppState {
         self.window_for_webview_id(webview.id()).set_needs_update();
     }
 
-    fn notify_page_title_changed(&self, webview: WebView, _: Option<String>) {
+    fn notify_page_title_changed(&self, webview: WebView, new_page_title_opt: Option<String>) {
+        let url_to_add_opt = webview.url().map(|url| url.to_string());
+        if let (Some(url_to_add), Some(new_page_title)) = (url_to_add_opt, new_page_title_opt) {
+            if url_to_add != NEW_TAB_PAGE_URL
+                && !url_to_add.is_empty()
+                && !new_page_title.is_empty()
+            {
+                self.browser_data_connection
+                    .add_to_browser_history(new_page_title, url_to_add);
+            }
+        }
         self.window_for_webview_id(webview.id()).set_needs_update();
     }
 

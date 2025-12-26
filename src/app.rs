@@ -161,8 +161,7 @@ impl App {
                 }
                 UserInterfaceCommand::NewWebView => {
                     window.set_needs_update();
-                    let url = Url::parse("resource:///newtab.html")
-                        .expect("Should always be able to parse");
+                    let url = Url::parse(NEW_TAB_PAGE_URL).expect("Should always be able to parse");
                     window.create_and_activate_toplevel_webview(state.clone(), url);
                 }
                 UserInterfaceCommand::CloseWebView(id) => {

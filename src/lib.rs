@@ -13,6 +13,7 @@ mod test;
 
 pub(crate) mod app;
 pub mod browser_window;
+pub mod data_storage;
 pub(crate) mod dialog;
 pub(crate) mod event_loop;
 pub mod geometry;

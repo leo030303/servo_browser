@@ -26,7 +26,8 @@ use winit::event::{ElementState, MouseButton, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, EventLoopProxy};
 use winit::window::Window;
 
-use crate::browser_window::{self, BrowserWindow};
+use crate::browser_window::BrowserWindow;
+use crate::data_storage::history::HistoryEntry;
 use crate::event_loop::AppEvent;
 use crate::geometry::winit_position_to_euclid_point;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
@@ -35,6 +36,11 @@ use super::browser_tab::create_browser_tab;
 
 pub const TAB_WIDTH: f32 = 200.0;
 pub const FAVICON_SIZE: f32 = 16.0;
+
+enum AppPage {
+    Main,
+    History,
+}
 
 /// The user interface of a headed servoshell. Currently this is implemented via
 /// egui.
@@ -73,6 +79,9 @@ pub struct Gui {
 
     /// If the webviews need their theme updated to match winit then this contains the new theme, otherwise its None
     updated_theme: Option<servo::Theme>,
+
+    browser_history_cache: Vec<HistoryEntry>,
+    current_page: AppPage,
 }
 
 impl Drop for Gui {
@@ -144,6 +153,8 @@ impl Gui {
             favicon_textures: Default::default(),
             _colour_scheme_subscription: colour_scheme_subscription,
             updated_theme: None,
+            browser_history_cache: Default::default(),
+            current_page: AppPage::Main,
         }
     }
 
@@ -252,7 +263,12 @@ impl Gui {
 
     /// Return true iff the given position is over the egui toolbar.
     fn is_in_egui_toolbar_rect(&self, position: Point2D<f32, DeviceIndependentPixel>) -> bool {
-        position.y < self.toolbar_height.get() || position.x < self.tabbar_width.get()
+        match self.current_page {
+            AppPage::Main => {
+                position.y < self.toolbar_height.get() || position.x < self.tabbar_width.get()
+            }
+            AppPage::History => true,
+        }
     }
 
     /// Create a frameless button with square sizing, as used in the toolbar.
@@ -263,7 +279,7 @@ impl Gui {
     }
 
     /// Update the user interface, but do not paint the updated state.
-    pub(crate) fn update(&mut self, _state: &RunningAppState, browser_window: &BrowserWindow) {
+    pub(crate) fn update(&mut self, state: &RunningAppState, browser_window: &BrowserWindow) {
         self.rendering_context
             .make_current()
             .expect("Could not make RenderingContext current");
@@ -276,10 +292,16 @@ impl Gui {
             location,
             location_dirty,
             favicon_textures,
+            current_page,
+            browser_history_cache,
+            can_go_back,
+            can_go_forward,
+            load_status,
             ..
         } = self;
 
         let winit_window = browser_window.winit_window();
+        let current_theme = winit_window.theme().unwrap_or(winit::window::Theme::Light);
         context.run(winit_window, |ctx| {
             load_pending_favicons(ctx, browser_window, favicon_textures);
 
@@ -289,215 +311,35 @@ impl Gui {
                 let frame = egui::Frame::default()
                     .fill(ctx.style().visuals.window_fill)
                     .inner_margin(4.0);
-                TopBottomPanel::top("toolbar").frame(frame).show(ctx, |ui| {
-                    ui.allocate_ui_with_layout(
-                        ui.available_size(),
-                        egui::Layout::left_to_right(egui::Align::Center),
-                        |ui| {
-                            let back_button = ui.add_enabled(
-                                self.can_go_back,
-                                Gui::toolbar_image_button(match winit_window.theme() {
-                                    Some(winit::window::Theme::Dark) => egui::include_image!(
-                                        "../../resources/icons/back_arrow_dark.svg"
-                                    ),
-                                    Some(winit::window::Theme::Light) | None => {
-                                        egui::include_image!(
-                                            "../../resources/icons/back_arrow_light.svg"
-                                        )
-                                    }
-                                }),
-                            );
-                            back_button.widget_info(|| {
-                                let mut info = WidgetInfo::new(WidgetType::Button);
-                                info.label = Some("Back".into());
-                                info
-                            });
-                            if back_button.clicked() {
-                                *location_dirty = false;
-                                event_queue.push(UserInterfaceCommand::Back);
-                            }
-
-                            let forward_button = ui.add_enabled(
-                                self.can_go_forward,
-                                Gui::toolbar_image_button(match winit_window.theme() {
-                                    Some(winit::window::Theme::Dark) => egui::include_image!(
-                                        "../../resources/icons/forward_arrow_dark.svg"
-                                    ),
-                                    Some(winit::window::Theme::Light) | None => {
-                                        egui::include_image!(
-                                            "../../resources/icons/forward_arrow_light.svg"
-                                        )
-                                    }
-                                }),
-                            );
-                            forward_button.widget_info(|| {
-                                let mut info = WidgetInfo::new(WidgetType::Button);
-                                info.label = Some("Forward".into());
-                                info
-                            });
-                            if forward_button.clicked() {
-                                *location_dirty = false;
-                                event_queue.push(UserInterfaceCommand::Forward);
-                            }
-
-                            match self.load_status {
-                                LoadStatus::Started | LoadStatus::HeadParsed => {
-                                    let stop_button = ui.add(Gui::toolbar_image_button(
-                                        match winit_window.theme() {
-                                            Some(winit::window::Theme::Dark) => {
-                                                egui::include_image!(
-                                                    "../../resources/icons/close_dark.svg"
-                                                )
-                                            }
-                                            Some(winit::window::Theme::Light) | None => {
-                                                egui::include_image!(
-                                                    "../../resources/icons/close_light.svg"
-                                                )
-                                            }
-                                        },
-                                    ));
-                                    stop_button.widget_info(|| {
-                                        let mut info = WidgetInfo::new(WidgetType::Button);
-                                        info.label = Some("Stop".into());
-                                        info
-                                    });
-                                    if stop_button.clicked() {
-                                        warn!("Do not support stop yet.");
-                                    }
-                                }
-                                LoadStatus::Complete => {
-                                    let reload_button = ui.add(Gui::toolbar_image_button(
-                                        match winit_window.theme() {
-                                            Some(winit::window::Theme::Dark) => {
-                                                egui::include_image!(
-                                                    "../../resources/icons/refresh_dark.svg"
-                                                )
-                                            }
-                                            Some(winit::window::Theme::Light) | None => {
-                                                egui::include_image!(
-                                                    "../../resources/icons/refresh_light.svg"
-                                                )
-                                            }
-                                        },
-                                    ));
-                                    reload_button.widget_info(|| {
-                                        let mut info = WidgetInfo::new(WidgetType::Button);
-                                        info.label = Some("Reload".into());
-                                        info
-                                    });
-                                    if reload_button.clicked() {
-                                        *location_dirty = false;
-                                        event_queue.push(UserInterfaceCommand::Reload);
-                                    }
-                                }
-                            }
-                            ui.add_space(2.0);
-
-                            ui.allocate_ui_with_layout(
-                                ui.available_size(),
-                                egui::Layout::right_to_left(egui::Align::Center),
-                                |ui| {
-                                    let location_id = egui::Id::new("location_input");
-                                    let location_field = ui.add_sized(
-                                        ui.available_size(),
-                                        egui::TextEdit::singleline(location)
-                                            .id(location_id)
-                                            .hint_text("Search or enter address"),
-                                    );
-
-                                    if location_field.changed() {
-                                        *location_dirty = true;
-                                    }
-                                    // Handle adddress bar shortcut.
-                                    if ui.input(|i| {
-                                        if cfg!(target_os = "macos") {
-                                            i.clone().consume_key(Modifiers::COMMAND, Key::L)
-                                        } else {
-                                            i.clone().consume_key(Modifiers::COMMAND, Key::L)
-                                                || i.clone().consume_key(Modifiers::ALT, Key::D)
-                                        }
-                                    }) {
-                                        // The focus request immediately makes gained_focus return true.
-                                        location_field.request_focus();
-                                    }
-                                    // Select address bar text when it's focused (click or shortcut).
-                                    if location_field.gained_focus() {
-                                        if let Some(mut state) =
-                                            TextEditState::load(ui.ctx(), location_id)
-                                        {
-                                            // Select the whole input.
-                                            state.cursor.set_char_range(Some(CCursorRange::two(
-                                                CCursor::new(0),
-                                                CCursor::new(location.len()),
-                                            )));
-                                            state.store(ui.ctx(), location_id);
-                                        }
-                                    }
-                                    // Navigate to address when enter is pressed in the address bar.
-                                    if location_field.lost_focus()
-                                        && ui.input(|i| i.clone().key_pressed(Key::Enter))
-                                    {
-                                        event_queue
-                                            .push(UserInterfaceCommand::Go(location.clone()));
-                                    }
-                                },
-                            );
-                        },
-                    );
-                });
-
-                // A simple Tab header strip
-                SidePanel::left("tabs")
-                    .resizable(false)
-                    .exact_width(TAB_WIDTH)
-                    .show(ctx, |ui| {
-                        ui.allocate_ui_with_layout(
-                            Vec2::new(TAB_WIDTH - 20.0, ui.available_size().y),
-                            egui::Layout::top_down(egui::Align::Center),
-                            |ui| {
-                                for (id, webview) in browser_window.webviews().into_iter() {
-                                    let favicon = favicon_textures
-                                        .get(&id)
-                                        .map(|(_, favicon)| favicon)
-                                        .copied();
-                                    ui.allocate_ui(Vec2::new(TAB_WIDTH - 30.0, 0.0), |ui| {
-                                        create_browser_tab(
-                                            ui,
-                                            browser_window,
-                                            webview,
-                                            event_queue,
-                                            favicon,
-                                            winit_window
-                                                .theme()
-                                                .unwrap_or(winit::window::Theme::Light),
-                                        );
-                                    });
-                                }
-
-                                let new_tab_button =
-                                    ui.add(Gui::toolbar_image_button(match winit_window.theme() {
-                                        Some(winit::window::Theme::Dark) => {
-                                            egui::include_image!(
-                                                "../../resources/icons/add_dark.svg"
-                                            )
-                                        }
-                                        Some(winit::window::Theme::Light) | None => {
-                                            egui::include_image!(
-                                                "../../resources/icons/add_light.svg"
-                                            )
-                                        }
-                                    }));
-                                new_tab_button.widget_info(|| {
-                                    let mut info = WidgetInfo::new(WidgetType::Button);
-                                    info.label = Some("New tab".into());
-                                    info
-                                });
-                                if new_tab_button.clicked() {
-                                    event_queue.push(UserInterfaceCommand::NewWebView);
-                                }
-                            },
+                match current_page {
+                    AppPage::History => {
+                        create_history_page(
+                            ctx,
+                            browser_history_cache,
+                            current_theme,
+                            current_page,
+                            event_queue,
                         );
-                    });
+                    }
+                    AppPage::Main => {
+                        create_main_page(
+                            state,
+                            browser_window,
+                            event_queue,
+                            location,
+                            location_dirty,
+                            favicon_textures,
+                            current_page,
+                            current_theme,
+                            ctx,
+                            frame,
+                            *can_go_back,
+                            *can_go_forward,
+                            *load_status,
+                            browser_history_cache,
+                        );
+                    }
+                }
             };
 
             // The toolbar height is where the Context’s available rect starts.
@@ -536,18 +378,20 @@ impl Gui {
 
             browser_window.repaint_webviews();
 
-            if let Some(render_to_parent) = rendering_context.render_to_parent_callback() {
-                ctx.layer_painter(LayerId::background()).add(PaintCallback {
-                    rect: ctx.available_rect(),
-                    callback: Arc::new(CallbackFn::new(move |info, painter| {
-                        let clip = info.viewport_in_pixels();
-                        let rect_in_parent = Rect::new(
-                            Point2D::new(clip.left_px, clip.from_bottom_px),
-                            Size2D::new(clip.width_px, clip.height_px),
-                        );
-                        render_to_parent(painter.gl(), rect_in_parent)
-                    })),
-                });
+            if matches!(current_page, AppPage::Main) {
+                if let Some(render_to_parent) = rendering_context.render_to_parent_callback() {
+                    ctx.layer_painter(LayerId::background()).add(PaintCallback {
+                        rect: ctx.available_rect(),
+                        callback: Arc::new(CallbackFn::new(move |info, painter| {
+                            let clip = info.viewport_in_pixels();
+                            let rect_in_parent = Rect::new(
+                                Point2D::new(clip.left_px, clip.from_bottom_px),
+                                Size2D::new(clip.width_px, clip.height_px),
+                            );
+                            render_to_parent(painter.gl(), rect_in_parent)
+                        })),
+                    });
+                }
             }
         });
     }
@@ -698,6 +542,308 @@ fn embedder_image_to_egui_image(image: &Image) -> egui::ColorImage {
             egui::ColorImage::from_rgba_unmultiplied([width, height], &data)
         }
     }
+}
+
+fn create_main_page(
+    state: &RunningAppState,
+    browser_window: &BrowserWindow,
+    event_queue: &mut Vec<UserInterfaceCommand>,
+    location: &mut String,
+    location_dirty: &mut bool,
+    favicon_textures: &mut HashMap<WebViewId, (egui::TextureHandle, egui::load::SizedTexture)>,
+    current_page: &mut AppPage,
+    current_theme: winit::window::Theme,
+    ctx: &egui::Context,
+    frame: egui::Frame,
+    can_go_back: bool,
+    can_go_forward: bool,
+    load_status: LoadStatus,
+    browser_history_cache: &mut Vec<HistoryEntry>,
+) {
+    TopBottomPanel::top("toolbar").frame(frame).show(ctx, |ui| {
+        ui.allocate_ui_with_layout(
+            ui.available_size(),
+            egui::Layout::left_to_right(egui::Align::Center),
+            |ui| {
+                let back_button = ui.add_enabled(
+                    can_go_back,
+                    Gui::toolbar_image_button(match current_theme {
+                        winit::window::Theme::Dark => {
+                            egui::include_image!("../../resources/icons/back_arrow_dark.svg")
+                        }
+                        winit::window::Theme::Light => {
+                            egui::include_image!("../../resources/icons/back_arrow_light.svg")
+                        }
+                    }),
+                );
+                back_button.widget_info(|| {
+                    let mut info = WidgetInfo::new(WidgetType::Button);
+                    info.label = Some("Back".into());
+                    info
+                });
+                if back_button.clicked() {
+                    *location_dirty = false;
+                    event_queue.push(UserInterfaceCommand::Back);
+                }
+
+                let forward_button = ui.add_enabled(
+                    can_go_forward,
+                    Gui::toolbar_image_button(match current_theme {
+                        winit::window::Theme::Dark => {
+                            egui::include_image!("../../resources/icons/forward_arrow_dark.svg")
+                        }
+                        winit::window::Theme::Light => {
+                            egui::include_image!("../../resources/icons/forward_arrow_light.svg")
+                        }
+                    }),
+                );
+                forward_button.widget_info(|| {
+                    let mut info = WidgetInfo::new(WidgetType::Button);
+                    info.label = Some("Forward".into());
+                    info
+                });
+                if forward_button.clicked() {
+                    *location_dirty = false;
+                    event_queue.push(UserInterfaceCommand::Forward);
+                }
+
+                match load_status {
+                    LoadStatus::Started | LoadStatus::HeadParsed => {
+                        let stop_button = ui.add(Gui::toolbar_image_button(match current_theme {
+                            winit::window::Theme::Dark => {
+                                egui::include_image!("../../resources/icons/close_dark.svg")
+                            }
+                            winit::window::Theme::Light => {
+                                egui::include_image!("../../resources/icons/close_light.svg")
+                            }
+                        }));
+                        stop_button.widget_info(|| {
+                            let mut info = WidgetInfo::new(WidgetType::Button);
+                            info.label = Some("Stop".into());
+                            info
+                        });
+                        if stop_button.clicked() {
+                            warn!("Do not support stop yet.");
+                        }
+                    }
+                    LoadStatus::Complete => {
+                        let reload_button =
+                            ui.add(Gui::toolbar_image_button(match current_theme {
+                                winit::window::Theme::Dark => {
+                                    egui::include_image!("../../resources/icons/refresh_dark.svg")
+                                }
+                                winit::window::Theme::Light => {
+                                    egui::include_image!("../../resources/icons/refresh_light.svg")
+                                }
+                            }));
+                        reload_button.widget_info(|| {
+                            let mut info = WidgetInfo::new(WidgetType::Button);
+                            info.label = Some("Reload".into());
+                            info
+                        });
+                        if reload_button.clicked() {
+                            *location_dirty = false;
+                            event_queue.push(UserInterfaceCommand::Reload);
+                        }
+                    }
+                }
+                ui.add_space(2.0);
+
+                ui.allocate_ui_with_layout(
+                    ui.available_size(),
+                    egui::Layout::left_to_right(egui::Align::Center),
+                    |ui| {
+                        let location_id = egui::Id::new("location_input");
+                        let location_field = ui.add_sized(
+                            Vec2::new(ui.available_width() - 20.0, ui.available_height()),
+                            egui::TextEdit::singleline(location)
+                                .id(location_id)
+                                .hint_text("Search or enter address"),
+                        );
+
+                        if location_field.changed() {
+                            *location_dirty = true;
+                        }
+                        // Handle adddress bar shortcut.
+                        if ui.input(|i| {
+                            if cfg!(target_os = "macos") {
+                                i.clone().consume_key(Modifiers::COMMAND, Key::L)
+                            } else {
+                                i.clone().consume_key(Modifiers::COMMAND, Key::L)
+                                    || i.clone().consume_key(Modifiers::ALT, Key::D)
+                            }
+                        }) {
+                            // The focus request immediately makes gained_focus return true.
+                            location_field.request_focus();
+                        }
+                        // Select address bar text when it's focused (click or shortcut).
+                        if location_field.gained_focus() {
+                            if let Some(mut state) = TextEditState::load(ui.ctx(), location_id) {
+                                // Select the whole input.
+                                state.cursor.set_char_range(Some(CCursorRange::two(
+                                    CCursor::new(0),
+                                    CCursor::new(location.len()),
+                                )));
+                                state.store(ui.ctx(), location_id);
+                            }
+                        }
+                        // Navigate to address when enter is pressed in the address bar.
+                        if location_field.lost_focus()
+                            && ui.input(|i| i.clone().key_pressed(Key::Enter))
+                        {
+                            event_queue.push(UserInterfaceCommand::Go(location.clone()));
+                        }
+                        let menu_button = ui.add(Gui::toolbar_image_button(match current_theme {
+                            winit::window::Theme::Dark => {
+                                egui::include_image!("../../resources/icons/menu_dark.svg")
+                            }
+                            winit::window::Theme::Light => {
+                                egui::include_image!("../../resources/icons/menu_light.svg")
+                            }
+                        }));
+                        menu_button.widget_info(|| {
+                            let mut info = WidgetInfo::new(WidgetType::Button);
+                            info.label = Some("Menu".into());
+                            info
+                        });
+                        if menu_button.clicked() {
+                            *browser_history_cache = state.get_browser_history();
+                            *current_page = AppPage::History;
+                        }
+                        ui.add_space(2.0);
+                    },
+                );
+            },
+        );
+    });
+
+    // A simple Tab header strip
+    SidePanel::left("tabs")
+        .resizable(false)
+        .exact_width(TAB_WIDTH)
+        .show(ctx, |ui| {
+            ui.allocate_ui_with_layout(
+                Vec2::new(TAB_WIDTH - 20.0, ui.available_size().y),
+                egui::Layout::top_down(egui::Align::Center),
+                |ui| {
+                    for (id, webview) in browser_window.webviews().into_iter() {
+                        let favicon = favicon_textures
+                            .get(&id)
+                            .map(|(_, favicon)| favicon)
+                            .copied();
+                        ui.allocate_ui(Vec2::new(TAB_WIDTH - 30.0, 0.0), |ui| {
+                            create_browser_tab(
+                                ui,
+                                browser_window,
+                                webview,
+                                event_queue,
+                                favicon,
+                                current_theme,
+                            );
+                        });
+                    }
+
+                    let new_tab_button = ui.add(Gui::toolbar_image_button(match current_theme {
+                        winit::window::Theme::Dark => {
+                            egui::include_image!("../../resources/icons/add_dark.svg")
+                        }
+                        winit::window::Theme::Light => {
+                            egui::include_image!("../../resources/icons/add_light.svg")
+                        }
+                    }));
+                    new_tab_button.widget_info(|| {
+                        let mut info = WidgetInfo::new(WidgetType::Button);
+                        info.label = Some("New tab".into());
+                        info
+                    });
+                    if new_tab_button.clicked() {
+                        event_queue.push(UserInterfaceCommand::NewWebView);
+                    }
+                },
+            );
+        });
+}
+
+fn create_history_page(
+    ctx: &egui::Context,
+    browser_history_cache: &[HistoryEntry],
+    current_theme: winit::window::Theme,
+    current_page: &mut AppPage,
+    event_queue: &mut Vec<UserInterfaceCommand>,
+) {
+    egui::CentralPanel::default().show(ctx, |ui| {
+        ui.allocate_ui_with_layout(
+            ui.available_size(),
+            egui::Layout::top_down(egui::Align::LEFT),
+            |ui| {
+                let back_button = ui.add(Gui::toolbar_image_button(match current_theme {
+                    winit::window::Theme::Dark => {
+                        egui::include_image!("../../resources/icons/back_dark.svg")
+                    }
+                    winit::window::Theme::Light => {
+                        egui::include_image!("../../resources/icons/back_light.svg")
+                    }
+                }));
+                back_button.widget_info(|| {
+                    let mut info = WidgetInfo::new(WidgetType::Button);
+                    info.label = Some("Back".into());
+                    info
+                });
+                if back_button.clicked() {
+                    *current_page = AppPage::Main;
+                }
+                egui::ScrollArea::vertical()
+                    .auto_shrink([false, false])
+                    .stick_to_right(true)
+                    .show(ui, |ui| {
+                        ui.vertical(|ui| {
+                            egui_extras::TableBuilder::new(ui)
+                                .striped(true)
+                                .column(egui_extras::Column::remainder())
+                                .column(egui_extras::Column::remainder())
+                                .column(egui_extras::Column::exact(150.0))
+                                .header(20.0, |mut header| {
+                                    header.col(|ui| {
+                                        ui.label("Title");
+                                    });
+                                    header.col(|ui| {
+                                        ui.label("URL");
+                                    });
+                                    header.col(|ui| {
+                                        ui.label("Time Accessed");
+                                    });
+                                })
+                                .body(|mut body| {
+                                    for entry in browser_history_cache {
+                                        body.row(20.0, |mut row| {
+                                            row.col(|ui| {
+                                                ui.label(&entry.title);
+                                            });
+                                            row.col(|ui| {
+                                                let url_link = ui.link(&entry.url);
+                                                if url_link.clicked() {
+                                                    event_queue.push(UserInterfaceCommand::Go(
+                                                        entry.url.clone(),
+                                                    ));
+                                                    *current_page = AppPage::Main;
+                                                }
+                                            });
+                                            row.col(|ui| {
+                                                ui.label(
+                                                    entry
+                                                        .time_accessed
+                                                        .format("%d-%m-%Y %H:%M:%S")
+                                                        .to_string(),
+                                                );
+                                            });
+                                        });
+                                    }
+                                });
+                        });
+                    });
+            },
+        );
+    });
 }
 
 /// Uploads all favicons that have not yet been processed to the GPU.

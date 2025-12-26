@@ -46,6 +46,7 @@ use {
 
 use super::geometry::{winit_position_to_euclid_point, winit_size_to_euclid_size};
 use super::keyutils::{CMD_OR_ALT, keyboard_event_from_winit};
+use crate::NEW_TAB_PAGE_URL;
 use crate::dialog::Dialog;
 use crate::event_loop::AppEvent;
 use crate::keyutils::CMD_OR_CONTROL;
@@ -423,9 +424,8 @@ impl BrowserWindow {
             .shortcut(CMD_OR_CONTROL, 'T', || {
                 self.create_and_activate_toplevel_webview(
                     state.clone(),
-                    Url::parse("resource:///newtab.html").expect(
-                        "Should be able to unconditionally parse 'resource:///newtab.html' as URL",
-                    ),
+                    Url::parse(NEW_TAB_PAGE_URL)
+                        .expect("Should be able to unconditionally parse new tab url as URL"),
                 );
             })
             .shortcut(CMD_OR_CONTROL, 'Q', || state.schedule_exit())
