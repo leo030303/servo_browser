@@ -51,6 +51,7 @@ use crate::dialog::Dialog;
 use crate::event_loop::AppEvent;
 use crate::keyutils::CMD_OR_CONTROL;
 use crate::misc_utils::accelerated_gl_media::setup_gl_accelerated_media;
+#[cfg(feature = "webxr")]
 use crate::misc_utils::webxr::XRWindowPose;
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand, WebViewCollection};
 use crate::user_interface::gui::Gui;
@@ -85,6 +86,7 @@ pub struct BrowserWindow {
     /// It equals viewport size + (0, toolbar height).
     inner_size: Cell<PhysicalSize<u32>>,
     fullscreen: Cell<bool>,
+    #[cfg(feature = "webxr")]
     xr_window_poses: RefCell<Vec<Rc<XRWindowPose>>>,
     modifiers_state: Cell<ModifiersState>,
     /// The `RenderingContext` of Servo itself. This is used to render Servo results
@@ -211,6 +213,7 @@ impl BrowserWindow {
             inner_size: Cell::new(inner_size),
             monitor,
             screen_size,
+            #[cfg(feature = "webxr")]
             xr_window_poses: RefCell::new(vec![]),
             modifiers_state: Cell::new(ModifiersState::empty()),
             window_rendering_context,
@@ -243,6 +246,7 @@ impl BrowserWindow {
             return;
         };
 
+        #[cfg(feature = "webxr")]
         for xr_window_pose in self.xr_window_poses.borrow().iter() {
             xr_window_pose.handle_xr_rotation(&winit_event, self.modifiers_state.get());
             xr_window_pose.handle_xr_translation(&keyboard_event);
