@@ -3,7 +3,7 @@
 
 A web browser using the Servo browser engine, built off of the Servoshell mini browser, with the goal be to build it out with the things a normal browser has.
 
-![resources/prism_256.png](Prism logo)
+![Prism logo](resources/prism_256.png)
 
 The planned features, in no particular order:
 * [x] Flatpak packaging
