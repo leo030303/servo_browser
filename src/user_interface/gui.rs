@@ -10,8 +10,8 @@ use dpi::PhysicalSize;
 use egui::text::{CCursor, CCursorRange};
 use egui::text_edit::TextEditState;
 use egui::{
-    Key, Label, LayerId, Modifiers, PaintCallback, SidePanel, TopBottomPanel, Vec2, WidgetInfo,
-    WidgetType, pos2,
+    Key, Label, LayerId, Modifiers, PaintCallback, Popup, SidePanel, TopBottomPanel, Vec2,
+    WidgetInfo, WidgetType, pos2,
 };
 use egui_glow::{CallbackFn, EguiGlow};
 use egui_winit::EventResponse;
@@ -82,6 +82,7 @@ pub struct Gui {
 
     browser_history_cache: Vec<HistoryEntry>,
     current_page: AppPage,
+    menu_is_active: bool,
 }
 
 impl Drop for Gui {
@@ -154,7 +155,12 @@ impl Gui {
             updated_theme: None,
             browser_history_cache: Default::default(),
             current_page: AppPage::Main,
+            menu_is_active: false,
         }
+    }
+
+    pub(crate) fn webview_should_get_user_input(&self) -> bool {
+        !self.menu_is_active && matches!(self.current_page, AppPage::Main)
     }
 
     fn update_style(
@@ -264,7 +270,11 @@ impl Gui {
     fn is_in_egui_toolbar_rect(&self, position: Point2D<f32, DeviceIndependentPixel>) -> bool {
         match self.current_page {
             AppPage::Main => {
-                position.y < self.toolbar_height.get() || position.x < self.tabbar_width.get()
+                if self.menu_is_active {
+                    true
+                } else {
+                    position.y < self.toolbar_height.get() || position.x < self.tabbar_width.get()
+                }
             }
             AppPage::History => true,
         }
@@ -296,6 +306,7 @@ impl Gui {
             can_go_back,
             can_go_forward,
             load_status,
+            menu_is_active,
             ..
         } = self;
 
@@ -336,6 +347,7 @@ impl Gui {
                             *can_go_forward,
                             *load_status,
                             browser_history_cache,
+                            menu_is_active,
                         );
                     }
                 }
@@ -563,6 +575,7 @@ fn create_main_page(
     can_go_forward: bool,
     load_status: LoadStatus,
     browser_history_cache: &mut Vec<HistoryEntry>,
+    menu_is_active: &mut bool,
 ) {
     TopBottomPanel::top("toolbar").frame(frame).show(ctx, |ui| {
         ui.allocate_ui_with_layout(
@@ -697,6 +710,7 @@ fn create_main_page(
                         {
                             event_queue.push(UserInterfaceCommand::Go(location.clone()));
                         }
+
                         let menu_button = ui.add(Gui::toolbar_image_button(match current_theme {
                             winit::window::Theme::Dark => {
                                 egui::include_image!("../../resources/icons/menu_dark.svg")
@@ -705,15 +719,26 @@ fn create_main_page(
                                 egui::include_image!("../../resources/icons/menu_light.svg")
                             }
                         }));
-                        menu_button.widget_info(|| {
-                            let mut info = WidgetInfo::new(WidgetType::Button);
-                            info.label = Some("Menu".into());
-                            info
+                        let menu_popup = Popup::menu(&menu_button);
+                        *menu_is_active = menu_popup.is_open();
+                        menu_popup.show(|ui| {
+                            ui.set_min_width(160.0);
+
+                            if ui.button("History").clicked() {
+                                *browser_history_cache = state.get_browser_history();
+                                *current_page = AppPage::History;
+                                ui.close_kind(egui::UiKind::Menu);
+                            }
+
+                            if ui.button("Downloads").clicked() {
+                                ui.close_kind(egui::UiKind::Menu);
+                            }
+
+                            if ui.button("Settings").clicked() {
+                                ui.close_kind(egui::UiKind::Menu);
+                            }
                         });
-                        if menu_button.clicked() {
-                            *browser_history_cache = state.get_browser_history();
-                            *current_page = AppPage::History;
-                        }
+
                         ui.add_space(2.0);
                     },
                 );

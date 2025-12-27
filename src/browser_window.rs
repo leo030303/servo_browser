@@ -803,7 +803,9 @@ impl BrowserWindow {
                 }
             }
 
-            if let Some(webview) = self.active_webview() {
+            if let Some(webview) = self.active_webview()
+                && self.gui.borrow().webview_should_get_user_input()
+            {
                 match event {
                     WindowEvent::KeyboardInput { event, .. } => {
                         self.handle_keyboard_input(state.clone(), event)
