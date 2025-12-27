@@ -21,11 +21,11 @@ use servo::{
     DeviceIndependentPixel, DevicePixel, Image, LoadStatus, OffscreenRenderingContext, PixelFormat,
     RenderingContext, WebViewId,
 };
-use url::Url;
 use winit::event::{ElementState, MouseButton, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, EventLoopProxy};
 use winit::window::Window;
 
+use crate::NEW_TAB_PAGE_URL;
 use crate::browser_window::BrowserWindow;
 use crate::data_storage::history::HistoryEntry;
 use crate::event_loop::AppEvent;
@@ -99,7 +99,6 @@ impl Gui {
         event_loop: &ActiveEventLoop,
         event_loop_proxy: EventLoopProxy<AppEvent>,
         rendering_context: Rc<OffscreenRenderingContext>,
-        initial_url: Url,
     ) -> Self {
         rendering_context
             .make_current()
@@ -144,7 +143,7 @@ impl Gui {
             toolbar_height: Default::default(),
             tabbar_width: Default::default(),
             last_mouse_position: None,
-            location: initial_url.to_string(),
+            location: String::new(),
             location_dirty: false,
             load_status: LoadStatus::Complete,
             status_text: None,
@@ -261,7 +260,7 @@ impl Gui {
         self.tabbar_width
     }
 
-    /// Return true iff the given position is over the egui toolbar.
+    /// Return true if the given position is over the egui toolbar.
     fn is_in_egui_toolbar_rect(&self, position: Point2D<f32, DeviceIndependentPixel>) -> bool {
         match self.current_page {
             AppPage::Main => {
@@ -409,7 +408,7 @@ impl Gui {
     }
 
     /// Updates the location field from the given [`RunningAppState`], unless the user has started
-    /// editing it without clicking Go, returning true iff it has changed (needing an egui update).
+    /// editing it without clicking Go, returning true if it has changed (needing an egui update).
     fn update_location_in_toolbar(&mut self, window: &BrowserWindow) -> bool {
         // User edited without clicking Go?
         if self.location_dirty {
@@ -421,7 +420,12 @@ impl Gui {
             .and_then(|webview| Some(webview.url()?.to_string()));
         match current_url_string {
             Some(location) if location != self.location => {
-                self.location = location.to_owned();
+                // We want the url bar to be blank on new tabs rather than showing a resource path
+                if location == NEW_TAB_PAGE_URL {
+                    self.location = String::new();
+                } else {
+                    self.location = location.to_owned();
+                }
                 true
             }
             _ => false,
@@ -473,7 +477,7 @@ impl Gui {
     }
 
     /// Updates all fields taken from the given [`BrowserWindow`], such as the location field.
-    /// Returns true iff the egui needs an update.
+    /// Returns true if the egui needs an update.
     pub(crate) fn update_webview_data(&mut self, window: &BrowserWindow) -> bool {
         // Note: We must use the "bitwise OR" (|) operator here instead of "logical OR" (||)
         //       because logical OR would short-circuit if any of the functions return true.

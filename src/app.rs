@@ -71,8 +71,7 @@ impl App {
             .protocol_registry(protocol_registry)
             .event_loop_waker(self.waker.clone());
 
-        let url = self.initial_url.as_url().clone();
-        let platform_window = self.create_platform_window(url, active_event_loop);
+        let platform_window = self.create_platform_window(active_event_loop);
 
         #[cfg(feature = "webxr")]
         let servo_builder = servo_builder.webxr_registry(
@@ -96,12 +95,8 @@ impl App {
         self.state = AppState::Running(running_state);
     }
 
-    fn create_platform_window(
-        &self,
-        url: Url,
-        active_event_loop: &ActiveEventLoop,
-    ) -> Rc<BrowserWindow> {
-        browser_window::BrowserWindow::new(active_event_loop, self.event_loop_proxy.clone(), url)
+    fn create_platform_window(&self, active_event_loop: &ActiveEventLoop) -> Rc<BrowserWindow> {
+        browser_window::BrowserWindow::new(active_event_loop, self.event_loop_proxy.clone())
     }
 
     pub fn pump_servo_event_loop(&mut self, active_event_loop: Option<&ActiveEventLoop>) -> bool {

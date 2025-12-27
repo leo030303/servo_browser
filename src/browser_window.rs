@@ -129,7 +129,6 @@ impl BrowserWindow {
     pub(crate) fn new(
         event_loop: &ActiveEventLoop,
         event_loop_proxy: EventLoopProxy<AppEvent>,
-        initial_url: Url,
     ) -> Rc<Self> {
         let window_attr = winit::window::Window::default_attributes()
             .with_title(INITIAL_WINDOW_TITLE.to_string())
@@ -201,7 +200,6 @@ impl BrowserWindow {
             event_loop,
             event_loop_proxy,
             rendering_context.clone(),
-            initial_url,
         ));
 
         debug!("Created window {:?}", winit_window.id());
