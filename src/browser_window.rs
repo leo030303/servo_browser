@@ -13,7 +13,7 @@ use std::env;
 use std::rc::Rc;
 use std::time::Duration;
 
-use euclid::{Length, Point2D, Rect, Rotation3D, Scale, Size2D, Vector3D};
+use euclid::{Length, Point2D, Rect, Scale, Size2D};
 use keyboard_types::ShortcutMatcher;
 use log::{debug, info};
 use raw_window_handle::{HasDisplayHandle, HasWindowHandle, RawWindowHandle};
@@ -867,6 +867,7 @@ impl BrowserWindow {
                         );
                     }
                     WindowEvent::CloseRequested => {
+                        state.save_tabs();
                         self.schedule_close();
                     }
                     WindowEvent::ThemeChanged(theme) => {

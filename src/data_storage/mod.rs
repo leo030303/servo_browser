@@ -1,6 +1,4 @@
-use bookmarks::BookmarkEntry;
 use database::init_db;
-use downloads::DownloadEntry;
 use history::HistoryEntry;
 use tabs::OpenTab;
 
@@ -44,6 +42,32 @@ impl BrowserDataConnection {
                     title: row.get(1).unwrap(),
                     url: row.get(2).unwrap(),
                     time_accessed: row.get(3).unwrap(),
+                })
+            })
+            .unwrap()
+            .map(|item| item.unwrap())
+            .collect()
+    }
+
+    pub fn save_open_tabs(&self, open_tabs: &[String]) {
+        self.connection
+            .execute("DELETE FROM open_tabs;", ())
+            .unwrap();
+        open_tabs.iter().for_each(|url| {
+            self.connection
+                .execute("INSERT INTO open_tabs (url) VALUES (?1)", (&url,))
+                .unwrap();
+        });
+    }
+
+    pub fn load_open_tabs(&self) -> Vec<OpenTab> {
+        self.connection
+            .prepare("SELECT id, url FROM open_tabs")
+            .unwrap()
+            .query_map([], |row| {
+                Ok(OpenTab {
+                    id: row.get(0).unwrap(),
+                    url: row.get(1).unwrap(),
                 })
             })
             .unwrap()

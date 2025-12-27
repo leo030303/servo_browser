@@ -174,9 +174,31 @@ impl RunningAppState {
         }
     }
 
-    pub(crate) fn open_window(self: &Rc<Self>, window: Rc<BrowserWindow>, initial_url: Url) {
-        window.create_and_activate_toplevel_webview(self.clone(), initial_url);
-        self.windows.borrow_mut().insert(window.id(), window);
+    pub(crate) fn open_initial_window(
+        self: &Rc<Self>,
+        window: Rc<BrowserWindow>,
+        initial_url: Url,
+    ) {
+        let previous_tabs = self.browser_data_connection.load_open_tabs();
+        if previous_tabs.is_empty() {
+            window.create_and_activate_toplevel_webview(self.clone(), initial_url);
+            self.windows.borrow_mut().insert(window.id(), window);
+        } else {
+            previous_tabs
+                .iter()
+                .filter_map(|open_tab| Url::parse(&open_tab.url).ok())
+                .for_each(|tab_url| {
+                    window.create_toplevel_webview(self.clone(), tab_url);
+                });
+            let first_webview_id = *window
+                .webview_collection
+                .borrow()
+                .creation_order
+                .first()
+                .unwrap();
+            window.activate_webview(first_webview_id);
+            self.windows.borrow_mut().insert(window.id(), window);
+        }
     }
 
     pub(crate) fn focused_window(&self) -> Option<Rc<BrowserWindow>> {
@@ -226,6 +248,23 @@ impl RunningAppState {
         }
 
         !self.exit_scheduled.get()
+    }
+
+    pub(crate) fn save_tabs(self: &Rc<Self>) {
+        let open_tabs: Vec<String> = self
+            .windows
+            .borrow()
+            .values()
+            .flat_map(|window| {
+                window
+                    .webview_collection
+                    .borrow()
+                    .all_in_creation_order()
+                    .filter_map(|(_, webview)| webview.url().map(|url| url.to_string()))
+                    .collect::<Vec<String>>()
+            })
+            .collect();
+        self.browser_data_connection.save_open_tabs(&open_tabs);
     }
 
     pub(crate) fn foreach_window_and_interface_commands(

@@ -12,6 +12,9 @@ edition = "2024"
 # macOS only
 cc = "1.2"
 
+[features]
+webxr = ["libservo/webxr"]
+
 [target.'cfg(windows)'.build-dependencies]
 winresource = "0.1"
 

@@ -1,13 +1,3 @@
-use std::path::PathBuf;
-
-use rusqlite::Connection;
-
-use crate::prefs::default_config_dir;
-
-use super::{
-    bookmarks::BookmarkEntry, downloads::DownloadEntry, history::HistoryEntry, tabs::OpenTab,
-};
-
 pub fn init_db(conn: &rusqlite::Connection) -> rusqlite::Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS browser_history (
@@ -30,7 +20,6 @@ pub fn init_db(conn: &rusqlite::Connection) -> rusqlite::Result<()> {
     conn.execute(
         "CREATE TABLE IF NOT EXISTS open_tabs (
             id   INTEGER PRIMARY KEY,
-            title TEXT NOT NULL,
             url TEXT NOT NULL
         )",
         (),

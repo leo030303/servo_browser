@@ -1458,6 +1458,8 @@ dependencies = [
  "webgl",
  "webrender",
  "webrender_api",
+ "webxr",
+ "webxr-api",
  "wr_malloc_size_of",
 ]
 
@@ -4807,6 +4809,7 @@ dependencies = [
  "webrender",
  "webrender_api",
  "webxr",
+ "webxr-api",
 ]
 
 [[package]]
@@ -7303,6 +7306,7 @@ dependencies = [
  "webdriver",
  "webgpu_traits",
  "webrender_api",
+ "webxr-api",
  "wgpu-core",
  "wgpu-types",
  "x25519-dalek",
@@ -7344,6 +7348,7 @@ dependencies = [
  "stylo",
  "stylo_atoms",
  "tendril",
+ "webxr-api",
  "xml5ever",
 ]
 
@@ -9560,6 +9565,8 @@ dependencies = [
  "surfman",
  "webrender",
  "webrender_api",
+ "webxr",
+ "webxr-api",
 ]
 
 [[package]]

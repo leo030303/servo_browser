@@ -91,7 +91,7 @@ impl App {
             self.servoshell_preferences.clone(),
             self.waker.clone(),
         ));
-        running_state.open_window(platform_window, self.initial_url.as_url().clone());
+        running_state.open_initial_window(platform_window, self.initial_url.as_url().clone());
 
         self.state = AppState::Running(running_state);
     }
