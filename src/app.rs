@@ -6,7 +6,9 @@
 
 use log::warn;
 use servo::protocol_handler::ProtocolRegistry;
-use servo::{EventLoopWaker, Preferences, ServoBuilder, ServoUrl};
+use servo::{
+    EventLoopWaker, Preferences, Servo, ServoBuilder, ServoUrl, UserContentManager, UserScript,
+};
 use std::rc::Rc;
 use std::time::Instant;
 use url::Url;
@@ -20,7 +22,7 @@ use super::event_loop::{AppEvent, HeadedEventLoopWaker};
 use super::resource_protocol::ResourceProtocolHandler;
 use crate::panic_utils::tracing::trace_winit_event;
 use crate::parser::location_bar_input_to_url;
-use crate::prefs::ServoShellPreferences;
+use crate::prefs::{ServoShellPreferences, default_config_dir};
 use crate::running_app_state::{RunningAppState, UserInterfaceCommand};
 use crate::{NEW_TAB_PAGE_URL, prefs};
 
@@ -83,6 +85,7 @@ impl App {
         );
 
         let servo = servo_builder.build();
+        load_userscript_manager(&servo);
         servo.setup_logging();
 
         let running_state = Rc::new(RunningAppState::new(
@@ -225,4 +228,18 @@ impl ApplicationHandler<AppEvent> for App {
         // Block until the window gets an event
         event_loop.set_control_flow(ControlFlow::Wait);
     }
+}
+
+fn load_userscript_manager(servo_handle: &Servo) -> UserContentManager {
+    let user_content_manager = UserContentManager::new(servo_handle);
+    std::fs::read_dir(default_config_dir().join("userscripts"))
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .for_each(|file| {
+            user_content_manager.add_script(UserScript {
+                script: std::fs::read_to_string(&file).unwrap(),
+                source_file: Some(file),
+            });
+        });
+    user_content_manager
 }

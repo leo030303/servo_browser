@@ -11,17 +11,18 @@ use std::rc::Rc;
 use log::{error, info};
 use servo::{
     AllowOrDenyRequest, AuthenticationRequest, DeviceIntPoint, DeviceIntSize, EmbedderControl,
-    EmbedderControlId, EventLoopWaker, GamepadHapticEffectType, GenericSender, InputEventId,
-    InputEventResult, IpcSender, LoadStatus, MediaSessionEvent, PermissionRequest, Servo,
-    ServoDelegate, ServoError, WebView, WebViewDelegate, WebViewId, pref,
+    EmbedderControlId, EventLoopWaker, GenericSender, InputEventId, InputEventResult, LoadStatus,
+    MediaSessionEvent, PermissionRequest, Servo, ServoDelegate, ServoError, WebView,
+    WebViewDelegate, WebViewId, pref,
 };
 use url::Url;
 
 use crate::browser_window::{BrowserWindow, BrowserWindowId};
 use crate::data_storage::BrowserDataConnection;
 use crate::data_storage::history::HistoryEntry;
+use crate::misc_utils::gamepad::ServoshellGamepadProvider;
 use crate::prefs::ServoShellPreferences;
-use crate::{GamepadSupport, NEW_TAB_PAGE_URL, data_storage};
+use crate::{NEW_TAB_PAGE_URL, data_storage};
 
 #[derive(Default)]
 pub struct WebViewCollection {
@@ -129,8 +130,9 @@ pub enum UserInterfaceCommand {
 }
 
 pub(crate) struct RunningAppState {
-    /// Gamepad support, which may be `None` if it failed to initialize.
-    gamepad_support: RefCell<Option<GamepadSupport>>,
+    /// The gamepad provider, used for handling gamepad events and set on each WebView.
+    /// May be `None` if gamepad support is disabled or failed to initialize.
+    gamepad_provider: Rc<Option<ServoshellGamepadProvider>>,
 
     /// servoshell specific preferences created during startup of the application.
     pub(crate) servoshell_preferences: ServoShellPreferences,
@@ -158,15 +160,9 @@ impl RunningAppState {
     ) -> Self {
         servo.set_delegate(Rc::new(ServoShellServoDelegate));
 
-        let gamepad_support = if pref!(dom_gamepad_enabled) {
-            GamepadSupport::maybe_new()
-        } else {
-            None
-        };
-
         Self {
             windows: Default::default(),
-            gamepad_support: RefCell::new(gamepad_support),
+            gamepad_provider: Rc::new(ServoshellGamepadProvider::maybe_new()),
             servoshell_preferences,
             servo,
             exit_scheduled: Default::default(),
@@ -303,15 +299,16 @@ impl RunningAppState {
     }
 
     pub(crate) fn handle_gamepad_events(&self) {
+        let Some(gamepad_provider) = self.gamepad_provider.as_ref() else {
+            return;
+        };
         let Some(active_webview) = self
             .focused_window()
             .and_then(|window| window.active_webview())
         else {
             return;
         };
-        if let Some(gamepad_support) = self.gamepad_support.borrow_mut().as_mut() {
-            gamepad_support.handle_gamepad_events(active_webview);
-        }
+        gamepad_provider.handle_gamepad_events(active_webview);
     }
 
     pub fn get_browser_history(&self) -> Vec<HistoryEntry> {
@@ -414,36 +411,6 @@ impl WebViewDelegate for RunningAppState {
 
     fn notify_new_frame_ready(&self, webview: WebView) {
         self.window_for_webview_id(webview.id()).set_needs_repaint();
-    }
-
-    fn play_gamepad_haptic_effect(
-        &self,
-        _webview: WebView,
-        index: usize,
-        effect_type: GamepadHapticEffectType,
-        effect_complete_sender: IpcSender<bool>,
-    ) {
-        match self.gamepad_support.borrow_mut().as_mut() {
-            Some(gamepad_support) => {
-                gamepad_support.play_haptic_effect(index, effect_type, effect_complete_sender);
-            }
-            None => {
-                let _ = effect_complete_sender.send(false);
-            }
-        }
-    }
-
-    fn stop_gamepad_haptic_effect(
-        &self,
-        _webview: WebView,
-        index: usize,
-        haptic_stop_sender: IpcSender<bool>,
-    ) {
-        let stopped = match self.gamepad_support.borrow_mut().as_mut() {
-            Some(gamepad_support) => gamepad_support.stop_haptic_effect(index),
-            None => false,
-        };
-        let _ = haptic_stop_sender.send(stopped);
     }
 
     fn show_embedder_control(&self, webview: WebView, embedder_control: EmbedderControl) {

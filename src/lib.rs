@@ -29,8 +29,6 @@ pub mod user_interface;
 
 const NEW_TAB_PAGE_URL: &str = "resource:///newtab.html";
 
-pub(crate) use crate::misc_utils::gamepad::GamepadSupport;
-
 pub mod platform {
     #[cfg(target_os = "macos")]
     pub use crate::platform::macos::deinit;

@@ -8,6 +8,7 @@ sdk-extensions:
 finish-args:
   - --share=ipc
   - --socket=fallback-x11
+  - --socket=x11
   - --socket=wayland
   - --socket=pulseaudio
   - --socket=system-bus
@@ -23,25 +24,39 @@ build-options:
   env:
     CARGO_HOME: /run/build/servo_browser/cargo
     MOZJS_ARCHIVE: /run/build/servo_browser/libmozjs-x86_64-unknown-linux-gnu.tar.gz
+    PYTHONPATH: /app/lib/python3.13/site-packages
 command: servo_browser
 modules:
   - name: uv
     buildsystem: simple
     build-commands:
-      # Install pyhton packages required by script crates
+      # Install python packages required by script crates
       - pip3 install --prefix=/app uv
+      # Install python packages required by script crates
+      - pip3 install --target=/app/lib/python3.13/site-packages --no-deps .
+      - pip3 install --target=/app/lib/python3.13/site-packages --no-deps ./WebIDL
+    sources:
+      - type: dir
+        path: ../../third_party/
+      # packaging pip package
+      - type: archive
+        url: https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz
+        sha256: d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f
+      # ply pip package
+      - type: archive
+        url: https://files.pythonhosted.org/packages/e5/69/882ee5c9d017149285cab114ebeab373308ef0f874fcdac9beb90e0ac4da/ply-3.11.tar.gz
+        sha256: 00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3
   - name: servo_browser
     buildsystem: simple
     build-commands:
-      # Install pyhton packages required by script crates
-      - pip3 install --prefix=/app --no-deps ./third_party/ply
-      - pip3 install --prefix=/app --no-deps ./third_party/WebIDL/
       # Desktop file
       - install -d /app/share/applications
       - install -Dm755 platform/linux/com.github.leo030303.servo_browser.desktop /app/share/applications/${FLATPAK_ID}.desktop
       - install -Dm644 resources/prism_256.png /app/share/icons/hicolor/256x256/apps/${FLATPAK_ID}.png
       # Install resources folder
       - cp -r resources /app/
+      - mkdir -p /app/config/servo
+      - cp -r userscripts /app/config/servo/
       - cargo build --release
       - install -Dm755 ./target/release/servo_browser -t /app/bin/
     sources:
